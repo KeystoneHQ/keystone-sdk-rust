@@ -1,0 +1,5 @@
+[workspace]
+members = [
+    "libs/ur-registry",
+    "libs/ur-registry-ffi",
+]
