@@ -12,3 +12,4 @@ pub mod traits;
 mod types;
 
 pub mod solana;
+pub mod ethereum;
