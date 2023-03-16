@@ -6,6 +6,8 @@ use crate::traits::{From, RegistryItem, To};
 use crate::types::{Bytes, Fingerprint};
 use serde_cbor::{from_slice, to_vec, Value};
 use std::collections::BTreeMap;
+use serde::{Serialize, Serializer};
+use serde::ser::SerializeStruct;
 
 const IS_MASTER: i128 = 1;
 const IS_PRIVATE: i128 = 2;
@@ -30,6 +32,26 @@ pub struct CryptoHDKey {
     parent_fingerprint: Option<Fingerprint>,
     name: Option<String>,
     note: Option<String>,
+}
+
+impl Serialize for CryptoHDKey {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: Serializer,
+    {
+        let mut hd_key = serializer.serialize_struct("CryptoHDKey", 10)?;
+        hd_key.serialize_field("is_master", &self.is_master)?;
+        hd_key.serialize_field("is_private_key", &self.is_private_key)?;
+        hd_key.serialize_field("key", &hex::encode(&self.key))?;
+        hd_key.serialize_field("chain_code", &self.chain_code)?;
+        hd_key.serialize_field("use_info", &self.use_info)?;
+        hd_key.serialize_field("origin", &self.origin)?;
+        hd_key.serialize_field("children", &self.children)?;
+        hd_key.serialize_field("parent_fingerprint", &self.parent_fingerprint)?;
+        hd_key.serialize_field("name", &self.name)?;
+        hd_key.serialize_field("note", &self.note)?;
+        hd_key.end()
+    }
 }
 
 impl CryptoHDKey {

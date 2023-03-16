@@ -4,12 +4,13 @@ use crate::traits::{From, RegistryItem, To};
 use crate::types::Fingerprint;
 use serde_cbor::{from_slice, to_vec, Value};
 use std::collections::BTreeMap;
+use serde::{Serialize, Deserialize, Serializer};
 
 const COMPONENTS: i128 = 1;
 const SOURCE_FINGERPRINT: i128 = 2;
 const DEPTH: i128 = 3;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default, Serialize, Deserialize)]
 pub struct PathComponent {
     index: Option<u32>,
     wildcard: bool,
@@ -61,11 +62,27 @@ impl PathComponent {
     }
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, Deserialize)]
 pub struct CryptoKeyPath {
     components: Vec<PathComponent>,
     source_fingerprint: Option<Fingerprint>,
     depth: Option<u32>,
+}
+
+impl Serialize for CryptoKeyPath {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: Serializer,
+    {
+        let hd_path = &self.components.iter()
+            .map(|path|
+                format!("{}{}",
+                        if path.wildcard { "*".to_string() } else { path.index.unwrap_or_default().to_string() },
+                        if path.hardened { "'" } else { "" }))
+            .collect::<Vec<String>>()
+            .join("/");
+        serializer.serialize_str(&format!("m/{}", hd_path))
+    }
 }
 
 impl CryptoKeyPath {
