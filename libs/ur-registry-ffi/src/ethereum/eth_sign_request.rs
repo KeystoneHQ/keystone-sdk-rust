@@ -14,14 +14,22 @@ export! {
         data_type: u32,
         sign_data: &str,
         path: &str,
-        xfp: u32,
+        xfp: &str,
         chain_id: i128,
         address: &str,
         origin: &str
     ) -> String {
-        let derivation_path = match CryptoKeyPath::from_path(path.to_string(), Some(xfp.to_be_bytes())) {
+        let xfp_bytes = match hex::decode(xfp) {
             Ok(v) => v,
-            Err(_) => return json!({"error": "path or xfp is invalid"}).to_string(),
+            Err(_) => return json!({"error": "xfp is invalid"}).to_string(),
+        };
+        let xfp_slice: [u8; 4] = match xfp_bytes.as_slice().try_into() {
+            Ok(v) => v,
+            Err(_) => return json!({"error": "length of xfp must be exactly 8"}).to_string(),
+        };
+        let derivation_path = match CryptoKeyPath::from_path(path.to_string(), Some(xfp_slice)) {
+            Ok(v) => v,
+            Err(_) => return json!({"error": "path is invalid"}).to_string(),
         };
         let data_type = match DataType::from_u32(data_type) {
             Ok(v) => v,
@@ -69,7 +77,7 @@ mod tests {
         let request_id = "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d";
         let sign_data = "f849808609184e72a00082271094000000000000000000000000000000000000000080a47f7465737432000000000000000000000000000000000000000000000000000000600057808080";
         let path = "m/44'/1'/1'/0/1";
-        let xfp = u32::from_str_radix("12345678", 16).unwrap();
+        let xfp = "12345678";
         let chain_id: i128 = 1;
         let address = "";
         let origin = "metamask";
@@ -87,13 +95,13 @@ mod tests {
         let request_id = "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d";
         let sign_data = "f849808609184e72a00082271094000000000000000000000000000000000000000080a47f7465737432000000000000000000000000000000000000000000000000000000600057808080";
         let path = "";
-        let xfp = u32::from_str_radix("12345678", 16).unwrap();
+        let xfp = "12345678";
         let chain_id: i128 = 1;
         let address = "";
         let origin = "metamask";
         let data_type = 1;
 
-        let expect_result = "{\"error\":\"path or xfp is invalid\"}";
+        let expect_result = "{\"error\":\"path is invalid\"}";
 
         assert_eq!(expect_result, generate_eth_sign_request(
             request_id, data_type, sign_data, path, xfp, chain_id, address, origin
@@ -105,7 +113,7 @@ mod tests {
         let request_id = "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d";
         let sign_data = "f8498086091";
         let path = "m/44'/1'/1'/0/1";
-        let xfp = u32::from_str_radix("12345678", 16).unwrap();
+        let xfp = "12345678";
         let chain_id: i128 = 1;
         let address = "";
         let origin = "metamask";

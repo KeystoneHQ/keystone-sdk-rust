@@ -50,7 +50,7 @@ impl To for SolSignature {
         self.get_request_id().and_then(|request_id| {
             map.insert(
                 Value::Integer(REQUEST_ID),
-                Value::Tag(37, Box::new(Value::Bytes(request_id))),
+                Value::Tag(UUID.get_tag(), Box::new(Value::Bytes(request_id))),
             )
         });
         map.insert(
