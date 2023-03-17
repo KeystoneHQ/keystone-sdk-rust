@@ -1,2 +1,2 @@
 pub mod sol_sign_request;
-pub mod sol_signarure;
+pub mod sol_signature;

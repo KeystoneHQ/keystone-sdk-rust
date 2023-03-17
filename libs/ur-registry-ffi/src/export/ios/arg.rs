@@ -10,6 +10,14 @@ impl Argument<'static> for i64 {
 	}
 }
 
+impl Argument<'static> for i128 {
+	type Ext = i128;
+	type Env = &'static mut ExternError;
+	fn convert(_: &Self::Env, val: Self::Ext) -> Self {
+		val
+	}
+}
+
 impl Argument<'static> for u32 {
 	type Ext = u32;
 	type Env = &'static mut ExternError;

@@ -8,5 +8,6 @@ edition = "2021"
 [dependencies]
 ur = { git = "https://github.com/KeystoneHQ/ur-rs", branch = "master" }
 serde_cbor = "0.11.2"
+serde = { version = "1.0", features = ["derive"] }
 hex = "0.4.3"
 bs58 = {version = "0.4.0", features=['check']}

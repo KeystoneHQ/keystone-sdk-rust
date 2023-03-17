@@ -11,4 +11,6 @@ pub mod registry_types;
 pub mod traits;
 mod types;
 
+pub mod extend;
 pub mod solana;
+pub mod ethereum;
