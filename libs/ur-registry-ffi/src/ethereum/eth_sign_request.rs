@@ -11,11 +11,11 @@ export! {
     @Java_com_keystone_sdk_KeystoneSDK_generateETHSignRequest
     fn generate_eth_sign_request(
         request_id: &str,
-        data_type: u32,
         sign_data: &str,
+        data_type: u32,
+        chain_id: i128,
         path: &str,
         xfp: &str,
-        chain_id: i128,
         address: &str,
         origin: &str
     ) -> String {
@@ -86,7 +86,7 @@ mod tests {
         let expect_result = "{\"cbor\":\"a601d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d02584bf849808609184e72a00082271094000000000000000000000000000000000000000080a47f74657374320000000000000000000000000000000000000000000000000000006000578080800301040105d90130a2018a182cf501f501f500f401f4021a1234567807686d6574616d61736b\",\"type\":\"eth-sign-request\"}";
 
         assert_eq!(expect_result, generate_eth_sign_request(
-            request_id, data_type, sign_data, path, xfp, chain_id, address, origin
+            request_id, sign_data, data_type, chain_id, path, xfp, address, origin
         ));
     }
     
@@ -104,7 +104,7 @@ mod tests {
         let expect_result = "{\"error\":\"path is invalid\"}";
 
         assert_eq!(expect_result, generate_eth_sign_request(
-            request_id, data_type, sign_data, path, xfp, chain_id, address, origin
+            request_id, sign_data, data_type, chain_id, path, xfp, address, origin
         ));
     }
 
@@ -122,7 +122,7 @@ mod tests {
         let expect_result = "{\"error\":\"sign_data is invalid\"}";
 
         assert_eq!(expect_result, generate_eth_sign_request(
-            request_id, data_type, sign_data, path, xfp, chain_id, address, origin
+            request_id, sign_data, data_type, chain_id, path, xfp, address, origin
         ));
     }
 }
