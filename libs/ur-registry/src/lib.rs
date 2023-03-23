@@ -7,6 +7,7 @@ pub mod crypto_hd_key;
 pub mod crypto_key_path;
 pub mod crypto_output;
 pub mod crypto_account;
+pub mod crypto_psbt;
 pub mod registry_types;
 pub mod traits;
 mod types;
