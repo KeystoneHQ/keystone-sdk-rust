@@ -436,7 +436,6 @@ version = "0.1.0"
 dependencies = [
  "bs58",
  "hex",
- "serde",
  "serde_cbor",
  "ur",
 ]
@@ -450,6 +449,7 @@ dependencies = [
  "hex",
  "jni",
  "libc",
+ "serde",
  "serde_cbor",
  "serde_json",
  "ur",
