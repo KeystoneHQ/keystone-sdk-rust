@@ -9,7 +9,7 @@ use uuid::Uuid;
 use crate::export;
 
 export! {
-    @Java_com_keystone_sdk_KeystoneSDK_parseSolSignature
+    @Java_com_keystone_sdk_KeystoneNativeSDK_parseSolSignature
 	fn parse_sol_signature(
 		cbor_hex: &str
 	) -> String {

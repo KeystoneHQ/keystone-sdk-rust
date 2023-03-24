@@ -60,7 +60,7 @@ impl Into<MultiAccounts> for CryptoMultiAccounts {
 }
 
 export! {
-    @Java_com_keystone_sdk_KeystoneSDK_parseCryptoMultiAccounts
+    @Java_com_keystone_sdk_KeystoneNativeSDK_parseCryptoMultiAccounts
 	fn parse_crypto_multi_accounts(
 		cbor_hex: &str
 	) -> String {
