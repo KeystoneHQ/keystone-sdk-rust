@@ -5,8 +5,6 @@ use crate::traits::{From, RegistryItem, To};
 use crate::types::Fingerprint;
 use serde_cbor::{from_slice, to_vec, Value};
 use std::collections::BTreeMap;
-use serde::{Serialize, Serializer};
-use serde::ser::SerializeStruct;
 
 const MASTER_FINGERPRINT: i128 = 1;
 const KEYS: i128 = 2;
@@ -17,19 +15,6 @@ pub struct CryptoMultiAccounts {
     master_fingerprint: Fingerprint,
     keys: Vec<CryptoHDKey>,
     device: Option<String>,
-}
-
-impl Serialize for CryptoMultiAccounts {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: Serializer,
-    {
-        let mut accounts = serializer.serialize_struct("CryptoMultiAccounts", 3)?;
-        accounts.serialize_field("master_fingerprint", &hex::encode(self.master_fingerprint))?;
-        accounts.serialize_field("keys", &self.keys)?;
-        accounts.serialize_field("device", &self.device)?;
-        accounts.end()
-    }
 }
 
 impl CryptoMultiAccounts {

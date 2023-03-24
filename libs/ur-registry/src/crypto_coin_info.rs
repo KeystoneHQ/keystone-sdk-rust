@@ -3,23 +3,22 @@ use crate::registry_types::{RegistryType, CRYPTO_COIN_INFO};
 use crate::traits::{From, RegistryItem, To};
 use serde_cbor::{from_slice, to_vec, Value};
 use std::collections::BTreeMap;
-use serde::{Serialize, Deserialize};
 
 const COIN_TYPE: i128 = 1;
 const NETWORK: i128 = 2;
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum CoinType {
     Bitcoin = 0,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Network {
     MainNet = 0,
     TestNet = 1,
 }
 
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default)]
 pub struct CryptoCoinInfo {
     coin_type: Option<CoinType>,
     network: Option<Network>,
