@@ -8,7 +8,7 @@ use ur_registry::solana::sol_sign_request::{SignType, SolSignRequest};
 use crate::export;
 
 export! {
-    @Java_com_keystone_sdk_KeystoneSDK_generateSolSignRequest
+    @Java_com_keystone_sdk_KeystoneNativeSDK_generateSolSignRequest
     fn generate_sol_sign_request(
         request_id: &str,
         sign_data: &str,

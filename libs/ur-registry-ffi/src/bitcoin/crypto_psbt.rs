@@ -9,7 +9,7 @@ use ur_registry::traits::To;
 use crate::export;
 
 export! {
-    @Java_com_keystone_sdk_KeystoneSDK_parseCryptoPSBT
+    @Java_com_keystone_sdk_KeystoneNativeSDK_parseCryptoPSBT
 	fn parse_crypto_psbt(
 		cbor_hex: &str
 	) -> String {
@@ -28,7 +28,7 @@ export! {
         }
     }
 
-    @Java_com_keystone_sdk_KeystoneSDK_generateCryptoPSBT
+    @Java_com_keystone_sdk_KeystoneNativeSDK_generateCryptoPSBT
     fn generate_crypto_psbt(psbt_hex: &str) -> String {
         let gen = || -> Result<String, Error> {
             let psbt = hex::decode(psbt_hex.to_string())?;

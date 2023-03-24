@@ -8,7 +8,7 @@ use ur_registry::ethereum::eth_sign_request::{EthSignRequest, DataType};
 use crate::export;
 
 export! {
-    @Java_com_keystone_sdk_KeystoneSDK_generateETHSignRequest
+    @Java_com_keystone_sdk_KeystoneNativeSDK_generateETHSignRequest
     fn generate_eth_sign_request(
         request_id: &str,
         sign_data: &str,
