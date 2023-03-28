@@ -13,5 +13,6 @@ pub mod crypto_psbt;
 pub mod crypto_key_path;
 mod cbor;
 pub mod crypto_coin_info;
+pub mod crypto_hd_key;
 
 
