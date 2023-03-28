@@ -35,7 +35,7 @@ impl RegistryItem for CryptoPSBT {
 impl<C> minicbor::Encode<C> for CryptoPSBT {
     fn encode<W: Write>(&self,
                         e: &mut Encoder<W>,
-                        ctx: &mut C) -> Result<(), minicbor::encode::Error<W::Error>> {
+                        _ctx: &mut C) -> Result<(), minicbor::encode::Error<W::Error>> {
         e.bytes(&self.psbt)?;
         Ok(())
     }
@@ -43,7 +43,7 @@ impl<C> minicbor::Encode<C> for CryptoPSBT {
 
 
 impl<'b, C> minicbor::Decode<'b, C> for CryptoPSBT {
-    fn decode(d: &mut Decoder<'b>, ctx: &mut C) -> Result<Self, minicbor::decode::Error> {
+    fn decode(d: &mut Decoder<'b>, _ctx: &mut C) -> Result<Self, minicbor::decode::Error> {
         Ok(Self {
             psbt: d.bytes()?.to_vec()
         })
@@ -65,7 +65,7 @@ impl FromCbor<CryptoPSBT> for CryptoPSBT {
 #[cfg(test)]
 mod tests {
     use alloc::vec::Vec;
-    use crate::traits::{From as FromCbor, RegistryItem, To, UR};
+    use crate::traits::{From as FromCbor, RegistryItem, To};
     use hex::FromHex;
     use crate::crypto_psbt::CryptoPSBT;
 
@@ -80,10 +80,7 @@ mod tests {
             hex::encode(crypto.to_cbor().unwrap()).to_uppercase()
         );
 
-        let mut encoder = crypto.to_ur_encoder(1000);
-        let ur = encoder.next_part().unwrap();
         let ur  = ur::encode(&*(crypto.to_cbor().unwrap()), CryptoPSBT::get_registry_type().get_type());
-
         assert_eq!(ur, "ur:crypto-psbt/hdcxlkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypkvoonhknt");
     }
 

@@ -147,7 +147,7 @@ impl RegistryItem for CryptoKeyPath {
 impl<C> minicbor::Encode<C> for CryptoKeyPath {
     fn encode<W: Write>(&self,
                         e: &mut Encoder<W>,
-                        ctx: &mut C) -> Result<(), minicbor::encode::Error<W::Error>> {
+                        _ctx: &mut C) -> Result<(), minicbor::encode::Error<W::Error>> {
         let mut size = 1;
         if let Some(_data) = self.source_fingerprint {
             size = size + 1;
@@ -214,7 +214,7 @@ impl<'b, C> minicbor::Decode<'b, C> for CryptoKeyPath {
                     let mut hardened = false;
                     let mut previous_type: Type = Type::Null;
                     let mut path_index: Option<u32> = None;
-                    cbor_array(d, obj, |index, obj, d| {
+                    cbor_array(d, obj, |_index, _obj, d| {
                         let data_type = cbor_type(d.datatype()?);
                         match data_type {
                             Type::Array => {
@@ -283,7 +283,7 @@ impl FromCbor<CryptoKeyPath> for CryptoKeyPath {
 mod tests {
     use alloc::vec;
     use alloc::vec::Vec;
-    use crate::traits::{From as FromCbor, RegistryItem, To, UR};
+    use crate::traits::{From as FromCbor, RegistryItem, To};
     use hex::FromHex;
     use crate::crypto_key_path::{CryptoKeyPath, PathComponent};
 
