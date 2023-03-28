@@ -9,5 +9,7 @@ pub mod traits;
 mod types;
 pub mod error;
 pub mod crypto_psbt;
+pub mod crypto_key_path;
+mod cbor;
 
 
