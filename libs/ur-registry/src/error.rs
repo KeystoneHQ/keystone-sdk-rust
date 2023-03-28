@@ -1,5 +1,6 @@
-use thiserror_no_std::Error;
 use alloc::string::String;
+use thiserror::Error;
+
 
 #[derive(Error, Debug, PartialEq)]
 pub enum URError {

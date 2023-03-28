@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 ur = { git = "https://github.com/KeystoneHQ/ur-rs", branch = "release-0.3.0-no-std", default-features = false }
 minicbor = { version = "0.19", features = ["alloc"] }
-hex = "0.4.3"
-bs58 = {version = "0.4.0", features=['check']}
+hex = { version = "0.4.3", features = ["alloc"] }
+bs58 = { version = "0.4.0", features = ['check'] }
 libc-print = "0.1.21"
-thiserror-no-std = "2.0.2"
+thiserror = { version = "1.0", package = "thiserror-core", default-features = false }
