@@ -1,10 +1,29 @@
-use serde_cbor::{Value, from_slice, to_vec};
+use alloc::string::ToString;
+use alloc::vec::Vec;
+use minicbor::encode::Write;
+use minicbor::{Decoder, Encoder};
+use crate::error::{URError, UrResult};
+use crate::registry_types::{CRYPTO_PSBT, RegistryType};
+use crate::traits::{RegistryItem, To, From as FromCbor};
+use crate::types::Bytes;
 
-use crate::{traits::{RegistryItem, To, From}, registry_types::{RegistryType, CRYPTO_PSBT}, cbor_value::CborValue};
-
-#[derive(Clone, Debug, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct CryptoPSBT {
-    psbt: Vec<u8>,
+    psbt: Bytes,
+}
+
+impl CryptoPSBT {
+    pub fn new(psbt: Bytes) -> Self {
+        CryptoPSBT { psbt }
+    }
+
+    pub fn get_psbt(&self) -> Bytes {
+        self.psbt.clone()
+    }
+
+    pub fn set_psbt(&mut self, psbt: Bytes) {
+        self.psbt = psbt;
+    }
 }
 
 impl RegistryItem for CryptoPSBT {
@@ -13,66 +32,68 @@ impl RegistryItem for CryptoPSBT {
     }
 }
 
-impl CryptoPSBT {
-    pub fn new(psbt: Vec<u8>) -> Self {
-        CryptoPSBT { psbt }
+impl<C> minicbor::Encode<C> for CryptoPSBT {
+    fn encode<W: Write>(&self,
+                        e: &mut Encoder<W>,
+                        ctx: &mut C) -> Result<(), minicbor::encode::Error<W::Error>> {
+        e.bytes(&self.psbt)?;
+        Ok(())
     }
+}
 
-    pub fn get_psbt(&self) -> Vec<u8> {
-        self.psbt.clone()
+
+impl<'b, C> minicbor::Decode<'b, C> for CryptoPSBT {
+    fn decode(d: &mut Decoder<'b>, ctx: &mut C) -> Result<Self, minicbor::decode::Error> {
+        Ok(Self {
+            psbt: d.bytes()?.to_vec()
+        })
     }
 }
 
 impl To for CryptoPSBT {
-    fn to_cbor(&self) -> Value {
-        Value::Bytes(self.psbt.clone())
-    }
-    fn to_bytes(&self) -> Vec<u8> {
-        let value = self.to_cbor();
-        to_vec(&value).unwrap()
+    fn to_cbor(&self) -> UrResult<Vec<u8>> {
+        minicbor::to_vec(self.clone()).map_err(|e| URError::CborEncodeError(e.to_string()))
     }
 }
 
-impl From<CryptoPSBT> for CryptoPSBT {
-    fn from_cbor(cbor: Value) -> Result<CryptoPSBT, String> {
-        Ok(CryptoPSBT {
-            psbt: CborValue::new(cbor).get_bytes().unwrap()
-        })
-    }
-
-    fn from_bytes(bytes: Vec<u8>) -> Result<CryptoPSBT, String> {
-        let value: Value = from_slice(bytes.as_slice()).unwrap();
-        CryptoPSBT::from_cbor(value)
+impl FromCbor<CryptoPSBT> for CryptoPSBT {
+    fn from_cbor(bytes: Vec<u8>) -> UrResult<CryptoPSBT> {
+        minicbor::decode(&bytes).map_err(|e| URError::CborDecodeError(e.to_string()))
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use alloc::vec::Vec;
+    use crate::traits::{From as FromCbor, RegistryItem, To, UR};
     use hex::FromHex;
-    use crate::traits::{To, From};
-
-    use super::CryptoPSBT;
+    use crate::crypto_psbt::CryptoPSBT;
 
     #[test]
     fn test_encode() {
-        let data = Vec::from_hex("70736274FF01009A020000000258E87A21B56DAF0C23BE8E7070456C336F7CBAA5C8757924F545887BB2ABDD750000000000FFFFFFFF838D0427D0EC650A68AA46BB0B098AEA4422C071B2CA78352A077959D07CEA1D0100000000FFFFFFFF0270AAF00800000000160014D85C2B71D0060B09C9886AEB815E50991DDA124D00E1F5050000000016001400AEA9A2E5F0F876A588DF5546E8742D1D87008F000000000000000000").unwrap();
-        let psbt = CryptoPSBT { psbt: data };
-        let cbor = psbt.to_cbor();
-        let cbor_bytes = serde_cbor::to_vec(&cbor).unwrap();
+        let crypto = CryptoPSBT {
+            psbt: Vec::from_hex("8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa")
+                .unwrap(),
+        };
         assert_eq!(
-            "58A770736274FF01009A020000000258E87A21B56DAF0C23BE8E7070456C336F7CBAA5C8757924F545887BB2ABDD750000000000FFFFFFFF838D0427D0EC650A68AA46BB0B098AEA4422C071B2CA78352A077959D07CEA1D0100000000FFFFFFFF0270AAF00800000000160014D85C2B71D0060B09C9886AEB815E50991DDA124D00E1F5050000000016001400AEA9A2E5F0F876A588DF5546E8742D1D87008F000000000000000000",
-            hex::encode(cbor_bytes).to_uppercase()
+            "58208C05C4B4F3E88840A4F4B5F155CFD69473EA169F3D0431B7A6787A23777F08AA",
+            hex::encode(crypto.to_cbor().unwrap()).to_uppercase()
         );
+
+        let mut encoder = crypto.to_ur_encoder(1000);
+        let ur = encoder.next_part().unwrap();
+        let ur  = ur::encode(&*(crypto.to_cbor().unwrap()), CryptoPSBT::get_registry_type().get_type());
+
+        assert_eq!(ur, "ur:crypto-psbt/hdcxlkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypkvoonhknt");
     }
 
     #[test]
     fn test_decode() {
-        let cbor_bytes = Vec::from_hex("58A770736274FF01009A020000000258E87A21B56DAF0C23BE8E7070456C336F7CBAA5C8757924F545887BB2ABDD750000000000FFFFFFFF838D0427D0EC650A68AA46BB0B098AEA4422C071B2CA78352A077959D07CEA1D0100000000FFFFFFFF0270AAF00800000000160014D85C2B71D0060B09C9886AEB815E50991DDA124D00E1F5050000000016001400AEA9A2E5F0F876A588DF5546E8742D1D87008F000000000000000000").unwrap();
-        let psbt = CryptoPSBT::from_bytes(cbor_bytes).unwrap();
-        let data = psbt.get_psbt();
-        assert_eq!(
-            "70736274FF01009A020000000258E87A21B56DAF0C23BE8E7070456C336F7CBAA5C8757924F545887BB2ABDD750000000000FFFFFFFF838D0427D0EC650A68AA46BB0B098AEA4422C071B2CA78352A077959D07CEA1D0100000000FFFFFFFF0270AAF00800000000160014D85C2B71D0060B09C9886AEB815E50991DDA124D00E1F5050000000016001400AEA9A2E5F0F876A588DF5546E8742D1D87008F000000000000000000",
-            hex::encode(data).to_uppercase()
+        let bytes = Vec::from_hex(
+            "58208C05C4B4F3E88840A4F4B5F155CFD69473EA169F3D0431B7A6787A23777F08AA",
         )
+            .unwrap();
+        let crypto = CryptoPSBT::from_cbor(bytes).unwrap();
+        assert_eq!(crypto.get_psbt(), Vec::from_hex("8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa").unwrap());
     }
 }

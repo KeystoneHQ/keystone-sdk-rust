@@ -1,17 +1,13 @@
-extern crate core;
+#![no_std]
 
-mod cbor_value;
-pub mod crypto_coin_info;
-pub mod crypto_ec_key;
-pub mod crypto_hd_key;
-pub mod crypto_key_path;
-pub mod crypto_output;
-pub mod crypto_account;
-pub mod crypto_psbt;
+extern crate core;
+extern crate alloc;
+
+
 pub mod registry_types;
 pub mod traits;
 mod types;
+pub mod error;
+pub mod crypto_psbt;
 
-pub mod extend;
-pub mod solana;
-pub mod ethereum;
+
