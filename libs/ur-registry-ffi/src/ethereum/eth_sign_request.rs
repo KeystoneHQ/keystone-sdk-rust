@@ -13,7 +13,7 @@ export! {
         request_id: &str,
         sign_data: &str,
         data_type: u32,
-        chain_id: i128,
+        chain_id: i32,
         path: &str,
         xfp: &str,
         address: &str,
@@ -44,7 +44,7 @@ export! {
             Err(_) => return json!({"error": "sign_data is invalid"}).to_string(),
         };
 
-        let chain_id = if chain_id != 0 { Some(chain_id) } else { None };
+        let chain_id = if chain_id != 0 { Some(i128::from(chain_id)) } else { None };
         let address = if address.len() == 0 { None } else { Some(address.as_bytes().to_vec()) };
         let origin = if origin.len() == 0 { None } else { Some(origin.to_string()) };
 
@@ -78,7 +78,7 @@ mod tests {
         let sign_data = "f849808609184e72a00082271094000000000000000000000000000000000000000080a47f7465737432000000000000000000000000000000000000000000000000000000600057808080";
         let path = "m/44'/1'/1'/0/1";
         let xfp = "12345678";
-        let chain_id: i128 = 1;
+        let chain_id: i32 = 1;
         let address = "";
         let origin = "metamask";
         let data_type = 1;
@@ -96,7 +96,7 @@ mod tests {
         let sign_data = "f849808609184e72a00082271094000000000000000000000000000000000000000080a47f7465737432000000000000000000000000000000000000000000000000000000600057808080";
         let path = "";
         let xfp = "12345678";
-        let chain_id: i128 = 1;
+        let chain_id: i32 = 1;
         let address = "";
         let origin = "metamask";
         let data_type = 1;
@@ -114,7 +114,7 @@ mod tests {
         let sign_data = "f8498086091";
         let path = "m/44'/1'/1'/0/1";
         let xfp = "12345678";
-        let chain_id: i128 = 1;
+        let chain_id: i32 = 1;
         let address = "";
         let origin = "metamask";
         let data_type = 1;

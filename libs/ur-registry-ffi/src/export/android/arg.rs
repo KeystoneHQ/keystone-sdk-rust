@@ -19,11 +19,11 @@ impl<'a> Argument<'a> for i64 {
 	}
 }
 
-impl<'a> Argument<'a> for i128 {
+impl<'a> Argument<'a> for i32 {
 	type Ext = jlong;
 	type Env = JNIEnv<'a>;
 	fn convert(_: &Self::Env, val: Self::Ext) -> Self {
-		val as i128
+		val as i32
 	}
 }
 
