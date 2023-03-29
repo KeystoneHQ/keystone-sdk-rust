@@ -15,4 +15,5 @@ mod cbor;
 pub mod crypto_coin_info;
 pub mod crypto_hd_key;
 pub mod crypto_ec_key;
+pub mod multi_key;
 
