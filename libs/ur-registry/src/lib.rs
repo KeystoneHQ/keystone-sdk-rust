@@ -16,4 +16,6 @@ pub mod crypto_coin_info;
 pub mod crypto_hd_key;
 pub mod crypto_ec_key;
 pub mod multi_key;
+pub mod script_expression;
+pub mod crypto_output;
 
