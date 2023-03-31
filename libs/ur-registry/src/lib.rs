@@ -18,4 +18,5 @@ pub mod crypto_ec_key;
 pub mod multi_key;
 pub mod script_expression;
 pub mod crypto_output;
+pub mod crypto_account;
 
