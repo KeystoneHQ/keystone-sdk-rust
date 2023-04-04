@@ -73,8 +73,7 @@ export! {
 	) -> String {
         let parse_signature = || -> Result<MultiAccounts, Error> {
             let cbor = hex::decode(cbor_hex.to_string())?;
-            let res = serde_cbor::from_slice(cbor.as_slice())?;
-            let crypto_multi_accounts = CryptoMultiAccounts::from_cbor(res).map_err(|_| format_err!(""))?;
+            let crypto_multi_accounts = CryptoMultiAccounts::from_cbor(cbor).map_err(|_| format_err!(""))?;
             let multi_accounts = crypto_multi_accounts.into();
             Ok(multi_accounts)
         };

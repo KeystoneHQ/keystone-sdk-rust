@@ -15,8 +15,7 @@ export! {
 	) -> String {
         let parse_signature = || -> Result<(String, String), Error> {
             let cbor = hex::decode(cbor_hex.to_string())?;
-            let res = serde_cbor::from_slice(cbor.as_slice())?;
-            let eth_signature = EthSignature::from_cbor(res).map_err(|_| format_err!(""))?;
+            let eth_signature = EthSignature::from_cbor(cbor).map_err(|_| format_err!(""))?;
             let uuid = eth_signature.get_request_id().ok_or(format_err!(""))?;
             let uuid_hex = hex::encode(uuid);
             let request_id = Uuid::parse_str(&uuid_hex)?.to_string();
