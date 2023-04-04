@@ -6,7 +6,7 @@ use minicbor::encode::Write;
 use minicbor::{Decoder, Encoder};
 use crate::cbor::cbor_map;
 use crate::crypto_key_path::CryptoKeyPath;
-use crate::error::{URError, UrResult};
+use crate::error::{URError, URResult};
 use crate::registry_types::{CRYPTO_KEYPATH, ETH_SIGN_REQUEST, RegistryType, UUID};
 use crate::traits::{RegistryItem, To, From as FromCbor};
 use crate::types::Bytes;
@@ -239,13 +239,13 @@ impl<'b, C> minicbor::Decode<'b, C> for EthSignRequest {
 }
 
 impl To for EthSignRequest {
-    fn to_bytes(&self) -> UrResult<Vec<u8>> {
+    fn to_bytes(&self) -> URResult<Vec<u8>> {
         minicbor::to_vec(self.clone()).map_err(|e| URError::CborEncodeError(e.to_string()))
     }
 }
 
 impl FromCbor<EthSignRequest> for EthSignRequest {
-    fn from_cbor(bytes: Vec<u8>) -> UrResult<EthSignRequest> {
+    fn from_cbor(bytes: Vec<u8>) -> URResult<EthSignRequest> {
         minicbor::decode(&bytes).map_err(|e| URError::CborDecodeError(e.to_string()))
     }
 }

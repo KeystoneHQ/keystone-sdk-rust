@@ -6,7 +6,7 @@ use minicbor::{Decoder, Encoder};
 use minicbor::data::{Tag, Type};
 use crate::crypto_ec_key::CryptoECKey;
 use crate::crypto_hd_key::CryptoHDKey;
-use crate::error::{URError, UrResult};
+use crate::error::{URError, URResult};
 use crate::multi_key::MultiKey;
 use crate::registry_types::{CRYPTO_ECKEY, CRYPTO_HDKEY, CRYPTO_OUTPUT, RegistryType};
 use crate::script_expression::ScriptExpression;
@@ -111,13 +111,13 @@ impl<'b, C> minicbor::Decode<'b, C> for CryptoOutput {
 }
 
 impl To for CryptoOutput {
-    fn to_bytes(&self) -> UrResult<Vec<u8>> {
+    fn to_bytes(&self) -> URResult<Vec<u8>> {
         minicbor::to_vec(self.clone()).map_err(|e| URError::CborEncodeError(e.to_string()))
     }
 }
 
 impl FromCbor<CryptoOutput> for CryptoOutput {
-    fn from_cbor(bytes: Vec<u8>) -> UrResult<CryptoOutput> {
+    fn from_cbor(bytes: Vec<u8>) -> URResult<CryptoOutput> {
         minicbor::decode(&bytes).map_err(|e| URError::CborDecodeError(e.to_string()))
     }
 }

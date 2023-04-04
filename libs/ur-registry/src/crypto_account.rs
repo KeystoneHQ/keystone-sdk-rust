@@ -6,7 +6,7 @@ use minicbor::{Decoder, Encoder};
 use minicbor::data::{Int, Tag};
 use crate::cbor::{cbor_array, cbor_map};
 use crate::crypto_output::CryptoOutput;
-use crate::error::{URError, UrResult};
+use crate::error::{URError, URResult};
 use crate::registry_types::{CRYPTO_ACCOUNT, CRYPTO_OUTPUT, RegistryType};
 use crate::traits::{From as FromCbor, RegistryItem, To};
 use crate::types::Fingerprint;
@@ -112,13 +112,13 @@ impl<'b, C> minicbor::Decode<'b, C> for CryptoAccount {
 }
 
 impl To for CryptoAccount {
-    fn to_bytes(&self) -> UrResult<Vec<u8>> {
+    fn to_bytes(&self) -> URResult<Vec<u8>> {
         minicbor::to_vec(self.clone()).map_err(|e| URError::CborEncodeError(e.to_string()))
     }
 }
 
 impl FromCbor<CryptoAccount> for CryptoAccount {
-    fn from_cbor(bytes: Vec<u8>) -> UrResult<CryptoAccount> {
+    fn from_cbor(bytes: Vec<u8>) -> URResult<CryptoAccount> {
         minicbor::decode(&bytes).map_err(|e| URError::CborDecodeError(e.to_string()))
     }
 }

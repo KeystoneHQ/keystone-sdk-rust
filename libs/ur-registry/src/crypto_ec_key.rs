@@ -7,7 +7,7 @@ use crate::cbor::cbor_map;
 use crate::registry_types::{RegistryType, CRYPTO_ECKEY};
 use crate::traits::{From as FromCbor, RegistryItem, To};
 use crate::types::Bytes;
-use crate::error::{UrResult, URError};
+use crate::error::{URResult, URError};
 
 const CURVE: u8 = 1;
 const PRIVATE: u8 = 2;
@@ -129,13 +129,13 @@ impl<'b, C> minicbor::Decode<'b, C> for CryptoECKey {
 }
 
 impl To for CryptoECKey {
-    fn to_bytes(&self) -> UrResult<Vec<u8>> {
+    fn to_bytes(&self) -> URResult<Vec<u8>> {
         minicbor::to_vec(self.clone()).map_err(|e| URError::CborEncodeError(e.to_string()))
     }
 }
 
 impl FromCbor<CryptoECKey> for CryptoECKey {
-    fn from_cbor(bytes: Vec<u8>) -> UrResult<CryptoECKey> {
+    fn from_cbor(bytes: Vec<u8>) -> URResult<CryptoECKey> {
         minicbor::decode(&bytes).map_err(|e| URError::CborDecodeError(e.to_string()))
     }
 }

@@ -1,14 +1,14 @@
 use alloc::vec::Vec;
 use crate::registry_types::RegistryType;
 use ur::Encoder;
-use crate::error::UrResult;
+use crate::error::URResult;
 
 pub trait From<T> {
-    fn from_cbor(bytes: Vec<u8>) -> UrResult<T>;
+    fn from_cbor(bytes: Vec<u8>) -> URResult<T>;
 }
 
 pub trait To {
-    fn to_bytes(&self) -> UrResult<Vec<u8>>;
+    fn to_bytes(&self) -> URResult<Vec<u8>>;
 }
 
 pub trait UR {

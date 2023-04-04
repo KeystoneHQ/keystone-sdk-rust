@@ -11,4 +11,4 @@ pub enum URError {
     CborEncodeError(String),
 }
 
-pub type UrResult<T> = Result<T, URError>;
+pub type URResult<T> = Result<T, URError>;

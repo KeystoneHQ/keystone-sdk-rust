@@ -4,7 +4,7 @@ use minicbor::encode::Write;
 use minicbor::{Decoder, Encoder};
 use minicbor::data::Int;
 use crate::cbor::cbor_map;
-use crate::error::{URError, UrResult};
+use crate::error::{URError, URResult};
 use crate::registry_types::{CRYPTO_COIN_INFO, RegistryType};
 use crate::traits::{From as FromCbor, RegistryItem, To};
 
@@ -133,14 +133,14 @@ impl<'b, C> minicbor::Decode<'b, C> for CryptoCoinInfo {
 }
 
 impl To for CryptoCoinInfo {
-    fn to_bytes(&self) -> UrResult<Vec<u8>> {
+    fn to_bytes(&self) -> URResult<Vec<u8>> {
         minicbor::to_vec(self.clone()).map_err(|e| URError::CborEncodeError(e.to_string()))
     }
 }
 
 
 impl FromCbor<CryptoCoinInfo> for CryptoCoinInfo {
-    fn from_cbor(bytes: Vec<u8>) -> UrResult<CryptoCoinInfo> {
+    fn from_cbor(bytes: Vec<u8>) -> URResult<CryptoCoinInfo> {
         minicbor::decode(&bytes).map_err(|e| URError::CborDecodeError(e.to_string()))
     }
 }

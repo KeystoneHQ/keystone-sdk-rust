@@ -4,7 +4,7 @@ use minicbor::data::{Int, Tag};
 use minicbor::encode::Write;
 use minicbor::{Decoder, Encoder};
 use crate::cbor::cbor_map;
-use crate::error::{URError, UrResult};
+use crate::error::{URError, URResult};
 use crate::registry_types::{ETH_SIGNATURE, RegistryType, UUID};
 use crate::traits::{RegistryItem, To, From as FromCbor};
 use crate::types::Bytes;
@@ -110,13 +110,13 @@ impl<'b, C> minicbor::Decode<'b, C> for EthSignature {
 }
 
 impl To for EthSignature {
-    fn to_bytes(&self) -> UrResult<Vec<u8>> {
+    fn to_bytes(&self) -> URResult<Vec<u8>> {
         minicbor::to_vec(self.clone()).map_err(|e| URError::CborEncodeError(e.to_string()))
     }
 }
 
 impl FromCbor<EthSignature> for EthSignature {
-    fn from_cbor(bytes: Vec<u8>) -> UrResult<EthSignature> {
+    fn from_cbor(bytes: Vec<u8>) -> URResult<EthSignature> {
         minicbor::decode(&bytes).map_err(|e| URError::CborDecodeError(e.to_string()))
     }
 }
