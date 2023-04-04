@@ -2,6 +2,7 @@ pub mod solana;
 pub mod ethereum;
 pub mod extend;
 pub mod bitcoin;
+pub mod cosmos;
 mod export;
 mod util;
 

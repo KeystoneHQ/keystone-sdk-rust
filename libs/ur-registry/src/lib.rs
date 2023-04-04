@@ -22,4 +22,4 @@ pub mod crypto_account;
 pub mod solana;
 pub mod ethereum;
 pub mod extend;
-
+pub mod cosmos;
