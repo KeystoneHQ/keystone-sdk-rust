@@ -8,7 +8,7 @@ pub trait From<T> {
 }
 
 pub trait To {
-    fn to_cbor(&self) -> UrResult<Vec<u8>>;
+    fn to_bytes(&self) -> UrResult<Vec<u8>>;
 }
 
 pub trait UR {
@@ -24,7 +24,7 @@ where
     N: To + RegistryItem,
 {
     fn to_ur_encoder(&self, max_fragment_length: usize) -> Encoder {
-        let message = self.to_cbor().unwrap();
+        let message = self.to_bytes().unwrap();
         ur::Encoder::new(
             message.as_slice(),
             max_fragment_length,

@@ -370,7 +370,7 @@ impl<'b, C> minicbor::Decode<'b, C> for CryptoHDKey {
 
 
 impl To for CryptoHDKey {
-    fn to_cbor(&self) -> UrResult<Vec<u8>> {
+    fn to_bytes(&self) -> UrResult<Vec<u8>> {
         minicbor::to_vec(self.clone()).map_err(|e| URError::CborEncodeError(e.to_string()))
     }
 }
@@ -402,7 +402,7 @@ mod tests {
         );
         assert_eq!(
             "A301F503582100E8F32E723DECF4051AEFAC8E2C93C9C5B214313817CDB01A1494B917C8436B35045820873DFF81C02F525623FD1FE5167EAC3A55A049DE3D314BB42EE227FFED37D508",
-            hex::encode(master_key.to_cbor().unwrap()).to_uppercase()
+            hex::encode(master_key.to_bytes().unwrap()).to_uppercase()
         );
 
         let hd_key = CryptoHDKey::new_extended_key(
@@ -433,11 +433,11 @@ mod tests {
 
         assert_eq!(
             "A5035821026FE2355745BB2DB3630BBC80EF5D58951C963C841F54170BA6E5C12BE7FC12A6045820CED155C72456255881793514EDC5BD9447E7F74ABB88C6D6B6480FD016EE8C8505D90131A1020106D90130A1018A182CF501F501F500F401F4081AE9181CF3",
-            hex::encode(hd_key.to_cbor().unwrap()).to_uppercase()
+            hex::encode(hd_key.to_bytes().unwrap()).to_uppercase()
         );
         assert_eq!(
             "ur:crypto-hdkey/onaxhdclaojlvoechgferkdpqdiabdrflawshlhdmdcemtfnlrctghchbdolvwsednvdztbgolaahdcxtottgostdkhfdahdlykkecbbweskrymwflvdylgerkloswtbrpfdbsticmwylklpahtaadehoyaoadamtaaddyoyadlecsdwykadykadykaewkadwkaycywlcscewfihbdaehn",
-            ur::encode(&*(hd_key.to_cbor().unwrap()), CryptoHDKey::get_registry_type().get_type()));
+            ur::encode(&*(hd_key.to_bytes().unwrap()), CryptoHDKey::get_registry_type().get_type()));
     }
 
     #[test]

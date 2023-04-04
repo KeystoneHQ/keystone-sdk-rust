@@ -92,7 +92,7 @@ impl<'b, C> minicbor::Decode<'b, C> for SolSignature {
 }
 
 impl To for SolSignature {
-    fn to_cbor(&self) -> UrResult<Vec<u8>> {
+    fn to_bytes(&self) -> UrResult<Vec<u8>> {
         minicbor::to_vec(self.clone()).map_err(|e| URError::CborEncodeError(e.to_string()))
     }
 }
@@ -117,7 +117,7 @@ mod tests {
         let sol_signature = SolSignature::new(request_id, signature);
         assert_eq!(
             "a201d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d025840d4f0a7bcd95bba1fbb1051885054730e3f47064288575aacc102fbbf6a9a14daa066991e360d3e3406c20c00a40973eff37c7d641e5b351ec4a99bfe86f335f7",
-            hex::encode(sol_signature.to_cbor().unwrap()).to_lowercase()
+            hex::encode(sol_signature.to_bytes().unwrap()).to_lowercase()
         );
     }
 

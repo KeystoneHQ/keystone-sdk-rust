@@ -129,7 +129,7 @@ impl<'b, C> minicbor::Decode<'b, C> for CryptoECKey {
 }
 
 impl To for CryptoECKey {
-    fn to_cbor(&self) -> UrResult<Vec<u8>> {
+    fn to_bytes(&self) -> UrResult<Vec<u8>> {
         minicbor::to_vec(self.clone()).map_err(|e| URError::CborEncodeError(e.to_string()))
     }
 }
@@ -157,10 +157,10 @@ mod tests {
         };
         assert_eq!(
             "A202F50358208C05C4B4F3E88840A4F4B5F155CFD69473EA169F3D0431B7A6787A23777F08AA",
-            hex::encode(crypto_ec_key.to_cbor().unwrap()).to_uppercase()
+            hex::encode(crypto_ec_key.to_bytes().unwrap()).to_uppercase()
         );
 
-        let ur = ur::encode(&*(crypto_ec_key.to_cbor().unwrap()), CryptoECKey::get_registry_type().get_type());
+        let ur = ur::encode(&*(crypto_ec_key.to_bytes().unwrap()), CryptoECKey::get_registry_type().get_type());
         assert_eq!(ur, "ur:crypto-eckey/oeaoykaxhdcxlkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypkrphsmyid");
     }
 

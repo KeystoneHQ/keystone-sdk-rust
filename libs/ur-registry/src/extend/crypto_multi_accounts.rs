@@ -133,7 +133,7 @@ impl<'b, C> minicbor::Decode<'b, C> for CryptoMultiAccounts {
 
 
 impl To for CryptoMultiAccounts {
-    fn to_cbor(&self) -> UrResult<Vec<u8>> {
+    fn to_bytes(&self) -> UrResult<Vec<u8>> {
         minicbor::to_vec(self.clone()).map_err(|e| URError::CborEncodeError(e.to_string()))
     }
 }
@@ -183,7 +183,7 @@ mod tests {
             vec![crypto_hdkey],
             Some("keystone".to_string()),
         );
-        assert_eq!("a3011ae9181cf30281d9012fa203582102eae4b876a8696134b868f88cc2f51f715f2dbedb7446b8e6edf3d4541c4eb67b06d90130a10188182cf51901f5f500f500f503686b657973746f6e65", hex::encode(crypto_multi_accounts.to_cbor().unwrap()));
+        assert_eq!("a3011ae9181cf30281d9012fa203582102eae4b876a8696134b868f88cc2f51f715f2dbedb7446b8e6edf3d4541c4eb67b06d90130a10188182cf51901f5f500f500f503686b657973746f6e65", hex::encode(crypto_multi_accounts.to_bytes().unwrap()));
         let result = crypto_multi_accounts
             .to_ur_encoder(400)
             .next_part()

@@ -111,7 +111,7 @@ impl<'b, C> minicbor::Decode<'b, C> for CryptoOutput {
 }
 
 impl To for CryptoOutput {
-    fn to_cbor(&self) -> UrResult<Vec<u8>> {
+    fn to_bytes(&self) -> UrResult<Vec<u8>> {
         minicbor::to_vec(self.clone()).map_err(|e| URError::CborEncodeError(e.to_string()))
     }
 }
@@ -145,10 +145,10 @@ mod tests {
         let crypto = CryptoOutput::new(script_expressions, Some(ec_keys), None, None);
         assert_eq!(
             "d90193d90132a103582102c6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5",
-            hex::encode(crypto.to_cbor().unwrap()).to_lowercase()
+            hex::encode(crypto.to_bytes().unwrap()).to_lowercase()
         );
 
-        let ur = ur::encode(&*(crypto.to_cbor().unwrap()), CryptoOutput::get_registry_type().get_type());
+        let ur = ur::encode(&*(crypto.to_bytes().unwrap()), CryptoOutput::get_registry_type().get_type());
 
         assert_eq!(ur, "ur:crypto-output/taadmutaadeyoyaxhdclaoswaalbmwfpwekijndyfefzjtmdrtketphhktmngrlkwsfnospypsasrhhhjonnvwtsqzwljy");
 
@@ -163,7 +163,7 @@ mod tests {
         let crypto = CryptoOutput::new(script_expressions, Some(ec_keys), None, None);
         assert_eq!(
             "d90190d90194d90132a103582103fff97bd5755eeea420453a14355235d382f6472f8568a18b2f057a1460297556",
-            hex::encode(crypto.to_cbor().unwrap()).to_lowercase()
+            hex::encode(crypto.to_bytes().unwrap()).to_lowercase()
         );
         let bytes = Vec::from_hex(
             "022f01e5e15cca351daff3843fb70f3c2f0a1bdd05e5af888a67784ef3e10a2a01",
@@ -183,7 +183,7 @@ mod tests {
         let crypto = CryptoOutput::new(script_expressions, None, None, Some(multi_key));
         assert_eq!(
             "d90190d90196a201020282d90132a1035821022f01e5e15cca351daff3843fb70f3c2f0a1bdd05e5af888a67784ef3e10a2a01d90132a103582103acd484e2f0c7f65309ad178a9f559abde09796974c57e714c35f110dfc27ccbe",
-            hex::encode(crypto.to_cbor().unwrap()).to_lowercase()
+            hex::encode(crypto.to_bytes().unwrap()).to_lowercase()
         );
     }
 

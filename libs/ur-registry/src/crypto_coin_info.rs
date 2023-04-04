@@ -133,7 +133,7 @@ impl<'b, C> minicbor::Decode<'b, C> for CryptoCoinInfo {
 }
 
 impl To for CryptoCoinInfo {
-    fn to_cbor(&self) -> UrResult<Vec<u8>> {
+    fn to_bytes(&self) -> UrResult<Vec<u8>> {
         minicbor::to_vec(self.clone()).map_err(|e| URError::CborEncodeError(e.to_string()))
     }
 }
@@ -157,10 +157,10 @@ mod tests {
         let crypto = CryptoCoinInfo::new(Some(CoinType::from_u32(0)), Some(Network::from_u32(1)));
         assert_eq!(
             "a201000201",
-            hex::encode(crypto.to_cbor().unwrap()).to_lowercase()
+            hex::encode(crypto.to_bytes().unwrap()).to_lowercase()
         );
 
-        let ur = ur::encode(&*(crypto.to_cbor().unwrap()), CryptoCoinInfo::get_registry_type().get_type());
+        let ur = ur::encode(&*(crypto.to_bytes().unwrap()), CryptoCoinInfo::get_registry_type().get_type());
         assert_eq!(ur, "ur:crypto-coin-info/oeadaeaoadehfdbany");
     }
 

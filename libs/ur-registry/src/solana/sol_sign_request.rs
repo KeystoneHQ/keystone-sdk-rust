@@ -215,7 +215,7 @@ impl<'b, C> minicbor::Decode<'b, C> for SolSignRequest {
 
 
 impl To for SolSignRequest {
-    fn to_cbor(&self) -> UrResult<Vec<u8>> {
+    fn to_bytes(&self) -> UrResult<Vec<u8>> {
         minicbor::to_vec(self.clone()).map_err(|e| URError::CborEncodeError(e.to_string()))
     }
 }
@@ -252,7 +252,7 @@ mod tests {
         let sol_sign_request = SolSignRequest::new(request_id, sign_data, crypto_key_path, None, Some("solflare".to_string()), SignType::Transaction);
         assert_eq!(
             "a501d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d02589601000103c8d842a2f17fd7aab608ce2ea535a6e958dffa20caf669b347b911c4171965530f957620b228bae2b94c82ddd4c093983a67365555b737ec7ddc1117e61c72e0000000000000000000000000000000000000000000000000000000000000000010295cc2f1f39f3604718496ea00676d6a72ec66ad09d926e3ece34f565f18d201020200010c0200000000e1f5050000000003d90130a20188182cf51901f5f500f500f5021a121212120568736f6c666c6172650601",
-            hex::encode(sol_sign_request.to_cbor().unwrap()).to_lowercase()
+            hex::encode(sol_sign_request.to_bytes().unwrap()).to_lowercase()
         );
     }
 

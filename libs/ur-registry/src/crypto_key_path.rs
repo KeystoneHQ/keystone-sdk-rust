@@ -267,7 +267,7 @@ impl<'b, C> minicbor::Decode<'b, C> for CryptoKeyPath {
 
 
 impl To for CryptoKeyPath {
-    fn to_cbor(&self) -> UrResult<Vec<u8>> {
+    fn to_bytes(&self) -> UrResult<Vec<u8>> {
         minicbor::to_vec(self.clone()).map_err(|e| URError::CborEncodeError(e.to_string()))
     }
 }
@@ -304,10 +304,10 @@ mod tests {
 
         assert_eq!(
             "A3018A182CF51876F500F500F480F4021A782308040305",
-            hex::encode(crypto_key_path.to_cbor().unwrap()).to_uppercase()
+            hex::encode(crypto_key_path.to_bytes().unwrap()).to_uppercase()
         );
 
-        let ur = ur::encode(&*(crypto_key_path.to_cbor().unwrap()), CryptoKeyPath::get_registry_type().get_type());
+        let ur = ur::encode(&*(crypto_key_path.to_bytes().unwrap()), CryptoKeyPath::get_registry_type().get_type());
         assert_eq!(ur, "ur:crypto-keypath/otadlecsdwykcskoykaeykaewklawkaocykscnayaaaxahrybsckoe");
 
         let path1 = PathComponent::new(Some(44), true).unwrap();
@@ -325,10 +325,10 @@ mod tests {
 
         assert_eq!(
             "A3018A182CF51876F500F500F400F4021A782308040305",
-            hex::encode(crypto_key_path.to_cbor().unwrap()).to_uppercase()
+            hex::encode(crypto_key_path.to_bytes().unwrap()).to_uppercase()
         );
 
-        let ur = ur::encode(&*(crypto_key_path.to_cbor().unwrap()), CryptoKeyPath::get_registry_type().get_type());
+        let ur = ur::encode(&*(crypto_key_path.to_bytes().unwrap()), CryptoKeyPath::get_registry_type().get_type());
         assert_eq!(ur, "ur:crypto-keypath/otadlecsdwykcskoykaeykaewkaewkaocykscnayaaaxahhpbkchot");
     }
 

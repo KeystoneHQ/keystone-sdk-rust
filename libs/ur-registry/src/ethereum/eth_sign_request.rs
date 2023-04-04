@@ -239,7 +239,7 @@ impl<'b, C> minicbor::Decode<'b, C> for EthSignRequest {
 }
 
 impl To for EthSignRequest {
-    fn to_cbor(&self) -> UrResult<Vec<u8>> {
+    fn to_bytes(&self) -> UrResult<Vec<u8>> {
         minicbor::to_vec(self.clone()).map_err(|e| URError::CborEncodeError(e.to_string()))
     }
 }
@@ -277,7 +277,7 @@ mod tests {
         let eth_sign_request = EthSignRequest::new(request_id, sign_data, DataType::Transaction, Some(1), crypto_key_path, None, Some("metamask".to_string()));
         assert_eq!(
             "a601d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d02584bf849808609184e72a00082271094000000000000000000000000000000000000000080a47f74657374320000000000000000000000000000000000000000000000000000006000578080800301040105d90130a2018a182cf501f501f500f401f4021a1234567807686d6574616d61736b",
-            hex::encode(eth_sign_request.to_cbor().unwrap()).to_lowercase()
+            hex::encode(eth_sign_request.to_bytes().unwrap()).to_lowercase()
         );
     }
 
