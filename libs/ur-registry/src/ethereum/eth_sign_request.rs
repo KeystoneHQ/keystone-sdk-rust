@@ -1,20 +1,25 @@
-use crate::cbor_value::CborValue;
+use alloc::format;
+use alloc::string::{String, ToString};
+use alloc::vec::Vec;
+use minicbor::data::{Int, Tag};
+use minicbor::encode::Write;
+use minicbor::{Decoder, Encoder};
+use crate::cbor::cbor_map;
 use crate::crypto_key_path::CryptoKeyPath;
-use crate::registry_types::{RegistryType, CRYPTO_KEYPATH, UUID, ETH_SIGN_REQUEST};
-use crate::traits::{From, RegistryItem, To};
+use crate::error::{URError, UrResult};
+use crate::registry_types::{CRYPTO_KEYPATH, ETH_SIGN_REQUEST, RegistryType, UUID};
+use crate::traits::{RegistryItem, To, From as FromCbor};
 use crate::types::Bytes;
-use serde_cbor::{from_slice, to_vec, Value};
-use std::collections::BTreeMap;
 
-const REQUEST_ID: i128 = 1;
-const SIGN_DATA: i128 = 2;
-const DATA_TYPE: i128 = 3;
-const CHAIN_ID: i128 = 4;
-const DERIVATION_PATH: i128 = 5;
-const ADDRESS: i128 = 6;
-const ORIGIN: i128 = 7;
+const REQUEST_ID: u8 = 1;
+const SIGN_DATA: u8 = 2;
+const DATA_TYPE: u8 = 3;
+const CHAIN_ID: u8 = 4;
+const DERIVATION_PATH: u8 = 5;
+const ADDRESS: u8 = 6;
+const ORIGIN: u8 = 7;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum DataType {
     Transaction = 1,
     TypedData = 2,
@@ -123,6 +128,23 @@ impl EthSignRequest {
     pub fn get_origin(&self) -> Option<String> {
         self.origin.clone()
     }
+
+    fn get_map_size(&self) -> u64 {
+        let mut size = 3;
+        if let Some(_) = self.request_id {
+            size = size + 1;
+        }
+        if let Some(_) = self.chain_id {
+            size = size + 1;
+        }
+        if let Some(_) = self.address {
+            size = size + 1;
+        }
+        if let Some(_) = self.origin {
+            size = size + 1;
+        }
+        size
+    }
 }
 
 impl RegistryItem for EthSignRequest {
@@ -131,101 +153,142 @@ impl RegistryItem for EthSignRequest {
     }
 }
 
-impl To for EthSignRequest {
-    fn to_cbor(&self) -> Value {
-        let mut map: BTreeMap<Value, Value> = BTreeMap::new();
-        self.get_request_id().and_then(|id| {
-            map.insert(
-                Value::Integer(REQUEST_ID),
-                Value::Tag(UUID.get_tag() as u64, Box::new(Value::Bytes(id))),
-            )
-        });
-        map.insert(
-            Value::Integer(SIGN_DATA),
-            Value::Bytes(self.get_sign_data()),
-        );
-        map.insert(
-            Value::Integer(DATA_TYPE),
-            Value::Integer(self.get_data_type() as i128),
-        );
-        self.get_chain_id().and_then(|chain_id| map.insert(Value::Integer(CHAIN_ID), Value::Integer(chain_id)));
-        map.insert(
-            Value::Integer(DERIVATION_PATH),
-            Value::Tag(
-                CryptoKeyPath::get_registry_type().get_tag() as u64,
-                Box::new(self.get_derivation_path().to_cbor()),
-            ),
-        );
-        self.get_address()
-            .and_then(|address| map.insert(Value::Integer(ADDRESS), Value::Bytes(address)));
-        self.get_origin()
-            .and_then(|origin| map.insert(Value::Integer(ORIGIN), Value::Text(origin)));
-        Value::Map(map)
-    }
 
-    fn to_bytes(&self) -> Vec<u8> {
-        let value = self.to_cbor();
-        to_vec(&value).unwrap()
+impl<C> minicbor::Encode<C> for EthSignRequest {
+    fn encode<W: Write>(&self,
+                        e: &mut Encoder<W>,
+                        _ctx: &mut C) -> Result<(), minicbor::encode::Error<W::Error>> {
+        e.map(self.get_map_size())?;
+
+        if let Some(request_id) = &self.request_id {
+            e.int(Int::from(REQUEST_ID))?
+                .tag(Tag::Unassigned(UUID.get_tag()))?
+                .bytes(request_id)?;
+        }
+
+        e.int(Int::from(SIGN_DATA))?
+            .bytes(&self.sign_data)?;
+
+
+        e.int(Int::from(DATA_TYPE))?
+            .int(Int::from(self.data_type.clone() as u8))?;
+
+
+        if let Some(chain_id) = self.chain_id {
+            e.int(Int::from(CHAIN_ID))?
+                .int(Int::try_from(chain_id).map_err(|e| minicbor::encode::Error::message(e.to_string()))?)?;
+        }
+
+        e.int(Int::from(DERIVATION_PATH))?;
+        e.tag(Tag::Unassigned(CRYPTO_KEYPATH.get_tag()))?;
+        CryptoKeyPath::encode(&self.derivation_path, e, _ctx)?;
+
+        if let Some(address) = &self.address {
+            e.int(Int::from(ADDRESS))?
+                .bytes(address)?;
+        }
+
+        if let Some(origin) = &self.origin {
+            e.int(Int::from(ORIGIN))?
+                .str(origin)?;
+        }
+
+        Ok(())
     }
 }
 
-impl From<EthSignRequest> for EthSignRequest {
-    fn from_cbor(cbor: Value) -> Result<EthSignRequest, String> {
-        let value = CborValue::new(cbor);
-        let map = value.get_map()?;
-        let request_id = map
-            .get_by_integer(REQUEST_ID)
-            .map(|v| v.get_tag(UUID.get_tag()).and_then(|v| v.get_bytes()))
-            .transpose()?;
-        let sign_data = map.get_by_integer(SIGN_DATA).map_or(
-            Err("sign_data is required for sol-sign-request".to_string()),
-            |v| v.get_bytes(),
-        )?;
-        let data_type = map.get_by_integer(DATA_TYPE)
-            .map_or(Err("data_type is required for eth-sign-request".to_string()), |v| v.get_integer())
-            .and_then(|v| match v {
-                1 => Ok(DataType::Transaction),
-                2 => Ok(DataType::TypedData),
-                3 => Ok(DataType::PersonalMessage),
-                4 => Ok(DataType::TypedTransaction),
-                x => Err(format!(
-                    "invalid value for data_type in eth-sign-request, expected (1, 2, 3, 4), received {:?}",
-                    x
-                )),
-            })?;
-        let chain_id = map.get_by_integer(CHAIN_ID).map(|v| v.get_integer()).transpose()?;
-        let derivation_path = map.get_by_integer(DERIVATION_PATH).map_or(
-            Err("derivation_path is required for sol-sign-request".to_string()),
-            |v| {
-                v.get_tag(CRYPTO_KEYPATH.get_tag())
-                    .and_then(|v| CryptoKeyPath::from_cbor(v.get_value().clone()))
-            },
-        )?;
-        let address = map
-            .get_by_integer(ADDRESS)
-            .map(|v| v.get_bytes())
-            .transpose()?;
-        let origin = map
-            .get_by_integer(ORIGIN)
-            .map(|v| v.get_text())
-            .transpose()?;
 
-        Ok(EthSignRequest {
-            request_id,
-            sign_data,
-            data_type,
-            chain_id,
-            derivation_path,
-            address,
-            origin,
-        })
+impl<'b, C> minicbor::Decode<'b, C> for EthSignRequest {
+    fn decode(d: &mut Decoder<'b>, _ctx: &mut C) -> Result<Self, minicbor::decode::Error> {
+        let mut result = EthSignRequest::default();
+        cbor_map(d, &mut result, |key, obj, d| {
+            let key = u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
+            match key {
+                REQUEST_ID => {
+                    d.tag()?;
+                    obj.request_id = Some(d.bytes()?.to_vec());
+                }
+                SIGN_DATA => {
+                    obj.sign_data = d.bytes()?.to_vec();
+                }
+                DATA_TYPE => {
+                    obj.data_type =
+                        DataType::from_u32(u32::try_from(d.int()?)
+                            .map_err(|e| minicbor::decode::Error::message(e.to_string()))?)
+                            .map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
+                }
+                CHAIN_ID => {
+                    obj.chain_id = Some(i128::from(d.int()?));
+                }
+                DERIVATION_PATH => {
+                    d.tag()?;
+                    obj.derivation_path = CryptoKeyPath::decode(d, _ctx)?;
+                }
+                ADDRESS => {
+                    obj.address = Some(d.bytes()?.to_vec());
+                }
+                ORIGIN => {
+                    obj.origin = Some(d.str()?.to_string());
+                }
+                _ => {}
+            }
+            Ok(())
+        })?;
+        Ok(result)
+    }
+}
+
+impl To for EthSignRequest {
+    fn to_cbor(&self) -> UrResult<Vec<u8>> {
+        minicbor::to_vec(self.clone()).map_err(|e| URError::CborEncodeError(e.to_string()))
+    }
+}
+
+impl FromCbor<EthSignRequest> for EthSignRequest {
+    fn from_cbor(bytes: Vec<u8>) -> UrResult<EthSignRequest> {
+        minicbor::decode(&bytes).map_err(|e| URError::CborDecodeError(e.to_string()))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use alloc::string::ToString;
+    use alloc::vec;
+    use alloc::vec::Vec;
+    use crate::traits::{From as FromCbor, To};
+    use hex::FromHex;
+    use crate::crypto_key_path::{CryptoKeyPath, PathComponent};
+    use crate::ethereum::eth_sign_request::{DataType, EthSignRequest};
+
+    #[test]
+    fn test_encode() {
+        let path1 = PathComponent::new(Some(44), true).unwrap();
+        let path2 = PathComponent::new(Some(1), true).unwrap();
+        let path3 = PathComponent::new(Some(1), true).unwrap();
+        let path4 = PathComponent::new(Some(0), false).unwrap();
+        let path5 = PathComponent::new(Some(1), false).unwrap();
+
+        let source_fingerprint: [u8; 4] = [18, 52, 86, 120];
+        let components = vec![path1, path2, path3, path4, path5];
+        let crypto_key_path = CryptoKeyPath::new(components, Some(source_fingerprint), None);
+
+        let request_id = Some([155, 29, 235, 77, 59, 125, 75, 173, 155, 221, 43, 13, 123, 61, 203, 109].to_vec());
+        let sign_data = [248, 73, 128, 134, 9, 24, 78, 114, 160, 0, 130, 39, 16, 148, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 164, 127, 116, 101, 115, 116, 50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 96, 0, 87, 128, 128, 128].to_vec();
+        let eth_sign_request = EthSignRequest::new(request_id, sign_data, DataType::Transaction, Some(1), crypto_key_path, None, Some("metamask".to_string()));
+        assert_eq!(
+            "a601d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d02584bf849808609184e72a00082271094000000000000000000000000000000000000000080a47f74657374320000000000000000000000000000000000000000000000000000006000578080800301040105d90130a2018a182cf501f501f500f401f4021a1234567807686d6574616d61736b",
+            hex::encode(eth_sign_request.to_cbor().unwrap()).to_lowercase()
+        );
     }
 
-    fn from_bytes(bytes: Vec<u8>) -> Result<EthSignRequest, String> {
-        let value: Value = match from_slice(bytes.as_slice()) {
-            Ok(x) => x,
-            Err(e) => return Err(e.to_string()),
-        };
-        EthSignRequest::from_cbor(value)
+    #[test]
+    fn test_decode() {
+        let bytes = Vec::from_hex(
+            "a601d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d02584bf849808609184e72a00082271094000000000000000000000000000000000000000080a47f74657374320000000000000000000000000000000000000000000000000000006000578080800301040105d90130a2018a182cf501f501f500f401f4021a1234567807686d6574616d61736b",
+        )
+            .unwrap();
+        let eth_sign_request = EthSignRequest::from_cbor(bytes).unwrap();
+        assert_eq!("44'/1'/1'/0/1", eth_sign_request.get_derivation_path().get_path().unwrap());
+        assert_eq!(DataType::Transaction, eth_sign_request.get_data_type());
     }
 }

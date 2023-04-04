@@ -20,4 +20,5 @@ pub mod script_expression;
 pub mod crypto_output;
 pub mod crypto_account;
 pub mod solana;
+pub mod ethereum;
 
