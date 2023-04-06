@@ -97,7 +97,7 @@ impl<'b, C> minicbor::Decode<'b, C> for CryptoOutput {
                 last_tag_value = n;
             }
         }
-        let is_multi_key = !script_expressions.is_empty() && script_expressions[script_expressions.len() - 1] == ScriptExpression::MultiSig || script_expressions[script_expressions.len() - 1] == ScriptExpression::SortedMultiSig;
+        let is_multi_key = !script_expressions.is_empty() && (script_expressions[script_expressions.len() - 1] == ScriptExpression::MultiSig || script_expressions[script_expressions.len() - 1] == ScriptExpression::SortedMultiSig);
         result.script_expressions = script_expressions;
         if is_multi_key {
             result.multi_key = Some(MultiKey::decode(d, ctx)?);
