@@ -39,7 +39,7 @@ impl DataType {
             3 => Ok(DataType::Textual),
             4 => Ok(DataType::Message),
             x => Err(format!(
-                "invalid value for data_type in eth-sign-request, expected (1, 2, 3, 4), received {:?}",
+                "invalid value for data_type in cosmos-sign-request, expected (1, 2, 3, 4), received {:?}",
                 x
             )),
         }
