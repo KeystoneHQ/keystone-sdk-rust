@@ -37,7 +37,7 @@ impl Into<HDKey> for CryptoHDKey {
 impl Into<MultiHDKeys> for CryptoAccount {
     fn into(self) -> MultiHDKeys {
         let hd_keys = self.get_output_descriptors().iter()
-            .map(|output| CryptoOutput::get_crypto_key(output))
+            .map(|output| CryptoOutput::get_hd_key(output).unwrap_or_default())
             .map(|crypto_hd_key| crypto_hd_key.into())
             .collect();
         MultiHDKeys {
@@ -53,8 +53,7 @@ export! {
     ) -> String {
         let parse_signature = || -> Result<HDKey, Error> {
             let cbor = hex::decode(cbor_hex.to_string())?;
-            let res = serde_cbor::from_slice(cbor.as_slice())?;
-            let crypto_hd_key = CryptoHDKey::from_cbor(res).map_err(|_| format_err!(""))?;
+            let crypto_hd_key = CryptoHDKey::from_cbor(cbor).map_err(|_| format_err!(""))?;
             let hd_key = crypto_hd_key.into();
             Ok(hd_key)
         };
@@ -70,8 +69,7 @@ export! {
     ) -> String {
         let parse_signature = || -> Result<MultiHDKeys, Error> {
             let cbor = hex::decode(cbor_hex.to_string())?;
-            let res = serde_cbor::from_slice(cbor.as_slice())?;
-            let crypto_account = CryptoAccount::from_cbor(res).map_err(|_| format_err!(""))?;
+            let crypto_account = CryptoAccount::from_cbor(cbor).map_err(|_| format_err!(""))?;
             let multi_hd_keys = crypto_account.into();
             Ok(multi_hd_keys)
         };
