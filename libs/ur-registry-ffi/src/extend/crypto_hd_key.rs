@@ -8,6 +8,7 @@ use hex;
 use serde_json::json;
 use crate::export;
 use serde::{Serialize, Deserialize};
+use secp256k1::{Parity, XOnlyPublicKey};
 
 #[derive(Default, Clone, Debug, Serialize, Deserialize)]
 pub struct HDKey {
@@ -79,6 +80,29 @@ export! {
             Err(_) => json!({"error": "crypto hd key is invalid"}).to_string(),
         }
     }
+
+    @Java_com_keystone_sdk_KeystoneNativeSDK_getUncompressedKey
+    fn get_uncompressed_key(
+        compressed_key: &str
+    ) -> String {
+        let slice = &compressed_key.clone()[2..];
+        let decoded_slice = hex::decode(slice).unwrap();
+    
+        let result = match XOnlyPublicKey::from_slice(&decoded_slice) {
+            Ok(res) => res,
+            Err(_) => return json!({"error": "compressed key is invalid"}).to_string(),
+        };
+    
+        let prefix = &compressed_key[..2];
+        let parity = if prefix.eq("02") {
+            Parity::Even
+        } else {
+            Parity::Odd
+        };
+    
+        let uncompressed_key = result.public_key(parity).serialize_uncompressed();
+        hex::encode(uncompressed_key)
+    }
 }
 
 #[cfg(test)]
@@ -98,5 +122,21 @@ mod tests {
         let expect_result = "{\"hd_keys\":[{\"chain_code\":\"\",\"key\":\"02fef03a2bd3de113f1dc1cdb1e69aa4d935dc3458d542d796f5827abbb1a58b5e\",\"note\":\"account.ledger_live\",\"source_fingerprint\":\"52006ea0\"},{\"chain_code\":\"\",\"key\":\"033f1eddf1d1bb2762fcfa67fbc35e12dc9968cd2587ada055210e84f780c1109a\",\"note\":\"account.ledger_live\",\"source_fingerprint\":\"52006ea0\"},{\"chain_code\":\"\",\"key\":\"02c5fcf766ad77a0c254834d57ce3e6120a2be5c266e9babe8a047d1a53cb34f9e\",\"note\":\"account.ledger_live\",\"source_fingerprint\":\"52006ea0\"},{\"chain_code\":\"\",\"key\":\"02cd0b648cf944cba7e6be97bf1f17f0eab7b9e600d181c421b3bce6e7f6d941f0\",\"note\":\"account.ledger_live\",\"source_fingerprint\":\"52006ea0\"},{\"chain_code\":\"\",\"key\":\"0351f72104e737e94c7cc66e33307c74d5bbf19216800157ad34ebfe232f23c751\",\"note\":\"account.ledger_live\",\"source_fingerprint\":\"52006ea0\"},{\"chain_code\":\"\",\"key\":\"02037f8c5fc1074e654ff11619a8bf28dcc3db5d037191f08eb5722252af57a4a6\",\"note\":\"account.ledger_live\",\"source_fingerprint\":\"52006ea0\"},{\"chain_code\":\"\",\"key\":\"03a441895dfbe9c7b3bf8eba0ce461465a14350d902df163a0b3f06e4f4843e54f\",\"note\":\"account.ledger_live\",\"source_fingerprint\":\"52006ea0\"},{\"chain_code\":\"\",\"key\":\"02a8dcdf480733a5b7fb331c9464b7e0edf5206d8581fe3e26bfd6de38c8063d4c\",\"note\":\"account.ledger_live\",\"source_fingerprint\":\"52006ea0\"},{\"chain_code\":\"\",\"key\":\"037a1a6a48b09d4e3a01223b37c9d1212d8da20746302009956168e1ea3bd3e0c8\",\"note\":\"account.ledger_live\",\"source_fingerprint\":\"52006ea0\"},{\"chain_code\":\"\",\"key\":\"03c6f04a813f23799940b6fa44c6ca48abe04de9fbb8133b7342dbabc95b0ea481\",\"note\":\"account.ledger_live\",\"source_fingerprint\":\"52006ea0\"}]}";
 
         assert_eq!(expect_result, get_hd_keys(hd_keys_cbor));
+    }
+
+    #[test]
+    fn test_get_uncompressed_key_from_even_y() {
+        let compressed_key = "02fef03a2bd3de113f1dc1cdb1e69aa4d935dc3458d542d796f5827abbb1a58b5e";
+        let expect_result = "04fef03a2bd3de113f1dc1cdb1e69aa4d935dc3458d542d796f5827abbb1a58b5ebdffecfa6587da3216d50114700e5e314650cc2268e9fcb6ac31593bcc71d178";
+
+        assert_eq!(expect_result, get_uncompressed_key(compressed_key));
+    }
+
+    #[test]
+    fn test_get_uncompressed_key_from_odd_y() {
+        let compressed_key = "03b7db1c60fed9f333a5afb0f945c4fafc7739775bc4bda24ac6979362eca0f1f2";
+        let expect_result = "04b7db1c60fed9f333a5afb0f945c4fafc7739775bc4bda24ac6979362eca0f1f2ae4a073a1eb2f8bad6ddb7bcee0c475456d0c490eec0913c7bc30826fff3193d";
+
+        assert_eq!(expect_result, get_uncompressed_key(compressed_key));
     }
 }
