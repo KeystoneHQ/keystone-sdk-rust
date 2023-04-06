@@ -65,7 +65,7 @@ export! {
         };
         let sign_date_bytes = match hex::decode(sign_data) {
             Ok(v) => v,
-            Err(_) => return json!({"error": "sign_data is invalid"}).to_string(),
+            Err(_) => return json!({"error": "sign data is invalid"}).to_string(),
         };
 
         let origin = if origin.len() == 0 { None } else { Some(origin.to_string()) };
@@ -79,7 +79,7 @@ export! {
             origin
         ).to_bytes() {
             Ok(v) => v,
-            Err(_) => return json!({"error": "sign_data is invalid"}).to_string(),
+            Err(_) => return json!({"error": "sign data is invalid"}).to_string(),
         };
         let cbor_hex = hex::encode(cbor_bytes);
         let ur_type = "cosmos-sign-request";
@@ -150,7 +150,7 @@ mod tests {
             "#;
         let origin = "Keplr";
 
-        let expect_result = "{\"error\":\"sign_data is invalid\"}";
+        let expect_result = "{\"error\":\"sign data is invalid\"}";
 
         assert_eq!(expect_result, generate_cosmos_sign_request(
             request_id, sign_data, data_type, accounts, origin
