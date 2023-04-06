@@ -1,13 +1,17 @@
-use crate::cbor_value::CborValue;
+use alloc::string::ToString;
+use alloc::vec;
+use alloc::vec::Vec;
+use core::convert::From;
+use minicbor::data::Int;
+use crate::cbor::cbor_map;
 use crate::registry_types::{RegistryType, CRYPTO_ECKEY};
-use crate::traits::{From, RegistryItem, To};
-use serde_cbor::{from_slice, to_vec, Value};
-use std::collections::BTreeMap;
+use crate::traits::{From as FromCbor, RegistryItem, To};
 use crate::types::Bytes;
+use crate::error::{URResult, URError};
 
-const CURVE: i128 = 1;
-const PRIVATE: i128 = 2;
-const DATA: i128 = 3;
+const CURVE: u8 = 1;
+const PRIVATE: u8 = 2;
+const DATA: u8 = 3;
 
 #[derive(Default, Clone, Debug)]
 pub struct CryptoECKey {
@@ -19,6 +23,14 @@ pub struct CryptoECKey {
 impl CryptoECKey {
     pub fn default() {
         Default::default()
+    }
+
+    pub fn new(curve: Option<i128>, is_private_key: Option<bool>, data: Bytes) -> Self {
+        CryptoECKey {
+            curve,
+            is_private_key,
+            data,
+        }
     }
 
     pub fn set_curve(&mut self, curve: i128) {
@@ -58,66 +70,81 @@ impl RegistryItem for CryptoECKey {
     }
 }
 
-impl To for CryptoECKey {
-    fn to_cbor(&self) -> Value {
-        let mut map = BTreeMap::<Value, Value>::new();
-        match self.curve {
-            Some(x) => {
-                map.insert(Value::Integer(CURVE), Value::Integer(x));
-            }
-            None => {}
-        }
-        match self.is_private_key {
-            Some(x) => {
-                map.insert(Value::Integer(PRIVATE), Value::Bool(x));
-            }
-            None => {}
-        }
-        map.insert(Value::Integer(DATA), Value::Bytes(self.data.clone()));
-        Value::Map(map)
-    }
 
-    fn to_bytes(&self) -> Vec<u8> {
-        let value = self.to_cbor();
-        to_vec(&value).unwrap()
+impl<C> minicbor::Encode<C> for CryptoECKey {
+    fn encode<W: minicbor::encode::Write>(
+        &self,
+        e: &mut minicbor::Encoder<W>,
+        _ctx: &mut C,
+    ) -> Result<(), minicbor::encode::Error<W::Error>> {
+        let mut size = 1;
+
+        if let Some(_data) = self.curve {
+            size = size + 1;
+        }
+        if let Some(_data) = self.is_private_key {
+            size = size + 1;
+        }
+        e.map(size)?;
+        if let Some(data) = self.curve {
+            e.int(Int::from(CURVE))?.int(
+                Int::try_from(data)
+                    .map_err(|e| minicbor::encode::Error::message(e.to_string()))?
+            )?;
+        }
+
+        if let Some(data) = self.is_private_key {
+            e.int(Int::from(PRIVATE))?.bool(data)?;
+        }
+        e.int(Int::from(DATA))?.bytes(&self.data)?;
+        Ok(())
     }
 }
 
-impl From<CryptoECKey> for CryptoECKey {
-    fn from_cbor(cbor: Value) -> Result<CryptoECKey, String> {
-        let value = CborValue::new(cbor);
-        let map = value.get_map()?;
-        let curve = map
-            .get_by_integer(CURVE)
-            .map(|v| v.get_integer())
-            .transpose()?;
-        let is_private_key = map
-            .get_by_integer(PRIVATE)
-            .map(|v| v.get_bool())
-            .transpose()?;
-        let data = map
-            .get_by_integer(DATA)
-            .map_or(Ok(vec![]), |v| v.get_bytes())?;
-        Ok(CryptoECKey {
-            curve,
-            is_private_key,
-            data,
-        })
-    }
 
-    fn from_bytes(bytes: Vec<u8>) -> Result<CryptoECKey, String> {
-        let value: Value = match from_slice(bytes.as_slice()) {
-            Ok(x) => x,
-            Err(e) => return Err(e.to_string()),
-        };
-        CryptoECKey::from_cbor(value)
+impl<'b, C> minicbor::Decode<'b, C> for CryptoECKey {
+    fn decode(
+        d: &mut minicbor::Decoder<'b>,
+        _ctx: &mut C,
+    ) -> Result<Self, minicbor::decode::Error> {
+        let mut result = CryptoECKey { curve: None, is_private_key: None, data: vec![] };
+        cbor_map(d, &mut result, |key, obj, d| {
+            let key = u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
+            match key {
+                CURVE => {
+                    obj.curve = Some(core::convert::From::from(d.int()?));
+                }
+                PRIVATE => {
+                    obj.is_private_key = Some(d.bool()?);
+                }
+                DATA => {
+                    obj.data = d.bytes()?.to_vec();
+                }
+                _ => {}
+            }
+            Ok(())
+        })?;
+        Ok(result)
+    }
+}
+
+impl To for CryptoECKey {
+    fn to_bytes(&self) -> URResult<Vec<u8>> {
+        minicbor::to_vec(self.clone()).map_err(|e| URError::CborEncodeError(e.to_string()))
+    }
+}
+
+impl FromCbor<CryptoECKey> for CryptoECKey {
+    fn from_cbor(bytes: Vec<u8>) -> URResult<CryptoECKey> {
+        minicbor::decode(&bytes).map_err(|e| URError::CborDecodeError(e.to_string()))
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use alloc::vec::Vec;
     use crate::crypto_ec_key::CryptoECKey;
-    use crate::traits::{From, To, UR};
+    use crate::traits::{From as FromCbor, RegistryItem, To};
     use hex::FromHex;
 
     #[test]
@@ -130,11 +157,10 @@ mod tests {
         };
         assert_eq!(
             "A202F50358208C05C4B4F3E88840A4F4B5F155CFD69473EA169F3D0431B7A6787A23777F08AA",
-            hex::encode(crypto_ec_key.to_bytes()).to_uppercase()
+            hex::encode(crypto_ec_key.to_bytes().unwrap()).to_uppercase()
         );
 
-        let mut encoder = crypto_ec_key.to_ur_encoder(1000);
-        let ur = encoder.next_part().unwrap();
+        let ur = ur::encode(&*(crypto_ec_key.to_bytes().unwrap()), CryptoECKey::get_registry_type().get_type());
         assert_eq!(ur, "ur:crypto-eckey/oeaoykaxhdcxlkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypkrphsmyid");
     }
 
@@ -144,7 +170,7 @@ mod tests {
             "A202F50358208C05C4B4F3E88840A4F4B5F155CFD69473EA169F3D0431B7A6787A23777F08AA",
         )
             .unwrap();
-        let crypto_ec_key = CryptoECKey::from_bytes(bytes).unwrap();
+        let crypto_ec_key = CryptoECKey::from_cbor(bytes).unwrap();
         assert_eq!(crypto_ec_key.get_curve(), 0);
         assert_eq!(crypto_ec_key.get_is_private_key(), true);
         assert_eq!(

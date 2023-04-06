@@ -1,3 +1,5 @@
+use alloc::string::{String, ToString};
+
 pub struct RegistryType<'a>(&'a str, u64);
 
 impl<'a> RegistryType<'_> {

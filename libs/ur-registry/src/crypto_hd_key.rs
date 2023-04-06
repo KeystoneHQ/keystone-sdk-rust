@@ -1,22 +1,27 @@
-use crate::cbor_value::CborValue;
+use alloc::string::{String, ToString};
+use alloc::vec;
+use alloc::vec::Vec;
+use minicbor::{Decoder, Encoder};
+use minicbor::data::{Int, Tag};
+use minicbor::encode::Write;
+use crate::cbor::cbor_map;
 use crate::crypto_coin_info::CryptoCoinInfo;
 use crate::crypto_key_path::CryptoKeyPath;
-use crate::registry_types::{RegistryType, CRYPTO_COIN_INFO, CRYPTO_HDKEY, CRYPTO_KEYPATH};
-use crate::traits::{From, RegistryItem, To};
+use crate::error::{URError, URResult};
+use crate::registry_types::{CRYPTO_HDKEY, RegistryType};
+use crate::traits::{From as FromCbor, RegistryItem, To};
 use crate::types::{Bytes, Fingerprint};
-use serde_cbor::{from_slice, to_vec, Value};
-use std::collections::BTreeMap;
 
-const IS_MASTER: i128 = 1;
-const IS_PRIVATE: i128 = 2;
-const KEY_DATA: i128 = 3;
-const CHAIN_CODE: i128 = 4;
-const USE_INFO: i128 = 5;
-const ORIGIN: i128 = 6;
-const CHILDREN: i128 = 7;
-const PARENT_FINGERPRINT: i128 = 8;
-const NAME: i128 = 9;
-const NOTE: i128 = 10;
+const IS_MASTER: u8 = 1;
+const IS_PRIVATE: u8 = 2;
+const KEY_DATA: u8 = 3;
+const CHAIN_CODE: u8 = 4;
+const USE_INFO: u8 = 5;
+const ORIGIN: u8 = 6;
+const CHILDREN: u8 = 7;
+const PARENT_FINGERPRINT: u8 = 8;
+const NAME: u8 = 9;
+const NOTE: u8 = 10;
 
 #[derive(Clone, Debug, Default)]
 pub struct CryptoHDKey {
@@ -152,6 +157,40 @@ impl CryptoHDKey {
     pub fn get_depth(&self) -> Option<u32> {
         self.origin.clone().map_or(None, |v| v.get_depth())
     }
+
+    fn get_map_size(&self) -> u64 {
+        let mut size = 1;
+        if let Some(_) = self.is_private_key {
+            size = size + 1;
+        }
+        if let Some(_) = self.chain_code {
+            size = size + 1;
+        }
+        if let Some(_) = self.use_info {
+            size = size + 1;
+        }
+
+        if let Some(_) = self.origin {
+            size = size + 1;
+        }
+
+        if let Some(_) = self.children {
+            size = size + 1;
+        }
+
+        if let Some(_) = self.parent_fingerprint {
+            size = size + 1;
+        }
+
+        if let Some(_) = self.name {
+            size = size + 1;
+        }
+
+        if let Some(_) = self.note {
+            size = size + 1;
+        }
+        size
+    }
 }
 
 impl RegistryItem for CryptoHDKey {
@@ -160,191 +199,196 @@ impl RegistryItem for CryptoHDKey {
     }
 }
 
-impl To for CryptoHDKey {
-    fn to_cbor(&self) -> Value {
-        let mut map: BTreeMap<Value, Value> = BTreeMap::new();
+impl<C> minicbor::Encode<C> for CryptoHDKey {
+    fn encode<W: Write>(&self,
+                        e: &mut Encoder<W>,
+                        ctx: &mut C) -> Result<(), minicbor::encode::Error<W::Error>> {
         if self.is_master() {
-            map.insert(Value::Integer(IS_MASTER), Value::Bool(self.is_master()));
-            map.insert(Value::Integer(KEY_DATA), Value::Bytes(self.key.clone()));
-            map.insert(
-                Value::Integer(CHAIN_CODE),
-                Value::Bytes(self.chain_code.clone().unwrap()),
-            );
+            e.map(3)?;
+            e.int(
+                Int::try_from(IS_MASTER)
+                    .map_err(|e| minicbor::encode::Error::message(e.to_string()))?
+            )?.bool(self.is_master())?;
+            e.int(
+                Int::try_from(KEY_DATA)
+                    .map_err(|e| minicbor::encode::Error::message(e.to_string()))?
+            )?.bytes(&*self.get_key())?;
+            e.int(
+                Int::try_from(CHAIN_CODE)
+                    .map_err(|e| minicbor::encode::Error::message(e.to_string()))?
+            )?.bytes(&*self.get_chain_code().ok_or(minicbor::encode::Error::message("is_master is true, but have no chain code"))?)?;
         } else {
+            let size = self.get_map_size();
+            e.map(size)?;
+
             match self.is_private_key {
                 Some(x) => {
-                    map.insert(Value::Integer(IS_PRIVATE), Value::Bool(x));
+                    e.int(
+                        Int::try_from(IS_PRIVATE)
+                            .map_err(|e| minicbor::encode::Error::message(e.to_string()))?
+                    )?.bool(x)?;
                 }
                 None => {}
             }
-            map.insert(Value::Integer(KEY_DATA), Value::Bytes(self.key.clone()));
+
+            e.int(
+                Int::try_from(KEY_DATA)
+                    .map_err(|e| minicbor::encode::Error::message(e.to_string()))?
+            )?.bytes(&*self.get_key())?;
+
             match &self.chain_code {
                 Some(x) => {
-                    map.insert(Value::Integer(CHAIN_CODE), Value::Bytes(x.clone()));
+                    e.int(
+                        Int::try_from(CHAIN_CODE)
+                            .map_err(|e| minicbor::encode::Error::message(e.to_string()))?
+                    )?.bytes(x)?;
                 }
                 None => {}
             }
+
             match &self.use_info {
                 Some(x) => {
-                    map.insert(
-                        Value::Integer(USE_INFO),
-                        Value::Tag(
-                            CryptoCoinInfo::get_registry_type().get_tag() as u64,
-                            Box::new(x.to_cbor()),
-                        ),
-                    );
+                    e.int(
+                        Int::try_from(USE_INFO)
+                            .map_err(|e| minicbor::encode::Error::message(e.to_string()))?
+                    )?;
+                    e.tag(Tag::Unassigned(CryptoCoinInfo::get_registry_type().get_tag()))?;
+                    CryptoCoinInfo::encode(x, e, ctx)?;
                 }
                 None => {}
             }
+
             match &self.origin {
                 Some(x) => {
-                    map.insert(
-                        Value::Integer(ORIGIN),
-                        Value::Tag(
-                            CryptoKeyPath::get_registry_type().get_tag() as u64,
-                            Box::new(x.to_cbor()),
-                        ),
-                    );
+                    e.int(
+                        Int::try_from(ORIGIN)
+                            .map_err(|e| minicbor::encode::Error::message(e.to_string()))?
+                    )?;
+                    e.tag(Tag::Unassigned(CryptoKeyPath::get_registry_type().get_tag()))?;
+                    CryptoKeyPath::encode(x, e, ctx)?;
                 }
                 None => {}
             }
+
             match &self.children {
                 Some(x) => {
-                    map.insert(
-                        Value::Integer(ORIGIN),
-                        Value::Tag(
-                            CryptoKeyPath::get_registry_type().get_tag() as u64,
-                            Box::new(x.to_cbor()),
-                        ),
-                    );
+                    e.int(
+                        Int::try_from(CHILDREN)
+                            .map_err(|e| minicbor::encode::Error::message(e.to_string()))?
+                    )?;
+                    e.tag(Tag::Unassigned(CryptoKeyPath::get_registry_type().get_tag()))?;
+                    CryptoKeyPath::encode(x, e, ctx)?;
                 }
                 None => {}
             }
+
             match self.parent_fingerprint {
                 Some(x) => {
-                    map.insert(
-                        Value::Integer(PARENT_FINGERPRINT),
-                        Value::Integer(u32::from_be_bytes(x) as i128),
-                    );
+                    e.int(
+                        Int::try_from(PARENT_FINGERPRINT)
+                            .map_err(|e| minicbor::encode::Error::message(e.to_string()))?)?
+                        .int(
+                            Int::try_from(u32::from_be_bytes(x))
+                                .map_err(|e| minicbor::encode::Error::message(e.to_string()))?
+                        )?;
                 }
                 None => {}
             }
+
             match &self.name {
                 Some(x) => {
-                    map.insert(Value::Integer(NAME), Value::Text(x.clone()));
+                    e.int(
+                        Int::try_from(NAME)
+                            .map_err(|e| minicbor::encode::Error::message(e.to_string()))?)?
+                        .str(x)?;
                 }
                 None => {}
             }
+
             match &self.note {
                 Some(x) => {
-                    map.insert(Value::Integer(NOTE), Value::Text(x.clone()));
+                    e.int(
+                        Int::try_from(NOTE)
+                            .map_err(|e| minicbor::encode::Error::message(e.to_string()))?)?
+                        .str(x)?;
                 }
                 None => {}
             }
         }
-        Value::Map(map)
-    }
 
-    fn to_bytes(&self) -> Vec<u8> {
-        let value = self.to_cbor();
-        to_vec(&value).unwrap()
+        Ok(())
     }
 }
 
-impl From<CryptoHDKey> for CryptoHDKey {
-    fn from_cbor(cbor: Value) -> Result<CryptoHDKey, String> {
-        let value = CborValue::new(cbor);
-        let map = value.get_map()?;
-        let is_master = map
-            .get_by_integer(IS_MASTER)
-            .map(|v| v.get_bool())
-            .transpose()?;
-        match is_master {
-            Some(true) => {
-                let key = map
-                    .get_by_integer(KEY_DATA)
-                    .map(|v| v.get_bytes())
-                    .transpose()?
-                    .ok_or("key data is required for crypto-hdkey".to_string())?;
-                let chain_code = map
-                    .get_by_integer(CHAIN_CODE)
-                    .map(|v| v.get_bytes())
-                    .transpose()?
-                    .ok_or(
-                        "chain code is required for crypto-hdkey when it is a master key"
-                            .to_string(),
-                    )?;
-                Ok(CryptoHDKey::new_master_key(key, chain_code))
+impl<'b, C> minicbor::Decode<'b, C> for CryptoHDKey {
+    fn decode(d: &mut Decoder<'b>, ctx: &mut C) -> Result<Self, minicbor::decode::Error> {
+        let mut result = CryptoHDKey::default();
+        cbor_map(d, &mut result, |key, obj, d| {
+            let key = u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
+            match key {
+                IS_MASTER => {
+                    obj.is_master = Some(d.bool()?);
+                }
+                IS_PRIVATE => {
+                    obj.is_private_key = Some(d.bool()?);
+                }
+                KEY_DATA => {
+                    obj.key = d.bytes()?.to_vec();
+                }
+                CHAIN_CODE => {
+                    obj.chain_code = Some(d.bytes()?.to_vec());
+                }
+                USE_INFO => {
+                    d.tag()?;
+                    obj.use_info = Some(CryptoCoinInfo::decode(d, ctx)?);
+                }
+                ORIGIN => {
+                    d.tag()?;
+                    obj.origin = Some(CryptoKeyPath::decode(d, ctx)?)
+                }
+                CHILDREN => {
+                    d.tag()?;
+                    obj.children = Some(CryptoKeyPath::decode(d, ctx)?)
+                }
+                PARENT_FINGERPRINT => {
+                    obj.parent_fingerprint = Some(u32::to_be_bytes(u32::try_from(d.int()?).map_err(|e| minicbor::decode::Error::message(e.to_string()))?));
+                }
+                NAME => {
+                    obj.name = Some(d.str()?.to_string())
+                }
+                NOTE => {
+                    obj.note = Some(d.str()?.to_string())
+                }
+                _ => {}
             }
-            _ => {
-                let is_private_key = map
-                    .get_by_integer(IS_PRIVATE)
-                    .map(|v| v.get_bool())
-                    .transpose()?;
-                let key = map
-                    .get_by_integer(KEY_DATA)
-                    .map(|v| v.get_bytes())
-                    .transpose()?
-                    .ok_or("key data is required for crypto-hdkey".to_string())?;
-                let chain_code = map
-                    .get_by_integer(CHAIN_CODE)
-                    .map(|v| v.get_bytes())
-                    .transpose()?;
-                let use_info = map
-                    .get_by_integer(USE_INFO)
-                    .map(|v| v.get_tag(CRYPTO_COIN_INFO.get_tag()))
-                    .transpose()?
-                    .map(|v| CryptoCoinInfo::from_cbor(v.get_value().clone()))
-                    .transpose()?;
-                let origin = map
-                    .get_by_integer(ORIGIN)
-                    .map(|v| v.get_tag(CRYPTO_KEYPATH.get_tag()))
-                    .transpose()?
-                    .map(|v| CryptoKeyPath::from_cbor(v.get_value().clone()))
-                    .transpose()?;
-                let children = map
-                    .get_by_integer(CHILDREN)
-                    .map(|v| v.get_tag(CRYPTO_KEYPATH.get_tag()))
-                    .transpose()?
-                    .map(|v| CryptoKeyPath::from_cbor(v.get_value().clone()))
-                    .transpose()?;
-                let parent_fingerprint = map
-                    .get_by_integer(PARENT_FINGERPRINT)
-                    .map(|v| v.get_integer())
-                    .transpose()?
-                    .map(|v| u32::to_be_bytes(v as u32));
-                let name = map.get_by_integer(NAME).map(|v| v.get_text()).transpose()?;
-                let note = map.get_by_integer(NOTE).map(|v| v.get_text()).transpose()?;
-                Ok(CryptoHDKey::new_extended_key(
-                    is_private_key,
-                    key,
-                    chain_code,
-                    use_info,
-                    origin,
-                    children,
-                    parent_fingerprint,
-                    name,
-                    note,
-                ))
-            }
-        }
-    }
+            Ok(())
+        })?;
 
-    fn from_bytes(bytes: Vec<u8>) -> Result<CryptoHDKey, String> {
-        let value: Value = match from_slice(bytes.as_slice()) {
-            Ok(x) => x,
-            Err(e) => return Err(e.to_string()),
-        };
-        CryptoHDKey::from_cbor(value)
+        Ok(result)
+    }
+}
+
+
+impl To for CryptoHDKey {
+    fn to_bytes(&self) -> URResult<Vec<u8>> {
+        minicbor::to_vec(self.clone()).map_err(|e| URError::CborEncodeError(e.to_string()))
+    }
+}
+
+impl FromCbor<CryptoHDKey> for CryptoHDKey {
+    fn from_cbor(bytes: Vec<u8>) -> URResult<CryptoHDKey> {
+        minicbor::decode(&bytes).map_err(|e| URError::CborDecodeError(e.to_string()))
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use alloc::vec;
+    use alloc::vec::Vec;
     use crate::crypto_coin_info::{CoinType, CryptoCoinInfo, Network};
     use crate::crypto_hd_key::CryptoHDKey;
     use crate::crypto_key_path::{CryptoKeyPath, PathComponent};
-    use crate::traits::{From, To, UR};
+    use crate::traits::{From as FromCbor, RegistryItem, To};
     use hex;
     use hex::FromHex;
 
@@ -358,7 +402,7 @@ mod tests {
         );
         assert_eq!(
             "A301F503582100E8F32E723DECF4051AEFAC8E2C93C9C5B214313817CDB01A1494B917C8436B35045820873DFF81C02F525623FD1FE5167EAC3A55A049DE3D314BB42EE227FFED37D508",
-            hex::encode(master_key.to_bytes()).to_uppercase()
+            hex::encode(master_key.to_bytes().unwrap()).to_uppercase()
         );
 
         let hd_key = CryptoHDKey::new_extended_key(
@@ -389,16 +433,16 @@ mod tests {
 
         assert_eq!(
             "A5035821026FE2355745BB2DB3630BBC80EF5D58951C963C841F54170BA6E5C12BE7FC12A6045820CED155C72456255881793514EDC5BD9447E7F74ABB88C6D6B6480FD016EE8C8505D90131A1020106D90130A1018A182CF501F501F500F401F4081AE9181CF3",
-            hex::encode(hd_key.to_bytes()).to_uppercase()
+            hex::encode(hd_key.to_bytes().unwrap()).to_uppercase()
         );
         assert_eq!(
-            "ur:crypto-hdkey/1-1/lpadadcsiocyihbdaehnhdioonaxhdclaojlvoechgferkdpqdiabdrflawshlhdmdcemtfnlrctghchbdolvwsednvdztbgolaahdcxtottgostdkhfdahdlykkecbbweskrymwflvdylgerkloswtbrpfdbsticmwylklpahtaadehoyaoadamtaaddyoyadlecsdwykadykadykaewkadwkaycywlcscewfcpghbziy",
-            hd_key.to_ur_encoder(400).next_part().unwrap());
+            "ur:crypto-hdkey/onaxhdclaojlvoechgferkdpqdiabdrflawshlhdmdcemtfnlrctghchbdolvwsednvdztbgolaahdcxtottgostdkhfdahdlykkecbbweskrymwflvdylgerkloswtbrpfdbsticmwylklpahtaadehoyaoadamtaaddyoyadlecsdwykadykadykaewkadwkaycywlcscewfihbdaehn",
+            ur::encode(&*(hd_key.to_bytes().unwrap()), CryptoHDKey::get_registry_type().get_type()));
     }
 
     #[test]
     fn test_decode() {
-        let master_key = CryptoHDKey::from_bytes(Vec::from_hex("A301F503582100E8F32E723DECF4051AEFAC8E2C93C9C5B214313817CDB01A1494B917C8436B35045820873DFF81C02F525623FD1FE5167EAC3A55A049DE3D314BB42EE227FFED37D508").unwrap()).unwrap();
+        let master_key = CryptoHDKey::from_cbor(Vec::from_hex("A301F503582100E8F32E723DECF4051AEFAC8E2C93C9C5B214313817CDB01A1494B917C8436B35045820873DFF81C02F525623FD1FE5167EAC3A55A049DE3D314BB42EE227FFED37D508").unwrap()).unwrap();
         assert_eq!(
             "00e8f32e723decf4051aefac8e2c93c9c5b214313817cdb01a1494b917c8436b35",
             hex::encode(master_key.key)
@@ -408,7 +452,7 @@ mod tests {
             hex::encode(master_key.chain_code.unwrap())
         );
 
-        let hd_key = CryptoHDKey::from_bytes(Vec::from_hex("A5035821026FE2355745BB2DB3630BBC80EF5D58951C963C841F54170BA6E5C12BE7FC12A6045820CED155C72456255881793514EDC5BD9447E7F74ABB88C6D6B6480FD016EE8C8505D90131A1020106D90130A1018A182CF501F501F500F401F4081AE9181CF3").unwrap()).unwrap();
+        let hd_key = CryptoHDKey::from_cbor(Vec::from_hex("A5035821026FE2355745BB2DB3630BBC80EF5D58951C963C841F54170BA6E5C12BE7FC12A6045820CED155C72456255881793514EDC5BD9447E7F74ABB88C6D6B6480FD016EE8C8505D90131A1020106D90130A1018A182CF501F501F500F401F4081AE9181CF3").unwrap()).unwrap();
         assert_eq!(
             "026fe2355745bb2db3630bbc80ef5d58951c963c841f54170ba6e5c12be7fc12a6",
             hex::encode(hd_key.key.clone())

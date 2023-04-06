@@ -53,7 +53,12 @@ export! {
             origin,
             sign_type
         );
-        let cbor = hex::encode(result.to_bytes());
+
+        let cbor = match result.to_bytes() {
+            Ok(v) => v,
+            Err(_) => return json!({"error": "cbor serialization failed"}).to_string(),
+        };
+        let cbor = hex::encode(cbor);
         let ur_type = "sol-sign-request";
         let ur = json!({
             "type": ur_type,

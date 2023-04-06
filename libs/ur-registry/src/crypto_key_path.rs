@@ -1,15 +1,20 @@
-use crate::cbor_value::CborValue;
-use crate::registry_types::{RegistryType, CRYPTO_KEYPATH};
-use crate::traits::{From, RegistryItem, To};
+use alloc::{format, vec};
+use alloc::string::{String, ToString};
+use alloc::vec::Vec;
+use minicbor::data::{Int, Type};
+use minicbor::encode::Write;
+use minicbor::Encoder;
+use crate::cbor::{cbor_array, cbor_map, cbor_type};
+use crate::error::{URError, URResult};
+use crate::registry_types::{CRYPTO_KEYPATH, RegistryType};
+use crate::traits::{RegistryItem, To, From as FromCbor};
 use crate::types::Fingerprint;
-use serde_cbor::{from_slice, to_vec, Value};
-use std::collections::BTreeMap;
 
-const COMPONENTS: i128 = 1;
-const SOURCE_FINGERPRINT: i128 = 2;
-const DEPTH: i128 = 3;
+const COMPONENTS: u8 = 1;
+const SOURCE_FINGERPRINT: u8 = 2;
+const DEPTH: u8 = 3;
 
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Copy, Clone, Debug)]
 pub struct PathComponent {
     index: Option<u32>,
     wildcard: bool,
@@ -133,97 +138,217 @@ impl CryptoKeyPath {
     }
 }
 
-impl To for CryptoKeyPath {
-    fn to_cbor(&self) -> Value {
-        let mut map = BTreeMap::<Value, Value>::new();
-        let mut components = Vec::<Value>::new();
-        self.components.clone().iter().for_each(|component| {
-            if component.is_wildcard() {
-                components.push(Value::Array(vec![]))
-            } else {
-                components.push(Value::Integer(component.get_index().unwrap() as i128));
-            }
-            components.push(Value::Bool(component.is_hardened()))
-        });
-        map.insert(Value::Integer(COMPONENTS), Value::Array(components));
-
-        match self.source_fingerprint {
-            Some(x) => {
-                map.insert(
-                    Value::Integer(SOURCE_FINGERPRINT),
-                    Value::Integer(u32::from_be_bytes(x) as i128),
-                );
-            }
-            None => {}
-        }
-        match self.depth {
-            Some(x) => {
-                map.insert(Value::Integer(DEPTH), Value::Integer(x as i128));
-            }
-            None => {}
-        }
-        Value::Map(map)
-    }
-
-    fn to_bytes(&self) -> Vec<u8> {
-        let value = self.to_cbor();
-        to_vec(&value).unwrap()
-    }
-}
-
 impl RegistryItem for CryptoKeyPath {
     fn get_registry_type() -> RegistryType<'static> {
         CRYPTO_KEYPATH
     }
 }
 
-impl From<CryptoKeyPath> for CryptoKeyPath {
-    fn from_cbor(cbor: Value) -> Result<CryptoKeyPath, String> {
-        let value = CborValue::new(cbor);
-        let map = value.get_map()?;
-        let components = map
-            .get_by_integer(COMPONENTS)
-            .map_or(Ok(vec![]), |v| v.get_array())?
-            .iter()
-            .map(|v| v.get_value().clone())
-            .collect::<Vec<Value>>()
-            .chunks(2)
-            .map(|chunk| match chunk.clone() {
-                [Value::Array(_), Value::Bool(hardened)] => Ok(PathComponent {
-                    index: None,
-                    wildcard: true,
-                    hardened: hardened.clone(),
-                }),
-                [Value::Integer(x), Value::Bool(hardened)] => Ok(PathComponent {
-                    index: Some(x.clone() as u32),
-                    wildcard: false,
-                    hardened: hardened.clone(),
-                }),
-                x => Err(format!("Unexpected value when parsing components: {:?}", x)),
-            })
-            .collect::<Result<Vec<PathComponent>, String>>()?;
-        let source_fingerprint = map
-            .get_by_integer(SOURCE_FINGERPRINT)
-            .map(|v| v.get_integer())
-            .transpose()?
-            .map(|v| u32::to_be_bytes(v as u32));
-        let depth = map
-            .get_by_integer(DEPTH)
-            .map(|v| v.get_integer())
-            .transpose()?
-            .map(|v| v as u32);
-        Ok(CryptoKeyPath {
-            components,
-            source_fingerprint,
-            depth,
-        })
+impl<C> minicbor::Encode<C> for CryptoKeyPath {
+    fn encode<W: Write>(&self,
+                        e: &mut Encoder<W>,
+                        _ctx: &mut C) -> Result<(), minicbor::encode::Error<W::Error>> {
+        let mut size = 1;
+        if let Some(_data) = self.source_fingerprint {
+            size = size + 1;
+        }
+        if let Some(_data) = self.depth {
+            size = size + 1;
+        }
+        e.map(size)?;
+        e.int(
+            Int::try_from(COMPONENTS)
+                .map_err(|e| minicbor::encode::Error::message(e.to_string()))?
+        )?.array(2 * self.components.len() as u64)?;
+        for component in self.components.iter() {
+            if component.is_wildcard() {
+                e.array(0)?;
+            } else {
+                match component.index {
+                    Some(index) => {
+                        e.int(Int::from(index))?;
+                    }
+                    None => {
+                        e.int(Int::from(0))?;
+                    }
+                }
+            }
+            e.bool(component.is_hardened())?;
+        }
+
+        if let Some(source_fingerprint) = self.source_fingerprint {
+            e.int(
+                Int::try_from(SOURCE_FINGERPRINT)
+                    .map_err(|e| minicbor::encode::Error::message(e.to_string()))?)?
+                .int(
+                    Int::try_from(u32::from_be_bytes(source_fingerprint))
+                        .map_err(|e| minicbor::encode::Error::message(e.to_string()))?
+                )?;
+        }
+
+        if let Some(depth) = self.depth {
+            e.int(
+                Int::try_from(DEPTH)
+                    .map_err(|e| minicbor::encode::Error::message(e.to_string()))?)?
+                .int(
+                    Int::try_from(depth)
+                        .map_err(|e| minicbor::encode::Error::message(e.to_string()))?
+                )?;
+        }
+
+        Ok(())
+    }
+}
+
+impl<'b, C> minicbor::Decode<'b, C> for CryptoKeyPath {
+    fn decode(
+        d: &mut minicbor::Decoder<'b>,
+        _ctx: &mut C,
+    ) -> Result<Self, minicbor::decode::Error> {
+        let mut result = CryptoKeyPath::default();
+        cbor_map(d, &mut result, |key, obj, d| {
+            let key = u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
+            match key {
+                COMPONENTS => {
+                    let mut path_component: Vec<PathComponent> = vec![];
+                    let mut hardened = false;
+                    let mut previous_type: Type = Type::Null;
+                    let mut path_index: Option<u32> = None;
+                    cbor_array(d, obj, |_index, _obj, d| {
+                        let data_type = cbor_type(d.datatype()?);
+                        match data_type {
+                            Type::Array => {
+                                d.array()?;
+                                previous_type = Type::Array;
+                            }
+                            Type::Int => {
+                                path_index = Some(u32::try_from(d.int()?).map_err(|e| minicbor::decode::Error::message(e.to_string()))?);
+                                previous_type = Type::Int;
+                            }
+                            Type::Bool => {
+                                hardened = d.bool()?;
+                                match previous_type {
+                                    Type::Array => {
+                                        path_component.push(
+                                            PathComponent::new(None, hardened)
+                                                .map_err(|e|
+                                                    minicbor::decode::Error::message(e.to_string()))?
+                                        );
+                                    }
+                                    Type::Int => {
+                                        path_component.push(
+                                            PathComponent::new(path_index, hardened)
+                                                .map_err(|e|
+                                                    minicbor::decode::Error::message(e.to_string()))?
+                                        );
+                                    }
+                                    _ => {}
+                                }
+                            }
+                            _ => {}
+                        }
+                        Ok(())
+                    })?;
+                    obj.components = path_component;
+                }
+                SOURCE_FINGERPRINT => {
+                    obj.source_fingerprint = Some(u32::to_be_bytes(u32::try_from(d.int()?).map_err(|e| minicbor::decode::Error::message(e.to_string()))?));
+                }
+                DEPTH => {
+                    obj.depth = Some(u32::try_from(d.int()?).map_err(|e| minicbor::decode::Error::message(e.to_string()))?);
+                }
+                _ => {}
+            }
+            Ok(())
+        })?;
+        Ok(result)
+    }
+}
+
+
+impl To for CryptoKeyPath {
+    fn to_bytes(&self) -> URResult<Vec<u8>> {
+        minicbor::to_vec(self.clone()).map_err(|e| URError::CborEncodeError(e.to_string()))
+    }
+}
+
+
+impl FromCbor<CryptoKeyPath> for CryptoKeyPath {
+    fn from_cbor(bytes: Vec<u8>) -> URResult<CryptoKeyPath> {
+        minicbor::decode(&bytes).map_err(|e| URError::CborDecodeError(e.to_string()))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use alloc::vec;
+    use alloc::vec::Vec;
+    use crate::traits::{From as FromCbor, RegistryItem, To};
+    use hex::FromHex;
+    use crate::crypto_key_path::{CryptoKeyPath, PathComponent};
+
+    #[test]
+    fn test_encode() {
+        let path1 = PathComponent::new(Some(44), true).unwrap();
+        let path2 = PathComponent::new(Some(118), true).unwrap();
+        let path3 = PathComponent::new(Some(0), true).unwrap();
+        let path4 = PathComponent::new(Some(0), false).unwrap();
+        let path5 = PathComponent::new(None, false).unwrap();
+
+        let source_fingerprint: [u8; 4] = [120, 35, 8, 4];
+        let crypto_key_path = CryptoKeyPath {
+            components: vec![path1, path2, path3, path4, path5],
+            source_fingerprint: Some(source_fingerprint),
+            depth: Some(5),
+        };
+
+        assert_eq!(
+            "A3018A182CF51876F500F500F480F4021A782308040305",
+            hex::encode(crypto_key_path.to_bytes().unwrap()).to_uppercase()
+        );
+
+        let ur = ur::encode(&*(crypto_key_path.to_bytes().unwrap()), CryptoKeyPath::get_registry_type().get_type());
+        assert_eq!(ur, "ur:crypto-keypath/otadlecsdwykcskoykaeykaewklawkaocykscnayaaaxahrybsckoe");
+
+        let path1 = PathComponent::new(Some(44), true).unwrap();
+        let path2 = PathComponent::new(Some(118), true).unwrap();
+        let path3 = PathComponent::new(Some(0), true).unwrap();
+        let path4 = PathComponent::new(Some(0), false).unwrap();
+        let path5 = PathComponent::new(Some(0), false).unwrap();
+
+        let source_fingerprint: [u8; 4] = [120, 35, 8, 4];
+        let crypto_key_path = CryptoKeyPath {
+            components: vec![path1, path2, path3, path4, path5],
+            source_fingerprint: Some(source_fingerprint),
+            depth: Some(5),
+        };
+
+        assert_eq!(
+            "A3018A182CF51876F500F500F400F4021A782308040305",
+            hex::encode(crypto_key_path.to_bytes().unwrap()).to_uppercase()
+        );
+
+        let ur = ur::encode(&*(crypto_key_path.to_bytes().unwrap()), CryptoKeyPath::get_registry_type().get_type());
+        assert_eq!(ur, "ur:crypto-keypath/otadlecsdwykcskoykaeykaewkaewkaocykscnayaaaxahhpbkchot");
     }
 
-    fn from_bytes(bytes: Vec<u8>) -> Result<CryptoKeyPath, String> {
-        let value: Value = match from_slice(bytes.as_slice()) {
-            Ok(x) => x,
-            Err(e) => return Err(e.to_string()),
-        };
-        CryptoKeyPath::from_cbor(value)
+    #[test]
+    fn test_decode() {
+        let hex = "a3018a182cf51876f500f500f480f4021a782308040305"; //a3018a182cf51876f500f500f480f4021a782308040305
+        let bytes = Vec::from_hex(
+            hex,
+        ).unwrap();
+
+        let crypto = CryptoKeyPath::from_cbor(bytes).unwrap();
+        assert_eq!(crypto.get_depth().unwrap(), 5);
+        assert_eq!(crypto.get_source_fingerprint().unwrap(), [120, 35, 8, 4]);
+        assert_eq!(crypto.get_path().unwrap(), "44'/118'/0'/0/*");
+
+        let hex = "a3018a182cf51876f500f500f400f4021a782308040305";
+        let bytes = Vec::from_hex(
+            hex,
+        ).unwrap();
+        let crypto = CryptoKeyPath::from_cbor(bytes).unwrap();
+        assert_eq!(crypto.get_path().unwrap(), "44'/118'/0'/0/0");
     }
 }

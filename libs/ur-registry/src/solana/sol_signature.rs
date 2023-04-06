@@ -1,11 +1,16 @@
-use crate::cbor_value::CborValue;
+use alloc::string::ToString;
+use alloc::vec::Vec;
+use minicbor::encode::Write;
+use minicbor::{Decoder, Encoder};
+use minicbor::data::{Int, Tag};
+use crate::cbor::cbor_map;
+use crate::error::{URError, URResult};
 use crate::registry_types::{RegistryType, SOL_SIGNATURE, UUID};
-use crate::traits::{From, RegistryItem, To};
-use crate::types::{Bytes, CborMap};
-use serde_cbor::{from_slice, to_vec, Value};
+use crate::traits::{RegistryItem, To, From as FromCbor};
+use crate::types::Bytes;
 
-const REQUEST_ID: i128 = 1;
-const SIGNATURE: i128 = 2;
+const REQUEST_ID: u8 = 1;
+const SIGNATURE: u8 = 2;
 
 #[derive(Clone, Debug, Default)]
 pub struct SolSignature {
@@ -44,51 +49,86 @@ impl RegistryItem for SolSignature {
     }
 }
 
-impl To for SolSignature {
-    fn to_cbor(&self) -> Value {
-        let mut map: CborMap = CborMap::new();
-        self.get_request_id().and_then(|request_id| {
-            map.insert(
-                Value::Integer(REQUEST_ID),
-                Value::Tag(UUID.get_tag(), Box::new(Value::Bytes(request_id))),
-            )
-        });
-        map.insert(
-            Value::Integer(SIGNATURE),
-            Value::Bytes(self.get_signature()),
-        );
-        Value::Map(map)
-    }
-
-    fn to_bytes(&self) -> Vec<u8> {
-        let value = self.to_cbor();
-        to_vec(&value).unwrap()
+impl<C> minicbor::Encode<C> for SolSignature {
+    fn encode<W: Write>(&self,
+                        e: &mut Encoder<W>,
+                        _ctx: &mut C) -> Result<(), minicbor::encode::Error<W::Error>> {
+        let mut size = 1;
+        if let Some(_) = &self.request_id {
+            size = size + 1;
+        }
+        e.map(size)?;
+        if let Some(request_id) = &self.request_id {
+            e.int(Int::from(REQUEST_ID))?
+                .tag(Tag::Unassigned(UUID.get_tag()))?
+                .bytes(request_id)?;
+        }
+        e.int(Int::from(SIGNATURE))?
+            .bytes(&self.signature)?;
+        Ok(())
     }
 }
 
-impl From<SolSignature> for SolSignature {
-    fn from_cbor(cbor: Value) -> Result<SolSignature, String> {
-        let cbor_value = CborValue::new(cbor);
-        let map = cbor_value.get_map()?;
-        let request_id = map
-            .get_by_integer(REQUEST_ID)
-            .map(|v| v.get_tag(UUID.get_tag()).and_then(|v| v.get_bytes()))
-            .transpose()?;
-        let signature = map.get_by_integer(SIGNATURE).map_or(
-            Err("signature is required for sol-signature".to_string()),
-            |r| r.get_bytes(),
-        )?;
-        Ok(SolSignature {
-            request_id,
-            signature,
-        })
+
+impl<'b, C> minicbor::Decode<'b, C> for SolSignature {
+    fn decode(d: &mut Decoder<'b>, _ctx: &mut C) -> Result<Self, minicbor::decode::Error> {
+        let mut result = SolSignature::default();
+        cbor_map(d, &mut result, |key, obj, d| {
+            let key = u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
+            match key {
+                REQUEST_ID => {
+                    d.tag()?;
+                    obj.request_id = Some(d.bytes()?.to_vec());
+                }
+                SIGNATURE => {
+                    obj.signature = d.bytes()?.to_vec();
+                }
+                _ => {}
+            }
+            Ok(())
+        })?;
+        Ok(result)
+    }
+}
+
+impl To for SolSignature {
+    fn to_bytes(&self) -> URResult<Vec<u8>> {
+        minicbor::to_vec(self.clone()).map_err(|e| URError::CborEncodeError(e.to_string()))
+    }
+}
+
+impl FromCbor<SolSignature> for SolSignature {
+    fn from_cbor(bytes: Vec<u8>) -> URResult<SolSignature> {
+        minicbor::decode(&bytes).map_err(|e| URError::CborDecodeError(e.to_string()))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use alloc::vec::Vec;
+    use crate::traits::{From as FromCbor, To};
+    use hex::FromHex;
+    use crate::solana::sol_signature::SolSignature;
+
+    #[test]
+    fn test_encode() {
+        let request_id = Some([155, 29, 235, 77, 59, 125, 75, 173, 155, 221, 43, 13, 123, 61, 203, 109].to_vec());
+        let signature = [212, 240, 167, 188, 217, 91, 186, 31, 187, 16, 81, 136, 80, 84, 115, 14, 63, 71, 6, 66, 136, 87, 90, 172, 193, 2, 251, 191, 106, 154, 20, 218, 160, 102, 153, 30, 54, 13, 62, 52, 6, 194, 12, 0, 164, 9, 115, 239, 243, 124, 125, 100, 30, 91, 53, 30, 196, 169, 155, 254, 134, 243, 53, 247].to_vec();
+        let sol_signature = SolSignature::new(request_id, signature);
+        assert_eq!(
+            "a201d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d025840d4f0a7bcd95bba1fbb1051885054730e3f47064288575aacc102fbbf6a9a14daa066991e360d3e3406c20c00a40973eff37c7d641e5b351ec4a99bfe86f335f7",
+            hex::encode(sol_signature.to_bytes().unwrap()).to_lowercase()
+        );
     }
 
-    fn from_bytes(bytes: Vec<u8>) -> Result<SolSignature, String> {
-        let value: Value = match from_slice(bytes.as_slice()) {
-            Ok(x) => x,
-            Err(e) => return Err(e.to_string()),
-        };
-        SolSignature::from_cbor(value)
+    #[test]
+    fn test_decode() {
+        let bytes = Vec::from_hex(
+            "a201d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d025840d4f0a7bcd95bba1fbb1051885054730e3f47064288575aacc102fbbf6a9a14daa066991e360d3e3406c20c00a40973eff37c7d641e5b351ec4a99bfe86f335f7",
+        )
+            .unwrap();
+        let sol_signature = SolSignature::from_cbor(bytes).unwrap();
+        assert_eq!([155, 29, 235, 77, 59, 125, 75, 173, 155, 221, 43, 13, 123, 61, 203, 109].to_vec(), sol_signature.get_request_id().unwrap());
+        assert_eq!([212, 240, 167, 188, 217, 91, 186, 31, 187, 16, 81, 136, 80, 84, 115, 14, 63, 71, 6, 66, 136, 87, 90, 172, 193, 2, 251, 191, 106, 154, 20, 218, 160, 102, 153, 30, 54, 13, 62, 52, 6, 194, 12, 0, 164, 9, 115, 239, 243, 124, 125, 100, 30, 91, 53, 30, 196, 169, 155, 254, 134, 243, 53, 247].to_vec(), sol_signature.get_signature());
     }
 }

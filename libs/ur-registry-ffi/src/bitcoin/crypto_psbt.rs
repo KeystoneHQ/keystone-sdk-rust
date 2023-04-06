@@ -15,8 +15,7 @@ export! {
 	) -> String {
         let parse = || -> Result<String, Error> {
             let cbor = hex::decode(cbor_hex.to_string())?;
-            let res = serde_cbor::from_slice(cbor.as_slice())?;
-            let psbt = CryptoPSBT::from_cbor(res).map_err(|_| format_err!(""))?;
+            let psbt = CryptoPSBT::from_cbor(cbor).map_err(|_| format_err!(""))?;
             let psbt_hex = hex::encode(psbt.get_psbt());
             Ok(psbt_hex)
         };
@@ -33,7 +32,7 @@ export! {
         let gen = || -> Result<String, Error> {
             let psbt = hex::decode(psbt_hex.to_string())?;
             let crypto_psbt = CryptoPSBT::new(psbt);
-            let cbor_hex = hex::encode(crypto_psbt.to_bytes());
+            let cbor_hex = hex::encode(crypto_psbt.to_bytes()?);
             Ok(cbor_hex)
         };
         match gen() {
