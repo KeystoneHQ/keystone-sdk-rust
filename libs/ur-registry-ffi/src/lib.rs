@@ -3,6 +3,7 @@ pub mod ethereum;
 pub mod extend;
 pub mod bitcoin;
 pub mod cosmos;
+pub mod tron;
 mod export;
 mod util;
 

@@ -40,7 +40,7 @@ export! {
         }.as_bytes().to_vec();
         let sign_date_bytes = match hex::decode(sign_data) {
             Ok(v) => v,
-            Err(_) => return json!({"error": "sign_data is invalid"}).to_string(),
+            Err(_) => return json!({"error": "sign data is invalid"}).to_string(),
         };
         let address = if address.len() == 0 { None } else { Some(address.as_bytes().to_vec()) };
         let origin = if origin.len() == 0 { None } else { Some(origin.to_string()) };
@@ -117,7 +117,7 @@ mod tests {
         let origin = "solflare";
         let sign_type = 1;
         
-        let err_result = "{\"error\":\"sign_data is invalid\"}";
+        let err_result = "{\"error\":\"sign data is invalid\"}";
 
         assert_eq!(err_result, generate_sol_sign_request(
             request_id, sign_data, path, xfp, address, origin, sign_type
