@@ -32,3 +32,6 @@ pub const SOL_SIGNATURE: RegistryType = RegistryType("sol-signature", 1102);
 // Cosmos
 pub const COSMOS_SIGN_REQUEST: RegistryType = RegistryType("sol-sign-request", 4101);
 pub const COSMOS_SIGNATURE: RegistryType = RegistryType("sol-signature", 4102);
+// Tron
+pub const TRON_SIGN_REQUEST: RegistryType = RegistryType("tron-sign-request-kt", 5101);
+pub const TRON_SIGNATURE: RegistryType = RegistryType("tron-signature", 5102);
