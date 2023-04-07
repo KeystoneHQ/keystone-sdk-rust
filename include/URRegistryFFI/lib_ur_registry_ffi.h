@@ -21,3 +21,7 @@ const char* parse_eth_signature(struct ExternError*, const char* cbor_hex);
 // SOL
 const char* generate_sol_sign_request(struct ExternError*, const char* request_id, const char* sign_data, const char* path, const char* xfp, const char* address, const char* origin, const int sign_type);
 const char* parse_sol_signature(struct ExternError*, const char* cbor_hex);
+
+// Cosmos
+const char* generate_cosmos_sign_request(struct ExternError*, const char* request_id, const char* sign_data, const int data_type, const char* accounts, const char* origin);
+const char* parse_cosmos_signature(struct ExternError*, const char* cbor_hex);
