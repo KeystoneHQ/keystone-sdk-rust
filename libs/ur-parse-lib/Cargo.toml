@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 ur-registry = { path = "../ur-registry" }
-ur = { path = "../../../ur-rs", default-features = false }
+ur = { git = "https://github.com/KeystoneHQ/ur-rs", branch = "release-0.3.0-no-std", default-features = false }
 cty = "0.2.2"
 #libc-print = "0.1.21"
 hex = { version = "0.4.3", features = ["alloc"], default-features = false }
