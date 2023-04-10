@@ -135,7 +135,7 @@ mod tests {
     }
 
     #[test]
-    fn test_generate_eth_sign_request_err_sign_data() {
+    fn test_generate_cosmos_sign_request_err_sign_data() {
         let request_id = "7AFD5E09-9267-43FB-A02E-08C4A09417EC";
         let sign_data = "123412341";
         let data_type = 1;

@@ -37,7 +37,7 @@ export! {
         }.as_bytes().to_vec();
         let sign_date_bytes = match serde_json::from_str::<TronTransfer>(sign_data) {
             Ok(_) => sign_data.as_bytes().to_vec(),
-            Err(err) => return json!({"error": "sign data is invalid"}).to_string(),
+            Err(_) => return json!({"error": "sign data is invalid"}).to_string(),
         };
         let address = if address.len() == 0 { None } else { Some(address.as_bytes().to_vec()) };
         let origin = if origin.len() == 0 { None } else { Some(origin.to_string()) };
