@@ -18,6 +18,7 @@ serde = { version = "1.0", features = ["derive"] }
 secp256k1 = "0.24.0"
 protobuf = "3.2.0"
 ethabi = "15.0.0"
+bs58 = "0.4.0"
 
 [lib]
 name = "ur_registry_ffi"

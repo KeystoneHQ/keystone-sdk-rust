@@ -134,17 +134,18 @@ export! {
                             constant: false,
                             state_mutability: StateMutability::Payable,
                         };
-                        let decode_input = fun.decode_input(&v.data);
-                        println!("decode_input: {:?}", decode_input);
-
-                        // decode_input
-                        // println!("decode_input  222: {:?}", decode_input.unwrap()[1].to_owned());
-                        let token: Token = decode_input.unwrap()[1].to_owned();
+                        let decode_input = fun.decode_input(&v.data[4..]);
+                        let inputs = decode_input.unwrap_or_default();
+                        let to_address_bytes = inputs[0].clone().into_address().unwrap_or_default().to_fixed_bytes();
+                        let mut to_address_with_prefix = to_address_bytes.to_vec();
+                        to_address_with_prefix.insert(0, 65);
+                        let value = inputs[1].clone().into_uint().unwrap_or_default().to_string();
+                        let to_address = bs58::encode(to_address_with_prefix).with_check().into_string();
 
                         let transfer = TronTransfer::new(
                             hex::encode(v.owner_address),
-                            "".to_string(),
-                            "".to_string(),
+                            to_address,
+                            value,
                             raw_data.fee_limit.into(),
                             LatestBlock::new(hex::encode(raw_data.ref_block_hash), raw_data.ref_block_num.into(), raw_data.timestamp.into()),
                             None,
