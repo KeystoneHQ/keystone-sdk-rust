@@ -1,4 +1,28 @@
 use alloc::string::{String, ToString};
+use crate::error::{URError, URResult};
+
+#[derive(Clone, Debug)]
+pub enum URType {
+    CryptoPsbt(String),
+    CryptoAccount(String),
+}
+
+impl URType {
+    pub fn from(type_str: &str) -> URResult<URType> {
+        match type_str {
+            "crypto-psbt" => {
+                Ok(URType::CryptoPsbt(type_str.to_string()))
+            }
+            "crypto-account" => {
+                Ok(URType::CryptoAccount(type_str.to_string()))
+            }
+            _ => {
+                Err(URError::NotSupportURTypeError(type_str.to_string()))
+            }
+        }
+    }
+}
+
 
 pub struct RegistryType<'a>(&'a str, u64);
 
@@ -13,7 +37,7 @@ impl<'a> RegistryType<'_> {
 
 pub const UUID: RegistryType = RegistryType("uuid", 37);
 pub const CRYPTO_HDKEY: RegistryType = RegistryType("crypto-hdkey", 303);
-pub const CRYPTO_KEYPATH: RegistryType = RegistryType("crypto-keypath", 304);
+pub const CRYPTO_KEYPATH: RegistryType = RegistryType("", 304);
 pub const CRYPTO_COIN_INFO: RegistryType = RegistryType("crypto-coin-info", 305);
 pub const CRYPTO_ECKEY: RegistryType = RegistryType("crypto-eckey", 306);
 pub const CRYPTO_OUTPUT: RegistryType = RegistryType("crypto-output", 308);
