@@ -12,7 +12,7 @@ impl LatestBlock {
     pub fn new(hash: String, number: Number, timestamp: Number) -> Self { Self { hash, number, timestamp } }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Override {
     #[serde(rename = "tokenShortName")]
     token_short_name: String,
