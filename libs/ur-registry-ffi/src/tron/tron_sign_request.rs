@@ -51,9 +51,6 @@ export! {
         let address = if address.len() == 0 { None } else { Some(address.as_bytes().to_vec()) };
         let origin = if origin.len() == 0 { None } else { Some(origin.to_string()) };
 
-        // Print sign_data as json:
-        println!("JSON: {}", String::from_utf8(sign_data_bytes.clone()).unwrap());
-
         let result = TronSignRequest::new(
             Some(request_id),
             sign_data_bytes,
