@@ -59,3 +59,6 @@ pub const COSMOS_SIGNATURE: RegistryType = RegistryType("sol-signature", 4102);
 // Tron
 pub const TRON_SIGN_REQUEST: RegistryType = RegistryType("tron-sign-request-kt", 5101);
 pub const TRON_SIGNATURE: RegistryType = RegistryType("tron-signature", 5102);
+// Aptos
+pub const APTOS_SIGN_REQUEST: RegistryType = RegistryType("tron-sign-request-kt", 6101);
+pub const APTOS_SIGNATURE: RegistryType = RegistryType("tron-signature", 6102);

@@ -24,3 +24,4 @@ pub mod ethereum;
 pub mod extend;
 pub mod cosmos;
 pub mod tron;
+pub mod aptos;
