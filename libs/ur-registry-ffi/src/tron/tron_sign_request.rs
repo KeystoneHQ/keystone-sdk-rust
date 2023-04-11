@@ -1,8 +1,4 @@
-use ethabi::{
-    Function, Param, ParamType, StateMutability,
-};
 use hex;
-use protobuf::Message;
 use serde_json::json;
 use ur_registry::traits::To;
 use uuid::Uuid;
@@ -10,15 +6,8 @@ use ur_registry::crypto_key_path::CryptoKeyPath;
 use ur_registry::tron::tron_sign_request::TronSignRequest;
 
 use crate::export;
-use crate::tron::tron_transfer::LatestBlock;
-use crate::tron::types::tron::transaction;
-use crate::tron::types::contract;
 
-use super::tron_transfer::{TronTransfer, Override};
-
-fn format_address(address_bytes: Vec<u8>) -> String {
-    bs58::encode(address_bytes).with_check().into_string()
-}
+use super::tron_transfer::raw_to_json;
 
 export! {
     @Java_com_keystone_sdk_KeystoneNativeSDK_generateTronSignRequest
@@ -51,135 +40,13 @@ export! {
             Ok(v) => v,
             Err(_) => return json!({"error": "sign data is invalid"}).to_string(),
         };
-        let raw_data = match transaction::Raw::parse_from_bytes(&sign_data_bytes) {
+
+        sign_data_bytes = match raw_to_json(sign_data_bytes, token_info) {
             Ok(v) => v,
             Err(err) => {
-                println!("{:?}", err);
-                return json!({"error": "sign data is invalid"}).to_string();
-            },
+                return json!({"error": err}).to_string();
+            }
         };
-        let override_info = match serde_json::from_str::<Override>(token_info) {
-            Ok(v) => Some(v),
-            Err(_) => None
-        };
-
-        let mut ref_block_hash: Vec<u8> = vec![0; 8];
-        ref_block_hash.extend_from_slice(&raw_data.ref_block_hash);
-        ref_block_hash.extend_from_slice(&[0; 16]);
-
-        match raw_data.contract[0].type_.value() {
-            // TransferContract
-            1 => {
-                let contract = contract::TransferContract::parse_from_bytes(&raw_data.contract[0].parameter.get_or_default().value);
-                match contract {
-                    Ok(v) => {
-                        let transfer = TronTransfer::new(
-                            format_address(v.owner_address),
-                            format_address(v.to_address),
-                            v.amount.to_string(),
-                            raw_data.fee_limit.into(),
-                            LatestBlock::new(
-                                hex::encode(ref_block_hash),
-                                u16::from_be_bytes([raw_data.ref_block_bytes[0], raw_data.ref_block_bytes[1]]).into(),
-                                (raw_data.expiration - 600 * 5 * 1000).into()
-                            ),
-                            Some("TRX".to_string()),
-                            None,
-                            override_info
-                        );
-                        let json = json!(transfer).to_string();
-                        sign_data_bytes = json.as_bytes().to_vec();
-                    },
-                    Err(_) => {
-                        return json!({"error": "sign data is invalid"}).to_string();
-                    }
-                }
-            }
-            // TransferAssetContract
-            2 => {
-                let contract = contract::TransferAssetContract::parse_from_bytes(&raw_data.contract[0].parameter.get_or_default().value);
-                match contract {
-                    Ok(v) => {
-                        let transfer = TronTransfer::new(
-                            format_address(v.owner_address),
-                            format_address(v.to_address),
-                            v.amount.to_string(),
-                            raw_data.fee_limit.into(),
-                            LatestBlock::new(
-                                hex::encode(ref_block_hash),
-                                u16::from_be_bytes([raw_data.ref_block_bytes[0], raw_data.ref_block_bytes[1]]).into(),
-                                (raw_data.expiration - 600 * 5 * 1000).into()
-                            ),
-                            Some(String::from_utf8(v.asset_name).unwrap()),
-                            None,
-                            override_info
-                        );
-                        let json = json!(transfer).to_string();
-                        sign_data_bytes = json.as_bytes().to_vec();
-                    },
-                    Err(_) => {
-                        return json!({"error": "sign data is invalid"}).to_string();
-                    }
-                }
-            }
-            // TriggerSmartContract
-            31 => {
-                let contract = contract::TriggerSmartContract::parse_from_bytes(&raw_data.contract[0].parameter.get_or_default().value);
-                match contract {
-                    Ok(v) => {
-                        let address_params = Param {
-                            name: "to".to_owned(),
-                            kind: ParamType::Address,
-                            internal_type: None,
-                        };
-                        let value_params = Param {
-                            name: "value".to_owned(),
-                            kind: ParamType::Uint(256),
-                            internal_type: None,
-                        };
-                        let inputs = vec![address_params, value_params];
-                
-                        let outputs: Vec<Param> = Vec::new();
-                        #[allow(deprecated)]
-                        let fun = Function {
-                            name: "transfer".to_owned(),
-                            inputs,
-                            outputs,
-                            constant: Some(false),
-                            state_mutability: StateMutability::Payable,
-                        };
-                        let decode_input = fun.decode_input(&v.data[4..]);
-                        let inputs = decode_input.unwrap_or_default();
-                        let mut to_address_bytes = inputs[0].clone().into_address().unwrap_or_default().to_fixed_bytes().to_vec();
-                        to_address_bytes.insert(0, 65);
-                        let to_address = format_address(to_address_bytes);
-                        let value = inputs[1].clone().into_uint().unwrap_or_default().to_string();
-                        let transfer = TronTransfer::new(
-                            format_address(v.owner_address),
-                            to_address,
-                            value,
-                            raw_data.fee_limit.into(),
-                            LatestBlock::new(
-                                hex::encode(ref_block_hash),
-                                u16::from_be_bytes([raw_data.ref_block_bytes[0], raw_data.ref_block_bytes[1]]).into(),
-                                raw_data.timestamp.into()
-                            ),
-                            None,
-                            Some(format_address(v.contract_address)),
-                            override_info
-                        );
-                        let json = json!(transfer).to_string();
-                        sign_data_bytes = json.as_bytes().to_vec();
-                    },
-                    Err(_) => {
-                        return json!({"error": "sign data is invalid"}).to_string();
-                    }
-                }
-            }
-            _ => {
-                return json!({"error": "contract is not supported"}).to_string();
-            }
-        }
 
         let address = if address.len() == 0 { None } else { Some(address.as_bytes().to_vec()) };
         let origin = if origin.len() == 0 { None } else { Some(origin.to_string()) };
@@ -238,7 +105,7 @@ mod tests {
             "decimals": 8
         }"#;
 
-        let expect_result = "{\"cbor\":\"a301d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d025901557b22746f223a22544b43735874664b6648326436614561514363747962444339756141334d536a3268222c2266726f6d223a22545868745972386e6d6769537033645933635366694b426a6564337a4e3874654853222c2276616c7565223a2231222c22666565223a3130303030302c226c6174657374426c6f636b223a7b2268617368223a2236383836613736666361653637376533353433653534366134336164346535666336393230363533623536623731333534326530626636346530666638356365222c226e756d626572223a31363036383132362c2274696d657374616d70223a313537383435393639393030307d2c22746f6b656e223a2231303031303930222c226f76657272696465223a7b22746f6b656e53686f72744e616d65223a22544f4e45222c22746f6b656e46756c6c4e616d65223a2254726f6e4f6e65222c22646563696d616c73223a31387d7d03d90130a20188182cf518c3f500f500f5021a12121212\",\"type\":\"tron-sign-request\"}";
+        let expect_result = "{\"cbor\":\"a301d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d0259018c7b22636f6e747261637441646472657373223a225442416f37504e794b6f393459575571314373324c4246786b685470686e41453454222c22666565223a313030303030303030302c2266726f6d223a22545541687877334d674d795239726879724d446e564a626f33626b79314753557248222c226c6174657374426c6f636b223a7b2268617368223a2230303030303030303030303030303030653162396465353539363635633637313030303030303030303030303030303030303030303030303030303030303030222c226e756d626572223a313933362c2274696d657374616d70223a313532373638323434303030307d2c226f76657272696465223a7b22646563696d616c73223a382c22746f6b656e46756c6c4e616d65223a2254726f6e4f6e65222c22746f6b656e53686f72744e616d65223a22544f4e45227d2c22746f223a2254514167325432764a634841583973624b54456f616f577a7435313279556a694644222c22746f6b656e223a6e756c6c2c2276616c7565223a2231303030303030227d03d90130a20188182cf518c3f500f500f5021a12121212\",\"type\":\"tron-sign-request\"}";
 
         assert_eq!(expect_result, generate_tron_sign_request(
             request_id, &sign_data_hex, path, xfp, token_info, address, origin
@@ -268,7 +135,7 @@ mod tests {
             "decimals": 8
         }"#;
 
-        let expect_result = "{\"cbor\":\"a301d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d025901557b22746f223a22544b43735874664b6648326436614561514363747962444339756141334d536a3268222c2266726f6d223a22545868745972386e6d6769537033645933635366694b426a6564337a4e3874654853222c2276616c7565223a2231222c22666565223a3130303030302c226c6174657374426c6f636b223a7b2268617368223a2236383836613736666361653637376533353433653534366134336164346535666336393230363533623536623731333534326530626636346530666638356365222c226e756d626572223a31363036383132362c2274696d657374616d70223a313537383435393639393030307d2c22746f6b656e223a2231303031303930222c226f76657272696465223a7b22746f6b656e53686f72744e616d65223a22544f4e45222c22746f6b656e46756c6c4e616d65223a2254726f6e4f6e65222c22646563696d616c73223a31387d7d03d90130a20188182cf518c3f500f500f5021a12121212\",\"type\":\"tron-sign-request\"}";
+        let expect_result = "{\"cbor\":\"a301d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d025901637b22636f6e747261637441646472657373223a6e756c6c2c22666565223a302c2266726f6d223a22545868745972386e6d6769537033645933635366694b426a6564337a4e3874654853222c226c6174657374426c6f636b223a7b2268617368223a2230303030303030303030303030303030353433653534366134336164346535663030303030303030303030303030303030303030303030303030303030303030222c226e756d626572223a31313830362c2274696d657374616d70223a313537383435393639393030307d2c226f76657272696465223a7b22646563696d616c73223a382c22746f6b656e46756c6c4e616d65223a2254726f6e4f6e65222c22746f6b656e53686f72744e616d65223a22544f4e45227d2c22746f223a22544b43735874664b6648326436614561514363747962444339756141334d536a3268222c22746f6b656e223a2231303031303930222c2276616c7565223a2231227d03d90130a20188182cf518c3f500f500f5021a12121212\",\"type\":\"tron-sign-request\"}";
 
         assert_eq!(expect_result, generate_tron_sign_request(
             request_id, &sign_data_hex, path, xfp, token_info, address, origin
@@ -297,7 +164,7 @@ mod tests {
             "decimals": 0
         }"#;
 
-        let expect_result = "{\"cbor\":\"a301d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d025901557b22746f223a22544b43735874664b6648326436614561514363747962444339756141334d536a3268222c2266726f6d223a22545868745972386e6d6769537033645933635366694b426a6564337a4e3874654853222c2276616c7565223a2231222c22666565223a3130303030302c226c6174657374426c6f636b223a7b2268617368223a2236383836613736666361653637376533353433653534366134336164346535666336393230363533623536623731333534326530626636346530666638356365222c226e756d626572223a31363036383132362c2274696d657374616d70223a313537383435393639393030307d2c22746f6b656e223a2231303031303930222c226f76657272696465223a7b22746f6b656e53686f72744e616d65223a22544f4e45222c22746f6b656e46756c6c4e616d65223a2254726f6e4f6e65222c22646563696d616c73223a31387d7d03d90130a20188182cf518c3f500f500f5021a12121212\",\"type\":\"tron-sign-request\"}";
+        let expect_result = "{\"cbor\":\"a301d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d025901657b22636f6e747261637441646472657373223a6e756c6c2c22666565223a302c2266726f6d223a225454695947786237594e6655514a416e4c464d643170766d6f79774d375078694732222c226c6174657374426c6f636b223a7b2268617368223a2230303030303030303030303030303030656332376236333935346635393133643030303030303030303030303030303030303030303030303030303030303030222c226e756d626572223a32363230342c2274696d657374616d70223a313537383330363230373030307d2c226f76657272696465223a7b22646563696d616c73223a302c22746f6b656e46756c6c4e616d65223a2254726f6e4f6e65222c22746f6b656e53686f72744e616d65223a22544f4e45227d2c22746f223a22545868745972386e6d6769537033645933635366694b426a6564337a4e3874654853222c22746f6b656e223a22545258222c2276616c7565223a2232303030303030227d03d90130a20188182cf518c3f500f500f5021a12121212\",\"type\":\"tron-sign-request\"}";
 
         assert_eq!(expect_result, generate_tron_sign_request(
             request_id, &sign_data_hex, path, xfp, token_info, address, origin
