@@ -24,6 +24,18 @@ pub enum URError {
 
     #[error("not specified type")]
     TypeUnspecified,
+
+    #[error("protobuf decode failed, reason: `{0}`")]
+    ProtobufDecodeError(String),
+
+    #[error("protobuf encode failed, reason: `{0}`")]
+    ProtobufEncodeError(String),
+
+    #[error("gzip decode failed, reason: `{0}`")]
+    GzipDecodeError(String),
+
+    #[error("gzip encode failed, reason: `{0}`")]
+    GzipEncodeError(String),
 }
 
 pub type URResult<T> = Result<T, URError>;
