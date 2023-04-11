@@ -22,10 +22,15 @@ impl LatestBlock {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Override {
-    #[serde(rename = "tokenShortName")]
     token_short_name: String,
-    #[serde(rename = "tokenFullName")]
     token_full_name: String,
+    decimals: Number,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct TokenInfo {
+    name: String,
+    symbol: String,
     decimals: Number,
 }
 
@@ -62,9 +67,17 @@ pub fn raw_to_json(sign_data_bytes: Vec<u8>, token_info: &str) -> Result<Vec<u8>
             return Err("sign data is invalid");
         },
     };
-    let override_info = match serde_json::from_str::<Override>(token_info) {
+    let token_info = match serde_json::from_str::<TokenInfo>(token_info) {
         Ok(v) => Some(v),
         Err(_) => None
+    };
+    let override_info = if token_info.is_none() { None } else {
+        let info = token_info.unwrap();
+        Some(Override {
+            token_full_name: info.name,
+            token_short_name: info.symbol,
+            decimals: info.decimals
+        })
     };
 
     let mut ref_block_hash: Vec<u8> = vec![0; 8];
