@@ -21,6 +21,17 @@ impl URType {
             }
         }
     }
+
+    pub fn get_type_str(&self) -> String {
+        match self {
+            URType::CryptoPsbt(type_str) => {
+                type_str.to_string()
+            }
+            URType::CryptoAccount(type_str) => {
+                type_str.to_string()
+            }
+        }
+    }
 }
 
 

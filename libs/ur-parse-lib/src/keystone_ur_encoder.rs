@@ -1,6 +1,5 @@
-use alloc::boxed::Box;
 use alloc::string::{String, ToString};
-use cty::c_void;
+use core::fmt;
 use ur_registry::error::{URError, URResult};
 
 pub fn probe_encode(message: &[u8],
@@ -12,22 +11,30 @@ pub fn probe_encode(message: &[u8],
         ur_type.clone(),
     ).map_err(|e| URError::CborEncodeError(e.to_string()))?;
     if encoder.fragment_count() > 1 {
-        Ok(UREncodeResult { is_multi_part: true, data: encoder.next_part().map_err(|e| URError::UrEncodeError(e.to_string()))?, encoder: Some(Box::into_raw(Box::new(KeystoneUREncoder::new(encoder))) as *mut c_void) })
+        Ok(UREncodeResult { is_multi_part: true, data: encoder.next_part().map_err(|e| URError::UrEncodeError(e.to_string()))?, encoder: Some(KeystoneUREncoder::new(encoder)) })
     } else {
         let ur = ur::encode(message, ur_type);
         Ok(UREncodeResult { is_multi_part: false, data: ur, encoder: None })
     }
 }
 
-#[derive(Debug)]
 pub struct UREncodeResult {
     pub is_multi_part: bool,
     pub data: String,
-    pub encoder: Option<*mut c_void>,
+    pub encoder: Option<KeystoneUREncoder>,
 }
 
 pub struct KeystoneUREncoder {
     encoder: ur::Encoder,
+}
+
+impl fmt::Debug for UREncodeResult {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_tuple("")
+            .field(&self.is_multi_part)
+            .field(&self.data)
+            .finish()
+    }
 }
 
 impl KeystoneUREncoder {
@@ -54,7 +61,7 @@ mod tests {
     use alloc::vec::Vec;
     use ur_registry::crypto_psbt::CryptoPSBT;
     use ur_registry::traits::{RegistryItem, To};
-    use crate::keystone_ur_encoder::{KeystoneUREncoder, probe_encode};
+    use crate::keystone_ur_encoder::{probe_encode};
     use hex::FromHex;
 
     #[test]
@@ -66,9 +73,7 @@ mod tests {
         assert_eq!("ur:crypto-psbt/1-3/lpadaxcfaxiacyvwhdfhndhkadclhkaxhnlkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbnychpmiy",
                    result.data);
         if result.is_multi_part {
-            let ptr = result.encoder.unwrap();
-            let encoder_ptr = ptr as *mut KeystoneUREncoder;
-            let encoder = unsafe { &mut *encoder_ptr };
+            let mut encoder = result.encoder.unwrap();
             let next = encoder.next_part().unwrap();
             assert_eq!("ur:crypto-psbt/2-3/lpaoaxcfaxiacyvwhdfhndhkadclaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaylbntahvo",
                        next);
