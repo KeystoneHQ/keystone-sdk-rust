@@ -1,4 +1,3 @@
-// use ethabi::{Function, StateMutability, Param, ParamType, Token};
 use ethabi::{
     Function, Param, ParamType, StateMutability,
 };
