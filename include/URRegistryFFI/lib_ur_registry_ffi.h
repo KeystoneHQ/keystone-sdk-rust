@@ -25,3 +25,7 @@ const char* parse_sol_signature(struct ExternError*, const char* cbor_hex);
 // Cosmos
 const char* generate_cosmos_sign_request(struct ExternError*, const char* request_id, const char* sign_data, const int data_type, const char* accounts, const char* origin);
 const char* parse_cosmos_signature(struct ExternError*, const char* cbor_hex);
+
+// Tron
+const char* generate_tron_sign_request(struct ExternError*, const char* request_id, const char* sign_data, const char* path, const char* xfp, const char* token_info, const char* address, const char* origin);
+const char* parse_tron_signature(struct ExternError*, const char* cbor_hex);
