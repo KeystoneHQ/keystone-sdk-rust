@@ -48,7 +48,7 @@ impl<'a> RegistryType<'_> {
 
 pub const UUID: RegistryType = RegistryType("uuid", 37);
 pub const CRYPTO_HDKEY: RegistryType = RegistryType("crypto-hdkey", 303);
-pub const CRYPTO_KEYPATH: RegistryType = RegistryType("", 304);
+pub const CRYPTO_KEYPATH: RegistryType = RegistryType("crypto-keypath", 304);
 pub const CRYPTO_COIN_INFO: RegistryType = RegistryType("crypto-coin-info", 305);
 pub const CRYPTO_ECKEY: RegistryType = RegistryType("crypto-eckey", 306);
 pub const CRYPTO_OUTPUT: RegistryType = RegistryType("crypto-output", 308);
