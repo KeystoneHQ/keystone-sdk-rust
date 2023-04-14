@@ -69,10 +69,7 @@ impl Into<MultiAccounts> for CryptoMultiAccounts {
 
 export! {
     @Java_com_keystone_sdk_KeystoneNativeSDK_parseCryptoMultiAccounts
-	fn parse_crypto_multi_accounts(
-        ur_type: &str,
-		cbor_hex: &str
-	) -> String {
+	fn parse_crypto_multi_accounts(ur_type: &str, cbor_hex: &str) -> String {
         if CRYPTO_MULTI_ACCOUNTS.get_type() != ur_type {
             return json!({"error": "type not match"}).to_string();
         }

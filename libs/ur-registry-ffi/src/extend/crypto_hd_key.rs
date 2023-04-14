@@ -51,10 +51,7 @@ impl Into<MultiHDKeys> for CryptoAccount {
 
 export! {
     @Java_com_keystone_sdk_KeystoneNativeSDK_parseExtendedPublicKey
-    fn parse_extended_public_key(
-        ur_type: &str,
-        cbor_hex: &str
-    ) -> String {
+    fn parse_extended_public_key(ur_type: &str, cbor_hex: &str) -> String {
         if CRYPTO_HDKEY.get_type() != ur_type {
             return json!({"error": "type not match"}).to_string();
         }
@@ -72,10 +69,7 @@ export! {
     }
 
     @Java_com_keystone_sdk_KeystoneNativeSDK_parseMultiPublicKeys
-    fn parse_multi_public_keys(
-        ur_type: &str,
-        cbor_hex: &str
-    ) -> String {
+    fn parse_multi_public_keys(ur_type: &str, cbor_hex: &str) -> String {
         if CRYPTO_ACCOUNT.get_type() != ur_type {
             return json!({"error": "type not match"}).to_string();
         }

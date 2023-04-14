@@ -11,10 +11,7 @@ use crate::export;
 
 export! {
     @Java_com_keystone_sdk_KeystoneNativeSDK_parseCryptoPSBT
-	fn parse_crypto_psbt(
-        ur_type: &str,
-		cbor_hex: &str
-	) -> String {
+	fn parse_crypto_psbt(ur_type: &str, cbor_hex: &str) -> String {
         if CRYPTO_PSBT.get_type() != ur_type {
             return json!({"error": "type not match"}).to_string();
         }

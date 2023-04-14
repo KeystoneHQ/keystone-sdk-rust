@@ -10,10 +10,7 @@ use crate::export;
 
 export! {
     @Java_com_keystone_sdk_KeystoneNativeSDK_parseAptosSignature
-	fn parse_aptos_signature(
-        ur_type: &str,
-		cbor_hex: &str
-	) -> String {
+	fn parse_aptos_signature(ur_type: &str, cbor_hex: &str) -> String {
         if APTOS_SIGNATURE.get_type() != ur_type {
             return json!({"error": "type not match"}).to_string();
         }
