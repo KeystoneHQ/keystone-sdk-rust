@@ -5,14 +5,17 @@ use serde_json::json;
 use ur_registry::ethereum::eth_signature::EthSignature;
 use ur_registry::traits::From;
 use uuid::Uuid;
+use ur_registry::registry_types::ETH_SIGNATURE;
 
 use crate::export;
 
 export! {
     @Java_com_keystone_sdk_KeystoneNativeSDK_parseETHSignature
-	fn parse_eth_signature(
-		cbor_hex: &str
-	) -> String {
+	fn parse_eth_signature(ur_type: &str, cbor_hex: &str) -> String {
+        if ETH_SIGNATURE.get_type() != ur_type {
+            return json!({"error": "type not match"}).to_string();
+        }
+
         let parse_signature = || -> Result<(String, String), Error> {
             let cbor = hex::decode(cbor_hex.to_string())?;
             let eth_signature = EthSignature::from_cbor(cbor).map_err(|_| format_err!(""))?;
@@ -42,7 +45,15 @@ mod tests {
         let eth_signature_cbor = "a301d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d025841d4f0a7bcd95bba1fbb1051885054730e3f47064288575aacc102fbbf6a9a14daa066991e360d3e3406c20c00a40973eff37c7d641e5b351ec4a99bfe86f335f71303686b657973746f6e65";
         let expect_result = "{\"request_id\":\"9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d\",\"signature\":\"d4f0a7bcd95bba1fbb1051885054730e3f47064288575aacc102fbbf6a9a14daa066991e360d3e3406c20c00a40973eff37c7d641e5b351ec4a99bfe86f335f713\"}";
 
-        assert_eq!(expect_result, parse_eth_signature(eth_signature_cbor));
+        assert_eq!(expect_result, parse_eth_signature("eth-signature", eth_signature_cbor));
+    }
+
+    #[test]
+    fn test_parse_eth_signature_type_error() {
+        let eth_signature_cbor = "a201d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d025840d4f0a7bcd95bba1fbb1051885054730e3f47064288575aacc102fbbf6a9a14daa066991e360d3e3406c20c00a40973eff37c7d641e5b351ec4a99bfe86f335f7";
+        let expect_result = "{\"error\":\"type not match\"}";
+
+        assert_eq!(expect_result, parse_eth_signature("sol-signature", eth_signature_cbor));
     }
 
     #[test]
@@ -50,6 +61,6 @@ mod tests {
         let eth_signature_cbor = "a201";
         let expect_result = "{\"error\":\"signature is invalid\"}";
 
-        assert_eq!(expect_result, parse_eth_signature(eth_signature_cbor));
+        assert_eq!(expect_result, parse_eth_signature("eth-signature", eth_signature_cbor));
     }
 }

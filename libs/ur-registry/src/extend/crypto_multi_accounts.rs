@@ -152,7 +152,7 @@ mod tests {
     use crate::crypto_hd_key::CryptoHDKey;
     use crate::crypto_key_path::{CryptoKeyPath, PathComponent};
     use crate::extend::crypto_multi_accounts::CryptoMultiAccounts;
-    use crate::traits::{From, To, UR};
+    use crate::traits::{From, To};
     use hex::FromHex;
 
     #[test]

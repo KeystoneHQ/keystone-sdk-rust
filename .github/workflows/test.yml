@@ -1,0 +1,17 @@
+on: [pull_request]
+
+name: UR Continuous Integration
+
+jobs:
+  UnitTest:
+    name: Unit Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Install nightly toolchain
+        uses: dtolnay/rust-toolchain@nightly
+
+      - name: Run Test
+        run: cargo test

@@ -65,11 +65,11 @@ pub const ETH_SIGNATURE: RegistryType = RegistryType("eth-signature", 402);
 pub const SOL_SIGN_REQUEST: RegistryType = RegistryType("sol-sign-request", 1101);
 pub const SOL_SIGNATURE: RegistryType = RegistryType("sol-signature", 1102);
 // Cosmos
-pub const COSMOS_SIGN_REQUEST: RegistryType = RegistryType("sol-sign-request", 4101);
-pub const COSMOS_SIGNATURE: RegistryType = RegistryType("sol-signature", 4102);
+pub const COSMOS_SIGN_REQUEST: RegistryType = RegistryType("cosmos-sign-request", 4101);
+pub const COSMOS_SIGNATURE: RegistryType = RegistryType("cosmos-signature", 4102);
 // Tron
-pub const TRON_SIGN_REQUEST: RegistryType = RegistryType("tron-sign-request-kt", 5101);
+pub const TRON_SIGN_REQUEST: RegistryType = RegistryType("tron-sign-request", 5101);
 pub const TRON_SIGNATURE: RegistryType = RegistryType("tron-signature", 5102);
 // Aptos
-pub const APTOS_SIGN_REQUEST: RegistryType = RegistryType("tron-sign-request-kt", 6101);
-pub const APTOS_SIGNATURE: RegistryType = RegistryType("tron-signature", 6102);
+pub const APTOS_SIGN_REQUEST: RegistryType = RegistryType("aptos-sign-request", 3101);
+pub const APTOS_SIGNATURE: RegistryType = RegistryType("aptos-signature", 3102);
