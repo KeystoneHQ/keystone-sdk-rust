@@ -25,3 +25,4 @@ pub mod extend;
 pub mod cosmos;
 pub mod tron;
 pub mod aptos;
+pub mod pb;

@@ -12,3 +12,7 @@ hex = { version = "0.4.3", features = ["alloc"], default-features = false }
 bs58 = { version = "0.4.0", features = ['check', "alloc"], default-features = false }
 thiserror = { version = "1.0", package = "thiserror-core", default-features = false }
 
+
+prost = { version = "0.11.8", default-features = false }
+prost-types = { version = "0.11.8", default-features = false }
+compression = { git = "https://github.com/KeystoneHQ/rust-compression" ,  branch = "master", default-features = false, features = ["gzip"] }
