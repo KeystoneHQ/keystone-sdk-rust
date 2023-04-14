@@ -71,7 +71,7 @@ impl<C> minicbor::Encode<C> for CryptoAccount {
                 .map_err(|e| minicbor::encode::Error::message(e.to_string()))?)?;
         e.array(self.output_descriptors.len() as u64)?;
         for output_descriptor in &self.output_descriptors {
-            e.tag(Tag::Unassigned(CryptoOutput::get_registry_type().get_tag()))?;
+            //e.tag(Tag::Unassigned(CryptoOutput::get_registry_type().get_tag()))?;
             CryptoOutput::encode(output_descriptor, e, ctx)?;
         }
         Ok(())
@@ -170,12 +170,12 @@ mod tests {
         let crypto3 = CryptoOutput::new(script_expressions, None, None, Some(multi_key));
 
         let crypto = CryptoAccount::new(master_fingerprint, vec![crypto1, crypto2, crypto3]);
-        assert_eq!("a2011a782308040283d90134d90193d90132a103582102c6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5d90134d90190d90194d90132a103582103fff97bd5755eeea420453a14355235d382f6472f8568a18b2f057a1460297556d90134d90190d90196a201020282d90132a1035821022f01e5e15cca351daff3843fb70f3c2f0a1bdd05e5af888a67784ef3e10a2a01d90132a103582103acd484e2f0c7f65309ad178a9f559abde09796974c57e714c35f110dfc27ccbe",
+        assert_eq!("a2011a782308040283d90193d90132a103582102c6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5d90190d90194d90132a103582103fff97bd5755eeea420453a14355235d382f6472f8568a18b2f057a1460297556d90190d90196a201020282d90132a1035821022f01e5e15cca351daff3843fb70f3c2f0a1bdd05e5af888a67784ef3e10a2a01d90132a103582103acd484e2f0c7f65309ad178a9f559abde09796974c57e714c35f110dfc27ccbe",
                    hex::encode(crypto.to_bytes().unwrap()).to_lowercase());
 
         let ur = ur::encode(&*(crypto.to_bytes().unwrap()), CryptoAccount::get_registry_type().get_type());
 
-        assert_eq!(ur, "ur:crypto-account/oeadcykscnayaaaolstaadeetaadmutaadeyoyaxhdclaoswaalbmwfpwekijndyfefzjtmdrtketphhktmngrlkwsfnospypsasrhhhjonnvwtaadeetaadmhtaadmwtaadeyoyaxhdclaxzmytkgtlkphywyoxcxfeftbbecgmectelfynfldllpisoyludlahknbbhndtkphftaadeetaadmhtaadmtoeadaoaolftaadeyoyaxhdclaodladvwvyhhsgeccapewflrfhrlbsfndlbkcwutahvwpeloleioksglwfvybkdradtaadeyoyaxhdclaxpstylrvowtstynguaspmchlenegonyryvtmsmtmsgshgvdbbsrhebybtztdisfrnuyhneets");
+        assert_eq!(ur, "ur:crypto-account/oeadcykscnayaaaolstaadmutaadeyoyaxhdclaoswaalbmwfpwekijndyfefzjtmdrtketphhktmngrlkwsfnospypsasrhhhjonnvwtaadmhtaadmwtaadeyoyaxhdclaxzmytkgtlkphywyoxcxfeftbbecgmectelfynfldllpisoyludlahknbbhndtkphftaadmhtaadmtoeadaoaolftaadeyoyaxhdclaodladvwvyhhsgeccapewflrfhrlbsfndlbkcwutahvwpeloleioksglwfvybkdradtaadeyoyaxhdclaxpstylrvowtstynguaspmchlenegonyryvtmsmtmsgshgvdbbsrhebybtztdisfrneocegrcl");
     }
 
     #[test]
