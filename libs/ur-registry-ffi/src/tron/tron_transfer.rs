@@ -22,7 +22,9 @@ impl LatestBlock {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Override {
+    #[serde(rename = "tokenShortName")]
     token_short_name: String,
+    #[serde(rename = "tokenFullName")]
     token_full_name: String,
     decimals: Number,
 }
