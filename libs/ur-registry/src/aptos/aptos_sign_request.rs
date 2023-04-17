@@ -50,7 +50,7 @@ pub struct AptosSignRequest {
     request_id: Bytes,
     sign_data: Bytes,
     authentication_key_derivation_paths: Vec<CryptoKeyPath>,
-    accounts: Option<Vec<String>>,
+    accounts: Option<Vec<Bytes>>,
     origin: Option<String>,
     sign_type: SignType,
 }
@@ -76,7 +76,7 @@ impl AptosSignRequest {
         self.authentication_key_derivation_paths = authentication_key_derivation_paths;
     }
 
-    pub fn set_accounts(&mut self, accounts: Vec<String>) {
+    pub fn set_accounts(&mut self, accounts: Vec<Bytes>) {
         self.accounts = Some(accounts)
     }
 
@@ -88,7 +88,7 @@ impl AptosSignRequest {
         request_id: Bytes,
         sign_data: Bytes,
         authentication_key_derivation_paths: Vec<CryptoKeyPath>,
-        accounts: Option<Vec<String>>,
+        accounts: Option<Vec<Bytes>>,
         origin: Option<String>,
         sign_type: SignType,
     ) -> AptosSignRequest {
@@ -113,7 +113,7 @@ impl AptosSignRequest {
     pub fn get_authentication_key_derivation_paths(&self) -> Vec<CryptoKeyPath> {
         self.authentication_key_derivation_paths.clone()
     }
-    pub fn get_accounts(&self) -> Option<Vec<String>> {
+    pub fn get_accounts(&self) -> Option<Vec<Bytes>> {
         self.accounts.clone()
     }
     pub fn get_origin(&self) -> Option<String> {
@@ -158,7 +158,7 @@ impl <C> minicbor::Encode<C> for AptosSignRequest {
             e.int(Int::try_from(ACCOUNTS).map_err(|e| minicbor::encode::Error::message(e.to_string()))?)?
                 .array(accounts.len() as u64)?;
             for addr in accounts {
-                e.str(&addr)?;
+                e.bytes(&addr)?;
             }
         }
         if let Some(origin) = self.get_origin() {
@@ -204,7 +204,7 @@ impl <'b, C> minicbor::Decode<'b, C> for AptosSignRequest {
                     }
                     cbor_array(d, &mut obj.accounts, |_key, obj, d| {
                         match obj {
-                            Some(v) => v.push(d.str()?.to_string()),
+                            Some(v) => v.push(d.bytes()?.to_vec()),
                             None => {}
                         }
                         Ok(())
