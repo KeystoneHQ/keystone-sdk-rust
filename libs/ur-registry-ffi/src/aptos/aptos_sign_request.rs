@@ -36,7 +36,13 @@ export! {
             Err(_) => return json!({"error": "accounts is invalid"}).to_string(),
         }.iter().map(|account| {
             if account.key.is_some() {
-                let key = hex::decode(account.key.clone().unwrap()).unwrap();
+                let key = match hex::decode(account.key.clone().unwrap()) {
+                    Ok(v) => v,
+                    Err(_) => {
+                        is_accounts_err = true;
+                        vec![]
+                    },
+                };
                 account_keys.push(key)
             }
             let xfp = match hex::decode(account.xfp.clone()) {
@@ -147,6 +153,34 @@ mod tests {
                     "path": "m/44'/637'/0'/0'/0'",
                     "xfp": "78230805",
                     "key": "97f95acfb04f84d228dce9bda4ad7e2a5cb324d5efdd6a7f0b959e755ebb3a70"
+                }
+            ]
+            "#;
+        let origin = "aptosWallet";
+
+        let expect_result = "{\"error\":\"accounts is invalid\"}";
+
+        assert_eq!(expect_result, generate_aptos_sign_request(
+            request_id, sign_data, accounts, origin, sign_type
+        ));
+    }
+
+    #[test]
+    fn test_generate_aptos_sign_request_account_error() {
+        let request_id = "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d";
+        let sign_data = "8e53e7b10656816de70824e3016fc1a277e77825e12825dc4f239f418ab2e04e";
+        let sign_type = 1;
+        let accounts = r#"
+            [
+                {
+                    "path": "",
+                    "xfp": "78230804",
+                    "key": "0xaa7420c68c16645775ecf69a5e2fdaa4f89d3293aee0dd280e2d97ad7b879650"
+                },
+                {
+                    "path": "m/44'/637'/0'/0'/0'",
+                    "xfp": "78230805",
+                    "key": "0x97f95acfb04f84d228dce9bda4ad7e2a5cb324d5efdd6a7f0b959e755ebb3a70"
                 }
             ]
             "#;
