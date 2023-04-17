@@ -29,3 +29,7 @@ const char* parse_cosmos_signature(struct ExternError*, const char* ur_type, con
 // Tron
 const char* generate_tron_sign_request(struct ExternError*, const char* request_id, const char* sign_data, const char* path, const char* xfp, const char* token_info, const char* address, const char* origin);
 const char* parse_tron_signature(struct ExternError*, const char* ur_type, const char* cbor_hex);
+
+// Aptos
+const char* generate_aptos_sign_request(struct ExternError*, const char* request_id, const char* sign_data, const char* accounts, const char* origin, const int sign_type);
+const char* parse_aptos_signature(struct ExternError*, const char* ur_type, const char* cbor_hex);
