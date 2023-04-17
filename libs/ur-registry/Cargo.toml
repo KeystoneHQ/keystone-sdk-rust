@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ur = { git = "https://github.com/KeystoneHQ/ur-rs", branch = "release-0.3.0-no-std", default-features = false }
+ur = { git = "https://github.com/KeystoneHQ/ur-rs", tag = "0.3.1", default-features = false }
 minicbor = { version = "0.19", features = ["alloc"] }
 hex = { version = "0.4.3", features = ["alloc"], default-features = false }
 bs58 = { version = "0.4.0", features = ['check', "alloc"], default-features = false }
@@ -15,4 +15,4 @@ thiserror = { version = "1.0", package = "thiserror-core", default-features = fa
 
 prost = { version = "0.11.8", default-features = false }
 prost-types = { version = "0.11.8", default-features = false }
-compression = { git = "https://github.com/KeystoneHQ/rust-compression" ,  branch = "master", default-features = false, features = ["gzip"] }
+compression = { git = "https://github.com/KeystoneHQ/rust-compression", tag = "0.0.1", default-features = false, features = ["gzip"] }
