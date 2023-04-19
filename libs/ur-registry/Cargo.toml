@@ -11,8 +11,12 @@ minicbor = { version = "0.19", features = ["alloc"] }
 hex = { version = "0.4.3", features = ["alloc"], default-features = false }
 bs58 = { version = "0.4.0", features = ['check', "alloc"], default-features = false }
 thiserror = { version = "1.0", package = "thiserror-core", default-features = false }
-
+serde = { version = "1.0", default-features = false, features = ["derive", "alloc"] }
 
 prost = { version = "0.11.8", default-features = false }
 prost-types = { version = "0.11.8", default-features = false }
 compression = { git = "https://github.com/KeystoneHQ/rust-compression", tag = "0.0.1", default-features = false, features = ["gzip"] }
+
+
+[build-dependencies]
+prost-build = { version = "0.11.8" }
