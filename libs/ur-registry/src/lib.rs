@@ -25,5 +25,6 @@ pub mod extend;
 pub mod cosmos;
 pub mod tron;
 pub mod aptos;
+pub mod utxo;
 pub mod pb;
 pub mod bytes;
