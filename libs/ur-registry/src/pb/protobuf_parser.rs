@@ -1,6 +1,7 @@
 use alloc::string::ToString;
 use alloc::vec::Vec;
-use compression::prelude::{Action, DecodeExt, EncodeExt, GZipDecoder, GZipEncoder};
+use core2::io::{Read, Write};
+use libflate::gzip::{Decoder, Encoder};
 use prost::bytes::Bytes;
 use prost::Message;
 use crate::error::URError;
@@ -14,26 +15,19 @@ pub fn serialize_protobuf<T>(data: T) -> Vec<u8> where T: Message + Default {
     data.encode_to_vec()
 }
 
-
 pub fn unzip(bytes: Vec<u8>) -> Result<Vec<u8>, URError> {
-    let decompressed = bytes
-        .iter()
-        .cloned()
-        .decode(&mut GZipDecoder::new())
-        .collect::<Result<Vec<_>, _>>()
-        .map_err(|e| URError::GzipDecodeError(e.to_string()))?;
-    Ok(decompressed)
+    let mut decoder = Decoder::new(&bytes[..]).map_err(|e| URError::GzipDecodeError(e.to_string()))?;
+    let mut buf = Vec::new();
+    Read::read(&mut decoder, &mut buf).map_err(|e| URError::GzipDecodeError(e.to_string()))?;
+    Read::read_to_end(&mut decoder, &mut buf).map_err(|e| URError::GzipDecodeError(e.to_string()))?;
+    Ok(buf)
 }
 
 pub fn zip(bytes: &Vec<u8>) -> Result<Vec<u8>, URError> {
-    let compressed = bytes
-        .iter()
-        .cloned()
-        .encode(&mut GZipEncoder::new(), Action::Finish)
-        .collect::<Result<Vec<_>, _>>()
-        .map_err(|e| URError::GzipEncodeError(e.to_string()))?;
+    let mut encoder = Encoder::new(Vec::new()).unwrap();
+    encoder.write_all(bytes).map_err(|e| URError::GzipEncodeError(e.to_string()))?;
+    let compressed = encoder.finish().into_result().map_err(|e| URError::GzipEncodeError(e.to_string()))?;
     Ok(compressed)
-
 }
 
 #[cfg(test)]
@@ -55,10 +49,10 @@ mod tests {
 
     #[test]
     fn test_gzip() {
-        let hex = "1f8b08000000000000ffe36012e20f2c72ce4f49550828ca2fc94fcecf915acd0814e53037307775753173569ac3c8c5ec1ae221a4629a926a92986891a89b629c66ae6b629e6aac9b649996aa6b69626164686902242d92a4047cf54d4cd4f5cd0cd4f54148df40e1ca8775fd4d061a4256215c5a0615401393528c0c8c2d1ccdcc4c8d2d2d8d0d0c2c934dcd2c0d8d9c934c4c0d0dcd139d80622e16427c8606c8408adbd8ccd2d4c2c8dcd2c4c04c89d5c40c28a6c56060a7f0d50f00e1098c51c4000000";
+        let hex = "1f8b08000000000000034dcc3b0ac2401405503f08a2a092325510410984bcc9bcf93c0b4193808da2900de45b09816061ed06dc803b105c8d0bb1b177ecbc5c6e718adbef58e36313d645e91c9afa5ce7f5c97eb48df615a8388e6438bdb707dd38d95a33519498a63af50a5e290f55c9bd8caad223d4012334ab337bb2f311e7be84b9ffab0fceebfdbc5d61612d93810b17f398150170bd965270220e40b990c4823043c1984a37c6226d8d18fcc71e724942078a10e4b487d298db8295f3d97f01e1098c51c4000000";
         let bytes = Vec::from_hex(hex).unwrap();
         let unzip_data = unzip(bytes.clone()).unwrap();
         let zip_data = zip(&unzip_data).unwrap();
-        assert_eq!(hex, hex::encode(zip_data).to_lowercase())
+        assert_eq!(hex, hex::encode(zip_data).to_lowercase());
     }
 }
