@@ -5,6 +5,7 @@ pub mod bitcoin;
 pub mod cosmos;
 pub mod tron;
 pub mod aptos;
+pub mod keystone;
 mod export;
 mod util;
 

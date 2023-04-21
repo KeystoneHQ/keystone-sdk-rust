@@ -33,3 +33,7 @@ const char* parse_tron_signature(struct ExternError*, const char* ur_type, const
 // Aptos
 const char* generate_aptos_sign_request(struct ExternError*, const char* request_id, const char* sign_data, const char* accounts, const char* origin, const int sign_type);
 const char* parse_aptos_signature(struct ExternError*, const char* ur_type, const char* cbor_hex);
+
+// Keystone
+const char* generate_keystone_sign_request(struct ExternError*, const char* request_id, const int coin_type, const char* sign_data, const char* xfp, const char* origin, const int64_t timestamp);
+const char* parse_keystone_sign_result(struct ExternError*, const char* ur_type, const char* cbor_hex);
