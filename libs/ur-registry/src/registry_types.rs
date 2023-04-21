@@ -82,5 +82,5 @@ pub const TRON_SIGNATURE: RegistryType = RegistryType("tron-signature", Some(510
 pub const APTOS_SIGN_REQUEST: RegistryType = RegistryType("aptos-sign-request", Some(3101));
 pub const APTOS_SIGNATURE: RegistryType = RegistryType("aptos-signature", Some(3102));
 // UTXO
-pub const UTXO_SIGN_REQUEST: RegistryType = RegistryType("utxo-sign-request", Some(6101));
-pub const UTXO_SIGN_RESULT: RegistryType = RegistryType("utxo-sign-result", Some(6102));
+pub const KEYSTONE_SIGN_REQUEST: RegistryType = RegistryType("keystone-sign-request", Some(6101));
+pub const KEYSTONE_SIGN_RESULT: RegistryType = RegistryType("keystone-sign-result", Some(6102));

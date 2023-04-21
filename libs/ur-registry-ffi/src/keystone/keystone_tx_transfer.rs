@@ -3,7 +3,7 @@ use ur_registry::pb::protobuf_parser::{serialize_protobuf, zip};
 use ur_registry::pb::protoc::{Base, Payload, payload, SignTransaction, BchTx, DashTx, LtcTx};
 use ur_registry::pb::protoc::payload::Type::SignTx;
 use ur_registry::pb::protoc::sign_transaction::Transaction;
-use crate::utxo::supported_coins::SupportedChains;
+use crate::keystone::supported_coins::SupportedChains;
 
 pub fn construct_tx(coin_type: SupportedChains, request_id: &str, sign_data: &str, xfp: &str, timestamp: i64) -> Result<Vec<u8>, String> {
     let transaction = match adapt_transaction(coin_type.clone(), sign_data) {
