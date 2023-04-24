@@ -5,6 +5,7 @@ use crate::error::{URError, URResult};
 pub enum URType {
     CryptoPsbt(String),
     CryptoAccount(String),
+    EthSignRequest(String),
     Bytes(String)
 }
 
@@ -19,6 +20,9 @@ impl URType {
             }
             "bytes" => {
                 Ok(URType::Bytes(type_str.to_string()))
+            }
+            "eth-sign-request" => {
+                Ok(URType::EthSignRequest(type_str.to_string()))
             }
             _ => {
                 Err(URError::NotSupportURTypeError(type_str.to_string()))
@@ -37,7 +41,10 @@ impl URType {
             URType::Bytes(type_str) => {
                 type_str.to_string()
             }
-        }
+            URType::EthSignRequest(type_str) => {
+                type_str.to_string()
+            }
+	}
     }
 }
 
