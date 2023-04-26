@@ -28,3 +28,4 @@ pub mod aptos;
 pub mod keystone;
 pub mod pb;
 pub mod bytes;
+pub mod near;

@@ -79,6 +79,9 @@ pub const ETH_SIGNATURE: RegistryType = RegistryType("eth-signature", Some(402))
 // SOL
 pub const SOL_SIGN_REQUEST: RegistryType = RegistryType("sol-sign-request", Some(1101));
 pub const SOL_SIGNATURE: RegistryType = RegistryType("sol-signature", Some(1102));
+// Near
+pub const NEAR_SIGN_REQUEST: RegistryType = RegistryType("near-sign-request", Some(2101));
+pub const NEAR_SIGNATURE: RegistryType = RegistryType("near-signature", Some(2102));
 // Cosmos
 pub const COSMOS_SIGN_REQUEST: RegistryType = RegistryType("cosmos-sign-request", Some(4101));
 pub const COSMOS_SIGNATURE: RegistryType = RegistryType("cosmos-signature", Some(4102));
