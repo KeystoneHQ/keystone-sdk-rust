@@ -39,7 +39,7 @@ export! {
                     return json!({"error": "sign data is invalid"}).to_string()
                 }
                 let mut is_decode_error = false;
-                let datas = v.iter().map(|s| {
+                let data_list = v.iter().map(|s| {
                     match hex::decode(s) {
                         Ok(bytes) => bytes,
                         Err(_) => {
@@ -51,7 +51,7 @@ export! {
                 if is_decode_error {
                     return json!({"error": "sign data is invalid"}).to_string()
                 }
-                datas
+                data_list
             },
             Err(_) => return json!({"error": "sign data is invalid"}).to_string(),
         };
