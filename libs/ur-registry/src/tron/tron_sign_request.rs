@@ -186,7 +186,7 @@ mod tests {
     use crate::traits::{From as FromCbor, To};
     use hex::FromHex;
     use crate::crypto_key_path::{CryptoKeyPath, PathComponent};
-    use crate::tron::tron_sign_request::{TronSignRequest};
+    use crate::tron::tron_sign_request::TronSignRequest;
 
     #[test]
     fn test_encode() {
