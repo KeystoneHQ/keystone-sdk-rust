@@ -40,4 +40,4 @@ const char* parse_keystone_sign_result(struct ExternError*, const char* ur_type,
 
 // Near
 const char* generate_near_sign_request(struct ExternError*, const char* request_id, const char* sign_data, const char* path, const char* xfp, const char* account, const char* origin);
-const char* parse_near_sign_result(struct ExternError*, const char* ur_type, const char* cbor_hex);
+const char* parse_near_signature(struct ExternError*, const char* ur_type, const char* cbor_hex);
