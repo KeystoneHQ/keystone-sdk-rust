@@ -11,7 +11,9 @@ use crate::export;
 use serde::{Serialize, Deserialize};
 use secp256k1::{Parity, XOnlyPublicKey};
 use ur_registry::registry_types::{CRYPTO_ACCOUNT, CRYPTO_HDKEY};
-use bitcoin::bip32;
+use bip32::ExtendedPublicKey;
+use bip32::ChildNumber;
+use bip32::secp256k1::PublicKey;
 
 #[derive(Default, Clone, Debug, Serialize, Deserialize)]
 pub struct HDKey {
@@ -118,11 +120,11 @@ export! {
         xpub: &str,
         path: &str
     ) -> String {
-        let derived_public_key = || -> Result<bitcoin::secp256k1::PublicKey, Error> {
-            let extended_pubkey = bip32::ExtendedPubKey::from_str(xpub).map_err(|_| format_err!(""))?;
-            let derivation_path = bip32::DerivationPath::from_str(path).map_err(|_| format_err!(""))?;
-            let derived_key = extended_pubkey.derive_pub(&bitcoin::secp256k1::Secp256k1::new(), &derivation_path).map_err(|_| format_err!(""))?;
-            Ok(derived_key.public_key)
+        let derived_public_key = || -> Result<&PublicKey, Error> {
+            let extended_pubkey = ExtendedPublicKey::from_str(xpub).map_err(|_| format_err!(""))?;
+            let child_number = ChildNumber::from_str(path).map_err(|_| format_err!(""))?;
+            let derived_key = extended_pubkey.derive_child(child_number).map_err(|_| format_err!(""))?;
+            Ok(derived_key.public_key())
         };
         match derived_public_key() {
             Ok(derived_public_key) => derived_public_key.to_string(),
