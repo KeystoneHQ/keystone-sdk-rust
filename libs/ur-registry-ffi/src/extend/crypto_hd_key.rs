@@ -11,10 +11,7 @@ use crate::export;
 use serde::{Serialize, Deserialize};
 use secp256k1::{Parity, XOnlyPublicKey};
 use ur_registry::registry_types::{CRYPTO_ACCOUNT, CRYPTO_HDKEY};
-use bip32::{DerivationPath, ExtendedPublicKey, XPub};
-use bip32::ChildNumber;
-use bip32::secp256k1::ecdsa::VerifyingKey;
-use bip32::secp256k1::PublicKey;
+use bip32::{DerivationPath, XPub};
 
 #[derive(Default, Clone, Debug, Serialize, Deserialize)]
 pub struct HDKey {
