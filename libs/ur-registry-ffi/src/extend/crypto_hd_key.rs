@@ -11,8 +11,9 @@ use crate::export;
 use serde::{Serialize, Deserialize};
 use secp256k1::{Parity, XOnlyPublicKey};
 use ur_registry::registry_types::{CRYPTO_ACCOUNT, CRYPTO_HDKEY};
-use bip32::ExtendedPublicKey;
+use bip32::{DerivationPath, ExtendedPublicKey, XPub};
 use bip32::ChildNumber;
+use bip32::secp256k1::ecdsa::VerifyingKey;
 use bip32::secp256k1::PublicKey;
 
 #[derive(Default, Clone, Debug, Serialize, Deserialize)]
@@ -120,14 +121,17 @@ export! {
         xpub: &str,
         path: &str
     ) -> String {
-        let derived_public_key = || -> Result<&PublicKey, Error> {
-            let extended_pubkey = ExtendedPublicKey::from_str(xpub).map_err(|_| format_err!(""))?;
-            let child_number = ChildNumber::from_str(path).map_err(|_| format_err!(""))?;
-            let derived_key = extended_pubkey.derive_child(child_number).map_err(|_| format_err!(""))?;
-            Ok(derived_key.public_key())
+        let derived_public_key = || -> Result<bip32::PublicKeyBytes, Error> {
+            let extended_pubkey = XPub::from_str(xpub).map_err(|_| format_err!(""))?;
+            let derivation_path = DerivationPath::from_str(path).map_err(|_| format_err!(""))?;
+            let derived_key = derivation_path.iter().fold(Ok(extended_pubkey), |acc: Result<XPub, Error>, cur| {
+                acc.and_then(|v| v.derive_child(cur).map_err(|_|format_err!("")))
+            })?;
+            let pubkey_bytes = derived_key.to_bytes();
+            Ok(pubkey_bytes)
         };
         match derived_public_key() {
-            Ok(derived_public_key) => derived_public_key.to_string(),
+            Ok(derived_public_key) => hex::encode(derived_public_key),
             Err(_) => json!({"error": "can not derive public key"}).to_string(),
         }
     }
@@ -136,6 +140,7 @@ export! {
 #[cfg(test)]
 mod tests {
     use super::*;
+
     #[test]
     fn test_parse_extended_public_key() {
         let hd_key_cbor = "A902F4035821032F547FD525B6D83CC2C44F939CC1425FA1E98D97D26B00F9E2D04952933C5128045820B92B17B393612FC8E945E5C5389439CA0C0A28C3076C060B15C3F9F6523A9D1905D90131A201183C020006D90130A30186182CF5183CF500F5021A52006EA0030307D90130A2018400F480F40300081AEA156CD409684B657973746F6E650A706163636F756E742E7374616E64617264";
