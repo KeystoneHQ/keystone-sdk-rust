@@ -82,12 +82,16 @@ pub const SOL_SIGNATURE: RegistryType = RegistryType("sol-signature", Some(1102)
 // Near
 pub const NEAR_SIGN_REQUEST: RegistryType = RegistryType("near-sign-request", Some(2101));
 pub const NEAR_SIGNATURE: RegistryType = RegistryType("near-signature", Some(2102));
+// Arweave
+pub const ARWEAVE_CRYPTO_ACCOUNT: RegistryType = RegistryType("arweave-crypto-account", Some(5101));
+pub const ARWEAVE_SIGN_REQUEST: RegistryType = RegistryType("arweave-sign-request", Some(5102));
+pub const ARWEAVE_SIGNATURE: RegistryType = RegistryType("arweave-signature", Some(5103));
 // Cosmos
 pub const COSMOS_SIGN_REQUEST: RegistryType = RegistryType("cosmos-sign-request", Some(4101));
 pub const COSMOS_SIGNATURE: RegistryType = RegistryType("cosmos-signature", Some(4102));
 // Tron
-pub const TRON_SIGN_REQUEST: RegistryType = RegistryType("tron-sign-request", Some(5101));
-pub const TRON_SIGNATURE: RegistryType = RegistryType("tron-signature", Some(5102));
+pub const TRON_SIGN_REQUEST: RegistryType = RegistryType("tron-sign-request", Some(5201));
+pub const TRON_SIGNATURE: RegistryType = RegistryType("tron-signature", Some(5202));
 // Aptos
 pub const APTOS_SIGN_REQUEST: RegistryType = RegistryType("aptos-sign-request", Some(3101));
 pub const APTOS_SIGNATURE: RegistryType = RegistryType("aptos-signature", Some(3102));

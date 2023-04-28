@@ -7,6 +7,7 @@ pub mod tron;
 pub mod aptos;
 pub mod keystone;
 pub mod near;
+pub mod arweave;
 mod export;
 mod util;
 
