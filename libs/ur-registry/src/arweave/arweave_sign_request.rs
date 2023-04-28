@@ -23,6 +23,7 @@ const ACCOUNT: u8 = 7;
 pub enum SignType {
     Transaction = 1,
     DataItem = 2,
+    Message = 3
 }
 
 impl Default for SignType {
@@ -36,8 +37,34 @@ impl SignType {
         match i {
             1 => Ok(SignType::Transaction),
             2 => Ok(SignType::DataItem),
+            3 => Ok(SignType::Message),
             x => Err(format!(
-                "invalid value for sign_type in arweave-sign-request, expected (1, 2), received {:?}",
+                "invalid value for sign_type in arweave-sign-request, expected (1, 2, 3), received {:?}",
+                x
+            )),
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum SaltLen {
+    Zero = 0,
+    Digest = 32
+}
+
+impl Default for SaltLen {
+    fn default() -> Self {
+        SaltLen::Zero
+    }
+}
+
+impl SaltLen {
+    pub fn from_u32(i: u32) -> Result<Self, String> {
+        match i {
+            0 => Ok(SaltLen::Zero),
+            32 => Ok(SaltLen::Digest),
+            x => Err(format!(
+                "invalid value for salt_len in arweave-sign-request, expected (0, 32), received {:?}",
                 x
             )),
         }
@@ -50,7 +77,7 @@ pub struct ArweaveSignRequest {
     request_id: Option<Bytes>,
     sign_data: Bytes,
     sign_type: SignType,
-    salt_len: u32,
+    salt_len: SaltLen,
     account: Option<Bytes>,
     origin: Option<String>,
 }
@@ -76,7 +103,7 @@ impl ArweaveSignRequest {
         self.sign_type = sign_type;
     }
 
-    pub fn set_salt_len(&mut self, salt_len: u32) {
+    pub fn set_salt_len(&mut self, salt_len: SaltLen) {
         self.salt_len = salt_len;
     }
 
@@ -93,7 +120,7 @@ impl ArweaveSignRequest {
         request_id: Option<Bytes>,
         sign_data: Bytes,
         sign_type: SignType,
-        salt_len: u32,
+        salt_len: SaltLen,
         account: Option<Bytes>,
         origin: Option<String>,
     ) -> ArweaveSignRequest {
@@ -117,7 +144,7 @@ impl ArweaveSignRequest {
     pub fn get_sign_type(&self) -> SignType {
         self.sign_type.clone()
     }
-    pub fn get_salt_len(&self) -> u32 {
+    pub fn get_salt_len(&self) -> SaltLen {
         self.salt_len.clone()
     }
     pub fn get_account(&self) -> Option<Bytes> {
@@ -172,7 +199,7 @@ impl<C> minicbor::Encode<C> for ArweaveSignRequest {
             .int(Int::from(self.sign_type.clone() as u8))?;
 
         e.int(Int::from(SALT_LEN))?
-            .u32(self.salt_len)?;
+            .u32(self.salt_len.clone() as u32)?;
 
         if let Some(account) = &self.account {
             e.int(Int::from(ACCOUNT))?
@@ -213,7 +240,10 @@ impl<'b, C> minicbor::Decode<'b, C> for ArweaveSignRequest {
                             .map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
                 }
                 SALT_LEN => {
-                    obj.salt_len = d.u32()?;
+                    obj.salt_len =
+                        SaltLen::from_u32(u32::try_from(d.int()?)
+                            .map_err(|e| minicbor::decode::Error::message(e.to_string()))?)
+                            .map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
                 }
                 ACCOUNT => {
                     obj.account = Some(d.bytes()?.to_vec());
@@ -247,7 +277,7 @@ mod tests {
     use alloc::string::ToString;
     use alloc::vec::Vec;
     use hex::FromHex;
-    use crate::arweave::arweave_sign_request::{ArweaveSignRequest, SignType};
+    use crate::arweave::arweave_sign_request::{ArweaveSignRequest, SaltLen, SignType};
     use crate::traits::{To, From};
 
     #[test]
@@ -256,7 +286,7 @@ mod tests {
         let request_id: Option<Vec<u8>> = Some([155, 29, 235,  77,  59, 125, 75, 173, 155, 221, 43, 13, 123,  61, 203, 109].to_vec());
         let sign_data = hex::decode("af78f85b29d88a61ee49d36e84139ec8511c558f14612413f1503b8e6959adca").unwrap();
         let sign_type = SignType::Transaction;
-        let salt_len = 0;
+        let salt_len = SaltLen::Zero;
         let origin = Some("arconnect".to_string());
 
         let sign_request = ArweaveSignRequest::new(
@@ -284,7 +314,7 @@ mod tests {
         assert_eq!(request_id, sign_request.get_request_id());
         assert_eq!(sign_data, sign_request.get_sign_data());
         assert_eq!(SignType::Transaction, sign_request.get_sign_type());
-        assert_eq!(0, sign_request.get_salt_len());
+        assert_eq!(SaltLen::Zero, sign_request.get_salt_len());
         assert_eq!(Some("arconnect".to_string()), sign_request.get_origin());
     }
 }
