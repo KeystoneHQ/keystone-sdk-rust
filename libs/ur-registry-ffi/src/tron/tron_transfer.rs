@@ -3,31 +3,12 @@ use ethabi::{
 };
 use protobuf::Message;
 use serde::{Serialize, Deserialize};
-use serde_json::{Number, json};
+use serde_json::Number;
+use ur_registry::pb::protoc::{TronTx, LatestBlock, Override};
 
 use crate::tron::types::contract;
 
 use super::types::tron::transaction;
-
-#[derive(Serialize, Deserialize)]
-pub struct LatestBlock {
-    hash: String,
-    number: Number,
-    timestamp: Number,
-}
-
-impl LatestBlock {
-    pub fn new(hash: String, number: Number, timestamp: Number) -> Self { Self { hash, number, timestamp } }
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct Override {
-    #[serde(rename = "tokenShortName")]
-    token_short_name: String,
-    #[serde(rename = "tokenFullName")]
-    token_full_name: String,
-    decimals: Number,
-}
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TokenInfo {
@@ -36,33 +17,11 @@ pub struct TokenInfo {
     decimals: Number,
 }
 
-impl Override {
-    pub fn new(token_short_name: String, token_full_name: String, decimals: Number) -> Self { Self { token_short_name, token_full_name, decimals } }
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct TronTransfer {
-    from: String,
-    to: String,
-    value: String,
-    fee: Number,
-    #[serde(rename = "latestBlock")]
-    latest_block: LatestBlock,
-    token: Option<String>,
-    #[serde(rename = "contractAddress")]
-    contract_address: Option<String>,
-    r#override: Option<Override>,
-}
-
-impl TronTransfer {
-    pub fn new(from: String, to: String, value: String, fee: Number, latest_block: LatestBlock, token: Option<String>, contract_address: Option<String>, r#override: Option<Override>) -> Self { Self { from, to, value, fee, latest_block, token, contract_address, r#override } }
-}
-
 fn format_address(address_bytes: Vec<u8>) -> String {
     bs58::encode(address_bytes).with_check().into_string()
 }
 
-pub fn raw_to_json(sign_data_bytes: Vec<u8>, token_info: &str) -> Result<Vec<u8>, &str> {
+pub fn raw_to_tx(sign_data_bytes: Vec<u8>, token_info: &str) -> Result<TronTx, &str> {
     let raw_data = match transaction::Raw::parse_from_bytes(&sign_data_bytes) {
         Ok(v) => v,
         Err(_) => {
@@ -78,7 +37,7 @@ pub fn raw_to_json(sign_data_bytes: Vec<u8>, token_info: &str) -> Result<Vec<u8>
         Some(Override {
             token_full_name: info.name,
             token_short_name: info.symbol,
-            decimals: info.decimals
+            decimals: info.decimals.as_i64().unwrap() as i32
         })
     };
 
@@ -86,28 +45,30 @@ pub fn raw_to_json(sign_data_bytes: Vec<u8>, token_info: &str) -> Result<Vec<u8>
     ref_block_hash.extend_from_slice(&raw_data.ref_block_hash);
     ref_block_hash.extend_from_slice(&[0; 16]);
 
+    let fee = 990000;
+
     match raw_data.contract[0].type_.value() {
         // TransferContract
         1 => {
             let contract = contract::TransferContract::parse_from_bytes(&raw_data.contract[0].parameter.get_or_default().value);
             match contract {
                 Ok(v) => {
-                    let transfer = TronTransfer::new(
-                        format_address(v.owner_address),
-                        format_address(v.to_address),
-                        v.amount.to_string(),
-                        raw_data.fee_limit.into(),
-                        LatestBlock::new(
-                            hex::encode(ref_block_hash),
-                            u16::from_be_bytes([raw_data.ref_block_bytes[0], raw_data.ref_block_bytes[1]]).into(),
-                            (raw_data.expiration - 600 * 5 * 1000).into()
-                        ),
-                        Some("TRX".to_string()),
-                        None,
-                        override_info
-                    );
-                    let json = json!(transfer).to_string();
-                    Ok(json.as_bytes().to_vec())
+                    let tx = TronTx {
+                        token: "TRX".to_string(),
+                        contract_address: "".to_string(),
+                        from: format_address(v.owner_address),
+                        to: format_address(v.to_address),
+                        memo: "".to_string(),
+                        value: v.amount.to_string(),
+                        latest_block: Some(LatestBlock {
+                            hash: hex::encode(ref_block_hash),
+                            number: u16::from_be_bytes([raw_data.ref_block_bytes[0], raw_data.ref_block_bytes[1]]).into(),
+                            timestamp: (raw_data.expiration - 600 * 5 * 1000).into(),
+                        }),
+                        r#override: override_info,
+                        fee,
+                    };
+                    Ok(tx)
                 },
                 Err(_) => {
                     return Err("sign data is invalid");
@@ -119,22 +80,22 @@ pub fn raw_to_json(sign_data_bytes: Vec<u8>, token_info: &str) -> Result<Vec<u8>
             let contract = contract::TransferAssetContract::parse_from_bytes(&raw_data.contract[0].parameter.get_or_default().value);
             match contract {
                 Ok(v) => {
-                    let transfer = TronTransfer::new(
-                        format_address(v.owner_address),
-                        format_address(v.to_address),
-                        v.amount.to_string(),
-                        raw_data.fee_limit.into(),
-                        LatestBlock::new(
-                            hex::encode(ref_block_hash),
-                            u16::from_be_bytes([raw_data.ref_block_bytes[0], raw_data.ref_block_bytes[1]]).into(),
-                            (raw_data.expiration - 600 * 5 * 1000).into()
-                        ),
-                        Some(String::from_utf8(v.asset_name).unwrap()),
-                        None,
-                        override_info
-                    );
-                    let json = json!(transfer).to_string();
-                    Ok(json.as_bytes().to_vec())
+                    let tx = TronTx {
+                        from: format_address(v.owner_address),
+                        to: format_address(v.to_address),
+                        value: v.amount.to_string(),
+                        fee,
+                        latest_block: Some(LatestBlock {
+                            hash: hex::encode(ref_block_hash),
+                            number: u16::from_be_bytes([raw_data.ref_block_bytes[0], raw_data.ref_block_bytes[1]]).into(),
+                            timestamp: (raw_data.expiration - 600 * 5 * 1000).into()
+                        }),
+                        token: String::from_utf8(v.asset_name).unwrap(),
+                        contract_address: "".to_string(),
+                        memo: "".to_string(),
+                        r#override: override_info
+                    };
+                    Ok(tx)
                 },
                 Err(_) => {
                     return Err("sign data is invalid");
@@ -173,22 +134,22 @@ pub fn raw_to_json(sign_data_bytes: Vec<u8>, token_info: &str) -> Result<Vec<u8>
                     to_address_bytes.insert(0, 65);
                     let to_address = format_address(to_address_bytes);
                     let value = inputs[1].clone().into_uint().unwrap_or_default().to_string();
-                    let transfer = TronTransfer::new(
-                        format_address(v.owner_address),
-                        to_address,
+                    let tx = TronTx {
+                        token: "".to_string(),
+                        contract_address: format_address(v.contract_address),
+                        from: format_address(v.owner_address),
+                        to: to_address,
+                        memo: "".to_string(),
                         value,
-                        raw_data.fee_limit.into(),
-                        LatestBlock::new(
-                            hex::encode(ref_block_hash),
-                            u16::from_be_bytes([raw_data.ref_block_bytes[0], raw_data.ref_block_bytes[1]]).into(),
-                            raw_data.timestamp.into()
-                        ),
-                        None,
-                        Some(format_address(v.contract_address)),
-                        override_info
-                    );
-                    let json = json!(transfer).to_string();
-                    Ok(json.as_bytes().to_vec())
+                        latest_block: Some(LatestBlock {
+                            hash: hex::encode(ref_block_hash),
+                            number: u16::from_be_bytes([raw_data.ref_block_bytes[0], raw_data.ref_block_bytes[1]]).into(),
+                            timestamp: raw_data.timestamp.into(),
+                        }),
+                        r#override: override_info,
+                        fee,
+                    };
+                    Ok(tx)
                 },
                 Err(_) => {
                     return Err("sign data is invalid");
