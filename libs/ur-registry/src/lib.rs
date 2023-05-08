@@ -23,7 +23,6 @@ pub mod solana;
 pub mod ethereum;
 pub mod extend;
 pub mod cosmos;
-pub mod tron;
 pub mod aptos;
 pub mod keystone;
 pub mod pb;
