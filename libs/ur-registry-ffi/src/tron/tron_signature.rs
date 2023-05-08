@@ -78,6 +78,6 @@ mod tests {
         let tron_signature_cbor = "a201";
         let expect_result = "{\"error\":\"signature is invalid\"}";
 
-        assert_eq!(expect_result, parse_tron_signature("tron-signature", tron_signature_cbor));
+        assert_eq!(expect_result, parse_tron_signature("keystone-sign-result", tron_signature_cbor));
     }
 }
