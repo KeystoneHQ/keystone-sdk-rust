@@ -27,7 +27,7 @@ const char* generate_cosmos_sign_request(struct ExternError*, const char* reques
 const char* parse_cosmos_signature(struct ExternError*, const char* ur_type, const char* cbor_hex);
 
 // Tron
-const char* generate_tron_sign_request(struct ExternError*, const char* request_id, const char* sign_data, const char* path, const char* xfp, const char* token_info, const char* address, const char* origin);
+const char* generate_tron_sign_request(struct ExternError*, const char* request_id, const char* sign_data, const char* path, const char* xfp, const char* token_info, const char* origin, const int64_t timestamp);
 const char* parse_tron_signature(struct ExternError*, const char* ur_type, const char* cbor_hex);
 
 // Aptos
