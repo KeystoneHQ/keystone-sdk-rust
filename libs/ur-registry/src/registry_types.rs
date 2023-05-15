@@ -98,3 +98,8 @@ pub const APTOS_SIGNATURE: RegistryType = RegistryType("aptos-signature", Some(3
 // UTXO
 pub const KEYSTONE_SIGN_REQUEST: RegistryType = RegistryType("keystone-sign-request", Some(6101));
 pub const KEYSTONE_SIGN_RESULT: RegistryType = RegistryType("keystone-sign-result", Some(6102));
+// CARDANO
+pub const CARDANO_UTXO: RegistryType = RegistryType("cardano-utxo", Some(2201));
+pub const CARDANO_SIGN_REQUEST: RegistryType = RegistryType("cardano-sign-request", Some(2202));
+pub const CARDANO_SIGNATURE: RegistryType = RegistryType("cardano-signature", Some(2203));
+pub const CARDANO_CERT_KEY: RegistryType = RegistryType("cardano-cert-key", Some(2204));
