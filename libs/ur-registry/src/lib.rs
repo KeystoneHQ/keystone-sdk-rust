@@ -30,3 +30,21 @@ pub mod bytes;
 pub mod near;
 pub mod arweave;
 pub mod cardano;
+mod macros;
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    extern crate std;
+
+    use std::println;
+    use std::string::String;
+    use std::vec::Vec;
+    use crate::{impl_template_struct};
+    #[test]
+    fn test() {
+        impl_template_struct!(What {a: String, b: u32, c: Vec::<u8>});
+        let x = What::default();
+        x.get_a();
+    }
+}

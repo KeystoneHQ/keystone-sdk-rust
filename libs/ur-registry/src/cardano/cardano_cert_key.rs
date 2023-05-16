@@ -4,9 +4,13 @@ use core::convert::From;
 use minicbor::data::{Int, Tag};
 use minicbor::encode::{Error, Write};
 use minicbor::{Decoder, Encoder};
+use crate::cardano::cardano_utxo::CardanoUTXO;
 use crate::cbor::cbor_map;
 use crate::crypto_key_path::CryptoKeyPath;
 use crate::error::{URError, URResult};
+use alloc::format;
+use alloc::string::String;
+use crate::{impl_from_into_cbor_bytes, impl_ur_try_from_cbor_bytes, impl_ur_try_into_cbor_bytes};
 use crate::registry_types::CRYPTO_KEYPATH;
 use crate::traits::{To, From as FromCbor};
 use crate::types::Bytes;
@@ -94,3 +98,5 @@ impl FromCbor<CardanoCertKey> for CardanoCertKey {
         minicbor::decode(&bytes).map_err(|e| URError::CborDecodeError(e.to_string()))
     }
 }
+
+impl_from_into_cbor_bytes!(CardanoCertKey);
