@@ -59,8 +59,8 @@ impl<C> minicbor::Encode<C> for SolSignature {
         _ctx: &mut C,
     ) -> Result<(), minicbor::encode::Error<W::Error>> {
         let mut size = 1;
-        if let Some(_) = &self.request_id {
-            size = size + 1;
+        if self.request_id.is_some() {
+            size += 1;
         }
         e.map(size)?;
         if let Some(request_id) = &self.request_id {

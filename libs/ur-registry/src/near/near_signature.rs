@@ -59,8 +59,8 @@ impl<C> minicbor::Encode<C> for NearSignature {
         _ctx: &mut C,
     ) -> Result<(), minicbor::encode::Error<W::Error>> {
         let mut size = 1;
-        if let Some(_) = &self.request_id {
-            size = size + 1;
+        if self.request_id.is_some() {
+            size += 1;
         }
         e.map(size)?;
         if let Some(request_id) = &self.request_id {
@@ -72,7 +72,7 @@ impl<C> minicbor::Encode<C> for NearSignature {
         let len = self.signature.len().try_into().unwrap();
         e.array(len)?;
         for ele in &self.signature {
-            e.bytes(&ele)?;
+            e.bytes(ele)?;
         }
         Ok(())
     }

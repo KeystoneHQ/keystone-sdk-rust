@@ -49,7 +49,7 @@ impl ArweaveCryptoAccount {
         }
     }
     pub fn get_master_fingerprint(&self) -> Fingerprint {
-        self.master_fingerprint.clone()
+        self.master_fingerprint
     }
     pub fn get_key_data(&self) -> Bytes {
         self.key_data.clone()
@@ -61,7 +61,7 @@ impl ArweaveCryptoAccount {
     fn get_map_size(&self) -> u64 {
         let mut size = 2;
         if self.device.is_some() {
-            size = size + 1;
+            size += 1;
         }
         size
     }

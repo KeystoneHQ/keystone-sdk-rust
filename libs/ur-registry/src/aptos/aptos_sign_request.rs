@@ -18,17 +18,15 @@ const ORIGIN: u8 = 5;
 const SIGN_TYPE: u8 = 6;
 
 #[derive(Clone, Debug)]
+#[derive(Default)]
 pub enum SignType {
+    #[default]
     Single = 1,
     Multi = 2,
     Message = 3,
 }
 
-impl Default for SignType {
-    fn default() -> Self {
-        SignType::Single
-    }
-}
+
 
 impl SignType {
     pub fn from_u32(i: u32) -> Result<Self, String> {
@@ -156,7 +154,7 @@ impl<C> minicbor::Encode<C> for AptosSignRequest {
         .bytes(&self.get_sign_data())?;
 
         let authentication_key_derivation_paths = self.get_authentication_key_derivation_paths();
-        if authentication_key_derivation_paths.len() == 0 {
+        if authentication_key_derivation_paths.is_empty() {
             return Err(minicbor::encode::Error::message(
                 "authentication key derivation paths is invalid",
             ));
@@ -255,7 +253,7 @@ impl<'b, C> minicbor::Decode<'b, C> for AptosSignRequest {
                 }
                 SIGN_TYPE => {
                     obj.sign_type = SignType::from_u32(d.u32()?)
-                        .map_err(|err| minicbor::decode::Error::message(err))?;
+                        .map_err(minicbor::decode::Error::message)?;
                 }
                 _ => {}
             }

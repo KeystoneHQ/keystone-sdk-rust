@@ -157,7 +157,7 @@ mod tests {
         );
 
         let ur = ur::encode(
-            &*(crypto.to_bytes().unwrap()),
+            &(crypto.to_bytes().unwrap()),
             CryptoOutput::get_registry_type().get_type(),
         );
 

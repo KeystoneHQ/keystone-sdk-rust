@@ -84,13 +84,13 @@ impl NearSignRequest {
     fn get_map_size(&self) -> u64 {
         let mut size = 2;
         if self.request_id.is_some() {
-            size = size + 1;
+            size += 1;
         }
         if self.account.is_some() {
-            size = size + 1;
+            size += 1;
         }
         if self.origin.is_some() {
-            size = size + 1;
+            size += 1;
         }
         size
     }
@@ -120,7 +120,7 @@ impl<C> minicbor::Encode<C> for NearSignRequest {
         let sign_data_len = self.sign_data.len().try_into().unwrap();
         e.array(sign_data_len)?;
         for ele in &self.sign_data {
-            e.bytes(&ele)?;
+            e.bytes(ele)?;
         }
 
         e.int(Int::from(DERIVATION_PATH))?;

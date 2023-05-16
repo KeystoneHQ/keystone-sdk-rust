@@ -45,7 +45,7 @@ pub fn get_type(part: &String) -> URResult<URType> {
     let (type_, _) = strip_scheme
         .split_once('/')
         .ok_or(URError::TypeUnspecified)?;
-    Ok(URType::from(type_)?)
+    URType::from(type_)
 }
 
 pub struct KeystoneURDecoder {

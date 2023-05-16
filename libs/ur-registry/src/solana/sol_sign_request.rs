@@ -19,16 +19,14 @@ const ORIGIN: u8 = 5;
 const SIGN_TYPE: u8 = 6;
 
 #[derive(Clone, Debug, PartialEq)]
+#[derive(Default)]
 pub enum SignType {
+    #[default]
     Transaction = 1,
     Message,
 }
 
-impl Default for SignType {
-    fn default() -> Self {
-        SignType::Transaction
-    }
-}
+
 
 impl SignType {
     pub fn from_u32(i: u32) -> Result<Self, String> {
@@ -120,14 +118,14 @@ impl SolSignRequest {
 
     fn get_map_size(&self) -> u64 {
         let mut size = 3;
-        if let Some(_) = self.request_id {
-            size = size + 1;
+        if self.request_id.is_some() {
+            size += 1;
         }
-        if let Some(_) = self.address {
-            size = size + 1;
+        if self.address.is_some() {
+            size += 1;
         }
-        if let Some(_) = self.origin {
-            size = size + 1;
+        if self.origin.is_some() {
+            size += 1;
         }
         size
     }
@@ -203,7 +201,7 @@ impl<'b, C> minicbor::Decode<'b, C> for SolSignRequest {
                         u32::try_from(d.int()?)
                             .map_err(|e| minicbor::decode::Error::message(e.to_string()))?,
                     )
-                    .map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
+                    .map_err(minicbor::decode::Error::message)?;
                 }
                 _ => {}
             }

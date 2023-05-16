@@ -46,17 +46,11 @@ impl CryptoECKey {
     }
 
     pub fn get_curve(&self) -> i128 {
-        match self.curve {
-            Some(x) => x,
-            None => 0,
-        }
+        self.curve.unwrap_or(0)
     }
 
     pub fn get_is_private_key(&self) -> bool {
-        match self.is_private_key {
-            Some(x) => x,
-            None => false,
-        }
+        self.is_private_key.unwrap_or(false)
     }
 
     pub fn get_data(&self) -> Vec<u8> {
@@ -79,10 +73,10 @@ impl<C> minicbor::Encode<C> for CryptoECKey {
         let mut size = 1;
 
         if let Some(_data) = self.curve {
-            size = size + 1;
+            size += 1;
         }
         if let Some(_data) = self.is_private_key {
-            size = size + 1;
+            size += 1;
         }
         e.map(size)?;
         if let Some(data) = self.curve {
@@ -163,7 +157,7 @@ mod tests {
         );
 
         let ur = ur::encode(
-            &*(crypto_ec_key.to_bytes().unwrap()),
+            &(crypto_ec_key.to_bytes().unwrap()),
             CryptoECKey::get_registry_type().get_type(),
         );
         assert_eq!(ur, "ur:crypto-eckey/oeaoykaxhdcxlkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypkrphsmyid");
@@ -177,7 +171,7 @@ mod tests {
         .unwrap();
         let crypto_ec_key = CryptoECKey::from_cbor(bytes).unwrap();
         assert_eq!(crypto_ec_key.get_curve(), 0);
-        assert_eq!(crypto_ec_key.get_is_private_key(), true);
+        assert!(crypto_ec_key.get_is_private_key());
         assert_eq!(
             crypto_ec_key.get_data(),
             Vec::from_hex("8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa")

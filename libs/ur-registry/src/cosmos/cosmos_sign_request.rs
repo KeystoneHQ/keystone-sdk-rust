@@ -18,18 +18,16 @@ const ADDRESSES: u8 = 5;
 const ORIGIN: u8 = 6;
 
 #[derive(Clone, Debug)]
+#[derive(Default)]
 pub enum DataType {
+    #[default]
     Amino = 1,
     Direct = 2,
     Textual = 3,
     Message = 4,
 }
 
-impl Default for DataType {
-    fn default() -> Self {
-        DataType::Amino
-    }
-}
+
 
 impl DataType {
     pub fn from_u32(i: u32) -> Result<Self, String> {
@@ -163,7 +161,7 @@ impl<C> minicbor::Encode<C> for CosmosSignRequest {
         )?;
 
         let derivation_paths = self.get_derivation_paths();
-        if derivation_paths.len() == 0 {
+        if derivation_paths.is_empty() {
             return Result::Err(minicbor::encode::Error::message(
                 "derivation_paths is invalid",
             ));
@@ -221,7 +219,7 @@ impl<'b, C> minicbor::Decode<'b, C> for CosmosSignRequest {
                 }
                 DATA_TYPE => {
                     obj.data_type = DataType::from_u32(d.u32()?)
-                        .map_err(|err| minicbor::decode::Error::message(err))?;
+                        .map_err(minicbor::decode::Error::message)?;
                 }
                 DERIVATION_PATHS => {
                     cbor_array(d, &mut obj.derivation_paths, |_key, obj, d| {

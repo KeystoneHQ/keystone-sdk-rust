@@ -51,11 +51,11 @@ impl MultiKey {
 
     fn get_map_size(&self) -> u64 {
         let mut size = 1;
-        if let Some(_) = self.ec_keys {
-            size = size + 1;
+        if self.ec_keys.is_some() {
+            size += 1;
         }
-        if let Some(_) = self.hd_keys {
-            size = size + 1;
+        if self.hd_keys.is_some() {
+            size += 1;
         }
         size
     }

@@ -43,8 +43,8 @@ impl KeystoneSignRequest {
 
     fn get_map_size(&self) -> u64 {
         let mut size = 1;
-        if let Some(_) = self.origin {
-            size = size + 1;
+        if self.origin.is_some() {
+            size += 1;
         }
         size
     }

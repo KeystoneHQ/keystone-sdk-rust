@@ -85,10 +85,10 @@ impl<C> minicbor::Encode<C> for CryptoCoinInfo {
     ) -> Result<(), minicbor::encode::Error<W::Error>> {
         let mut size = 0;
         if let Some(_coin_type) = &self.coin_type {
-            size = size + 1;
+            size += 1;
         }
         if let Some(_network) = &self.network {
-            size = size + 1;
+            size += 1;
         }
         e.map(size)?;
         if let Some(coin_type) = &self.coin_type {
@@ -161,7 +161,7 @@ mod tests {
         );
 
         let ur = ur::encode(
-            &*(crypto.to_bytes().unwrap()),
+            &(crypto.to_bytes().unwrap()),
             CryptoCoinInfo::get_registry_type().get_type(),
         );
         assert_eq!(ur, "ur:crypto-coin-info/oeadaeaoadehfdbany");

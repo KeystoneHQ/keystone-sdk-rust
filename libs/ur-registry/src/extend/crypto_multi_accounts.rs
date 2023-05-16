@@ -56,7 +56,7 @@ impl CryptoMultiAccounts {
     }
 
     pub fn get_master_fingerprint(&self) -> Fingerprint {
-        self.master_fingerprint.clone()
+        self.master_fingerprint
     }
     pub fn get_keys(&self) -> Vec<CryptoHDKey> {
         self.keys.clone()
@@ -79,8 +79,8 @@ impl<C> minicbor::Encode<C> for CryptoMultiAccounts {
         ctx: &mut C,
     ) -> Result<(), minicbor::encode::Error<W::Error>> {
         let mut size = 2;
-        if let Some(_) = &self.device {
-            size = size + 1;
+        if self.device.is_some() {
+            size += 1;
         }
         e.map(size)?;
 

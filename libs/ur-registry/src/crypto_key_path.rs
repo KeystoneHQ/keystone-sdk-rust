@@ -47,7 +47,7 @@ impl PathComponent {
     }
 
     pub fn get_index(&self) -> Option<u32> {
-        self.index.clone()
+        self.index
     }
 
     pub fn get_canonical_index(&self) -> Option<u32> {
@@ -58,11 +58,11 @@ impl PathComponent {
     }
 
     pub fn is_wildcard(&self) -> bool {
-        self.wildcard.clone()
+        self.wildcard
     }
 
     pub fn is_hardened(&self) -> bool {
-        self.hardened.clone()
+        self.hardened
     }
 }
 
@@ -89,13 +89,13 @@ impl CryptoKeyPath {
         self.components.clone()
     }
     pub fn get_source_fingerprint(&self) -> Option<Fingerprint> {
-        self.source_fingerprint.clone()
+        self.source_fingerprint
     }
     pub fn get_depth(&self) -> Option<u32> {
-        self.depth.clone()
+        self.depth
     }
     pub fn get_path(&self) -> Option<String> {
-        if self.components.len() == 0 {
+        if self.components.is_empty() {
             return None;
         }
         Some(
@@ -140,7 +140,7 @@ impl CryptoKeyPath {
                         wildcard: false,
                     })
                 }
-                _ => Err(format!("Invalid Path")),
+                _ => Err("Invalid Path".to_string()),
             })
             .collect::<Result<Vec<PathComponent>, String>>()?;
         Ok(CryptoKeyPath {
@@ -165,10 +165,10 @@ impl<C> minicbor::Encode<C> for CryptoKeyPath {
     ) -> Result<(), minicbor::encode::Error<W::Error>> {
         let mut size = 1;
         if let Some(_data) = self.source_fingerprint {
-            size = size + 1;
+            size += 1;
         }
         if let Some(_data) = self.depth {
-            size = size + 1;
+            size += 1;
         }
         e.map(size)?;
         e.int(
@@ -252,14 +252,14 @@ impl<'b, C> minicbor::Decode<'b, C> for CryptoKeyPath {
                                     Type::Array => {
                                         path_component.push(
                                             PathComponent::new(None, hardened).map_err(|e| {
-                                                minicbor::decode::Error::message(e.to_string())
+                                                minicbor::decode::Error::message(e)
                                             })?,
                                         );
                                     }
                                     Type::Int => {
                                         path_component.push(
                                             PathComponent::new(path_index, hardened).map_err(
-                                                |e| minicbor::decode::Error::message(e.to_string()),
+                                                minicbor::decode::Error::message,
                                             )?,
                                         );
                                     }
@@ -333,7 +333,7 @@ mod tests {
         );
 
         let ur = ur::encode(
-            &*(crypto_key_path.to_bytes().unwrap()),
+            &(crypto_key_path.to_bytes().unwrap()),
             CryptoKeyPath::get_registry_type().get_type(),
         );
         assert_eq!(
@@ -360,7 +360,7 @@ mod tests {
         );
 
         let ur = ur::encode(
-            &*(crypto_key_path.to_bytes().unwrap()),
+            &(crypto_key_path.to_bytes().unwrap()),
             CryptoKeyPath::get_registry_type().get_type(),
         );
         assert_eq!(

@@ -36,7 +36,7 @@ impl<C> minicbor::Encode<C> for CardanoCertKey {
 
         e.int(Int::from(KEY_PATH))?
             .tag(Tag::Unassigned(CRYPTO_KEYPATH.get_tag()))?;
-        &self.key_path.encode(e, _ctx)?;
+        self.key_path.encode(e, _ctx)?;
 
         Ok(())
     }

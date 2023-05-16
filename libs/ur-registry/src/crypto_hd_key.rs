@@ -73,10 +73,10 @@ impl CryptoHDKey {
     }
 
     pub fn is_master(&self) -> bool {
-        self.is_master.clone().unwrap_or(false)
+        self.is_master.unwrap_or(false)
     }
     pub fn is_private_key(&self) -> bool {
-        self.is_private_key.clone().unwrap_or(false)
+        self.is_private_key.unwrap_or(false)
     }
     pub fn get_key(&self) -> Bytes {
         self.key.clone()
@@ -94,7 +94,7 @@ impl CryptoHDKey {
         self.children.clone()
     }
     pub fn get_parent_fingerprint(&self) -> Option<Fingerprint> {
-        self.parent_fingerprint.clone()
+        self.parent_fingerprint
     }
     pub fn get_name(&self) -> Option<String> {
         self.name.clone()
@@ -144,8 +144,7 @@ impl CryptoHDKey {
 
     pub fn get_account_index(&self, level: u32) -> Option<u32> {
         self.origin
-            .clone()
-            .map_or(None, |o| match o.get_components().len() {
+            .clone().and_then(|o| match o.get_components().len() {
                 0 => None,
                 _ => o
                     .get_components()
@@ -155,39 +154,39 @@ impl CryptoHDKey {
     }
 
     pub fn get_depth(&self) -> Option<u32> {
-        self.origin.clone().map_or(None, |v| v.get_depth())
+        self.origin.clone().and_then(|v| v.get_depth())
     }
 
     fn get_map_size(&self) -> u64 {
         let mut size = 1;
-        if let Some(_) = self.is_private_key {
-            size = size + 1;
+        if self.is_private_key.is_some() {
+            size += 1;
         }
-        if let Some(_) = self.chain_code {
-            size = size + 1;
+        if self.chain_code.is_some() {
+            size += 1;
         }
-        if let Some(_) = self.use_info {
-            size = size + 1;
-        }
-
-        if let Some(_) = self.origin {
-            size = size + 1;
+        if self.use_info.is_some() {
+            size += 1;
         }
 
-        if let Some(_) = self.children {
-            size = size + 1;
+        if self.origin.is_some() {
+            size += 1;
         }
 
-        if let Some(_) = self.parent_fingerprint {
-            size = size + 1;
+        if self.children.is_some() {
+            size += 1;
         }
 
-        if let Some(_) = self.name {
-            size = size + 1;
+        if self.parent_fingerprint.is_some() {
+            size += 1;
         }
 
-        if let Some(_) = self.note {
-            size = size + 1;
+        if self.name.is_some() {
+            size += 1;
+        }
+
+        if self.note.is_some() {
+            size += 1;
         }
         size
     }
@@ -216,12 +215,12 @@ impl<C> minicbor::Encode<C> for CryptoHDKey {
                 Int::try_from(KEY_DATA)
                     .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
             )?
-            .bytes(&*self.get_key())?;
+            .bytes(&self.get_key())?;
             e.int(
                 Int::try_from(CHAIN_CODE)
                     .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
             )?
-            .bytes(&*self.get_chain_code().ok_or(
+            .bytes(&self.get_chain_code().ok_or(
                 minicbor::encode::Error::message("is_master is true, but have no chain code"),
             )?)?;
         } else {
@@ -243,7 +242,7 @@ impl<C> minicbor::Encode<C> for CryptoHDKey {
                 Int::try_from(KEY_DATA)
                     .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
             )?
-            .bytes(&*self.get_key())?;
+            .bytes(&self.get_key())?;
 
             match &self.chain_code {
                 Some(x) => {
@@ -455,7 +454,7 @@ mod tests {
         );
         assert_eq!(
             "ur:crypto-hdkey/onaxhdclaojlvoechgferkdpqdiabdrflawshlhdmdcemtfnlrctghchbdolvwsednvdztbgolaahdcxtottgostdkhfdahdlykkecbbweskrymwflvdylgerkloswtbrpfdbsticmwylklpahtaadehoyaoadamtaaddyoyadlecsdwykadykadykaewkadwkaycywlcscewfihbdaehn",
-            ur::encode(&*(hd_key.to_bytes().unwrap()), CryptoHDKey::get_registry_type().get_type()));
+            ur::encode(&(hd_key.to_bytes().unwrap()), CryptoHDKey::get_registry_type().get_type()));
     }
 
     #[test]
@@ -479,8 +478,8 @@ mod tests {
             "ced155c72456255881793514edc5bd9447e7f74abb88c6d6b6480fd016ee8c85",
             hex::encode(hd_key.chain_code.clone().unwrap())
         );
-        assert_eq!(false, hd_key.is_master());
-        assert_eq!(false, hd_key.is_private_key());
+        assert!(!hd_key.is_master());
+        assert!(!hd_key.is_private_key());
         assert_eq!(
             CoinType::Bitcoin,
             hd_key.get_use_info().unwrap().get_coin_type()

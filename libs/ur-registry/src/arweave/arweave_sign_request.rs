@@ -19,17 +19,15 @@ const ORIGIN: u8 = 6;
 const ACCOUNT: u8 = 7;
 
 #[derive(Clone, Debug, PartialEq)]
+#[derive(Default)]
 pub enum SignType {
+    #[default]
     Transaction = 1,
     DataItem = 2,
     Message = 3,
 }
 
-impl Default for SignType {
-    fn default() -> Self {
-        SignType::Transaction
-    }
-}
+
 
 impl SignType {
     pub fn from_u32(i: u32) -> Result<Self, String> {
@@ -46,16 +44,14 @@ impl SignType {
 }
 
 #[derive(Clone, Debug, PartialEq)]
+#[derive(Default)]
 pub enum SaltLen {
+    #[default]
     Zero = 0,
     Digest = 32,
 }
 
-impl Default for SaltLen {
-    fn default() -> Self {
-        SaltLen::Zero
-    }
-}
+
 
 impl SaltLen {
     pub fn from_u32(i: u32) -> Result<Self, String> {
@@ -134,7 +130,7 @@ impl ArweaveSignRequest {
         }
     }
     pub fn get_master_fingerprint(&self) -> Fingerprint {
-        self.master_fingerprint.clone()
+        self.master_fingerprint
     }
     pub fn get_request_id(&self) -> Option<Bytes> {
         self.request_id.clone()
@@ -158,13 +154,13 @@ impl ArweaveSignRequest {
     fn get_map_size(&self) -> u64 {
         let mut size = 4;
         if self.request_id.is_some() {
-            size = size + 1;
+            size += 1;
         }
         if self.account.is_some() {
-            size = size + 1;
+            size += 1;
         }
         if self.origin.is_some() {
-            size = size + 1;
+            size += 1;
         }
         size
     }
@@ -239,14 +235,14 @@ impl<'b, C> minicbor::Decode<'b, C> for ArweaveSignRequest {
                         u32::try_from(d.int()?)
                             .map_err(|e| minicbor::decode::Error::message(e.to_string()))?,
                     )
-                    .map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
+                    .map_err(minicbor::decode::Error::message)?;
                 }
                 SALT_LEN => {
                     obj.salt_len = SaltLen::from_u32(
                         u32::try_from(d.int()?)
                             .map_err(|e| minicbor::decode::Error::message(e.to_string()))?,
                     )
-                    .map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
+                    .map_err(minicbor::decode::Error::message)?;
                 }
                 ACCOUNT => {
                     obj.account = Some(d.bytes()?.to_vec());

@@ -79,7 +79,7 @@ mod tests {
             hex::encode(crypto.to_bytes().unwrap()).to_uppercase()
         );
         let ur = ur::encode(
-            &*(crypto.to_bytes().unwrap()),
+            &(crypto.to_bytes().unwrap()),
             Bytes::get_registry_type().get_type(),
         );
         assert_eq!(
@@ -92,7 +92,7 @@ mod tests {
     fn test_decode() {
         let part =
             "ur:bytes/hdcxlkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypkvoonhknt";
-        let decode_data = ur::decode(&part);
+        let decode_data = ur::decode(part);
         let crypto = Bytes::from_cbor(decode_data.unwrap().1).unwrap();
         assert_eq!(
             crypto.get_bytes(),

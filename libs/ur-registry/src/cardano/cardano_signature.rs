@@ -22,7 +22,7 @@ impl MapSize for CardanoSignature {
     fn map_size(&self) -> u64 {
         let mut size = 1;
         if self.request_id.is_some() {
-            size = size + 1;
+            size += 1;
         }
         size
     }
