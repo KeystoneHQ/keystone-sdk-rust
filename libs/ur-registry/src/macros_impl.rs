@@ -41,7 +41,7 @@ use crate::crypto_output::CryptoOutput;
 use crate::error::{URError, URResult};
 use alloc::vec::Vec;
 use crate::{impl_cbor_bytes, impl_ur_try_from_cbor_bytes, impl_ur_try_into_cbor_bytes};
-use alloc::string::{String, ToString};
+use alloc::string::{ToString};
 
 impl_cbor_bytes!(
     Bytes,

@@ -1,11 +1,11 @@
 use crate::cardano::cardano_cert_key::CardanoCertKey;
 use crate::cardano::cardano_utxo::CardanoUTXO;
 use crate::cbor::{cbor_array, cbor_map};
-use crate::crypto_key_path::CryptoKeyPath;
+
 use crate::error::{URError, URResult};
 use crate::impl_template_struct;
 use crate::registry_types::{
-    RegistryType, CARDANO_CERT_KEY, CARDANO_SIGN_REQUEST, CARDANO_UTXO, CRYPTO_KEYPATH, UUID,
+    RegistryType, CARDANO_CERT_KEY, CARDANO_SIGN_REQUEST, CARDANO_UTXO, UUID,
 };
 use crate::traits::{From as FromCbor, MapSize, RegistryItem, To};
 use crate::types::Bytes;
@@ -90,14 +90,14 @@ impl<'b, C> minicbor::Decode<'b, C> for CardanoSignRequest {
                     obj.set_sign_data(d.bytes()?.to_vec());
                 }
                 UTXOS => {
-                    cbor_array(d, &mut obj.utxos, |index, array, d| {
+                    cbor_array(d, &mut obj.utxos, |_index, array, d| {
                         d.tag()?;
                         array.push(CardanoUTXO::decode(d, _ctx)?);
                         Ok(())
                     })?;
                 }
                 CERT_KEYS => {
-                    cbor_array(d, &mut obj.cert_keys, |index, array, d| {
+                    cbor_array(d, &mut obj.cert_keys, |_index, array, d| {
                         d.tag()?;
                         array.push(CardanoCertKey::decode(d, _ctx)?);
                         Ok(())
