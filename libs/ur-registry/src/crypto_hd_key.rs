@@ -1,16 +1,16 @@
-use alloc::string::{String, ToString};
-use alloc::vec;
-use alloc::vec::Vec;
-use minicbor::{Decoder, Encoder};
-use minicbor::data::{Int, Tag};
-use minicbor::encode::Write;
 use crate::cbor::cbor_map;
 use crate::crypto_coin_info::CryptoCoinInfo;
 use crate::crypto_key_path::CryptoKeyPath;
 use crate::error::{URError, URResult};
-use crate::registry_types::{CRYPTO_HDKEY, RegistryType};
+use crate::registry_types::{RegistryType, CRYPTO_HDKEY};
 use crate::traits::{From as FromCbor, RegistryItem, To};
 use crate::types::{Bytes, Fingerprint};
+use alloc::string::{String, ToString};
+use alloc::vec;
+use alloc::vec::Vec;
+use minicbor::data::{Int, Tag};
+use minicbor::encode::Write;
+use minicbor::{Decoder, Encoder};
 
 const IS_MASTER: u8 = 1;
 const IS_PRIVATE: u8 = 2;
@@ -73,10 +73,10 @@ impl CryptoHDKey {
     }
 
     pub fn is_master(&self) -> bool {
-        self.is_master.clone().unwrap_or(false)
+        self.is_master.unwrap_or(false)
     }
     pub fn is_private_key(&self) -> bool {
-        self.is_private_key.clone().unwrap_or(false)
+        self.is_private_key.unwrap_or(false)
     }
     pub fn get_key(&self) -> Bytes {
         self.key.clone()
@@ -94,7 +94,7 @@ impl CryptoHDKey {
         self.children.clone()
     }
     pub fn get_parent_fingerprint(&self) -> Option<Fingerprint> {
-        self.parent_fingerprint.clone()
+        self.parent_fingerprint
     }
     pub fn get_name(&self) -> Option<String> {
         self.name.clone()
@@ -144,8 +144,7 @@ impl CryptoHDKey {
 
     pub fn get_account_index(&self, level: u32) -> Option<u32> {
         self.origin
-            .clone()
-            .map_or(None, |o| match o.get_components().len() {
+            .clone().and_then(|o| match o.get_components().len() {
                 0 => None,
                 _ => o
                     .get_components()
@@ -155,39 +154,39 @@ impl CryptoHDKey {
     }
 
     pub fn get_depth(&self) -> Option<u32> {
-        self.origin.clone().map_or(None, |v| v.get_depth())
+        self.origin.clone().and_then(|v| v.get_depth())
     }
 
     fn get_map_size(&self) -> u64 {
         let mut size = 1;
-        if let Some(_) = self.is_private_key {
-            size = size + 1;
+        if self.is_private_key.is_some() {
+            size += 1;
         }
-        if let Some(_) = self.chain_code {
-            size = size + 1;
+        if self.chain_code.is_some() {
+            size += 1;
         }
-        if let Some(_) = self.use_info {
-            size = size + 1;
-        }
-
-        if let Some(_) = self.origin {
-            size = size + 1;
+        if self.use_info.is_some() {
+            size += 1;
         }
 
-        if let Some(_) = self.children {
-            size = size + 1;
+        if self.origin.is_some() {
+            size += 1;
         }
 
-        if let Some(_) = self.parent_fingerprint {
-            size = size + 1;
+        if self.children.is_some() {
+            size += 1;
         }
 
-        if let Some(_) = self.name {
-            size = size + 1;
+        if self.parent_fingerprint.is_some() {
+            size += 1;
         }
 
-        if let Some(_) = self.note {
-            size = size + 1;
+        if self.name.is_some() {
+            size += 1;
+        }
+
+        if self.note.is_some() {
+            size += 1;
         }
         size
     }
@@ -200,23 +199,30 @@ impl RegistryItem for CryptoHDKey {
 }
 
 impl<C> minicbor::Encode<C> for CryptoHDKey {
-    fn encode<W: Write>(&self,
-                        e: &mut Encoder<W>,
-                        ctx: &mut C) -> Result<(), minicbor::encode::Error<W::Error>> {
+    fn encode<W: Write>(
+        &self,
+        e: &mut Encoder<W>,
+        ctx: &mut C,
+    ) -> Result<(), minicbor::encode::Error<W::Error>> {
         if self.is_master() {
             e.map(3)?;
             e.int(
                 Int::try_from(IS_MASTER)
-                    .map_err(|e| minicbor::encode::Error::message(e.to_string()))?
-            )?.bool(self.is_master())?;
+                    .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
+            )?
+            .bool(self.is_master())?;
             e.int(
                 Int::try_from(KEY_DATA)
-                    .map_err(|e| minicbor::encode::Error::message(e.to_string()))?
-            )?.bytes(&*self.get_key())?;
+                    .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
+            )?
+            .bytes(&self.get_key())?;
             e.int(
                 Int::try_from(CHAIN_CODE)
-                    .map_err(|e| minicbor::encode::Error::message(e.to_string()))?
-            )?.bytes(&*self.get_chain_code().ok_or(minicbor::encode::Error::message("is_master is true, but have no chain code"))?)?;
+                    .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
+            )?
+            .bytes(&self.get_chain_code().ok_or(
+                minicbor::encode::Error::message("is_master is true, but have no chain code"),
+            )?)?;
         } else {
             let size = self.get_map_size();
             e.map(size)?;
@@ -225,23 +231,26 @@ impl<C> minicbor::Encode<C> for CryptoHDKey {
                 Some(x) => {
                     e.int(
                         Int::try_from(IS_PRIVATE)
-                            .map_err(|e| minicbor::encode::Error::message(e.to_string()))?
-                    )?.bool(x)?;
+                            .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
+                    )?
+                    .bool(x)?;
                 }
                 None => {}
             }
 
             e.int(
                 Int::try_from(KEY_DATA)
-                    .map_err(|e| minicbor::encode::Error::message(e.to_string()))?
-            )?.bytes(&*self.get_key())?;
+                    .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
+            )?
+            .bytes(&self.get_key())?;
 
             match &self.chain_code {
                 Some(x) => {
                     e.int(
                         Int::try_from(CHAIN_CODE)
-                            .map_err(|e| minicbor::encode::Error::message(e.to_string()))?
-                    )?.bytes(x)?;
+                            .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
+                    )?
+                    .bytes(x)?;
                 }
                 None => {}
             }
@@ -250,9 +259,11 @@ impl<C> minicbor::Encode<C> for CryptoHDKey {
                 Some(x) => {
                     e.int(
                         Int::try_from(USE_INFO)
-                            .map_err(|e| minicbor::encode::Error::message(e.to_string()))?
+                            .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
                     )?;
-                    e.tag(Tag::Unassigned(CryptoCoinInfo::get_registry_type().get_tag()))?;
+                    e.tag(Tag::Unassigned(
+                        CryptoCoinInfo::get_registry_type().get_tag(),
+                    ))?;
                     CryptoCoinInfo::encode(x, e, ctx)?;
                 }
                 None => {}
@@ -262,9 +273,11 @@ impl<C> minicbor::Encode<C> for CryptoHDKey {
                 Some(x) => {
                     e.int(
                         Int::try_from(ORIGIN)
-                            .map_err(|e| minicbor::encode::Error::message(e.to_string()))?
+                            .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
                     )?;
-                    e.tag(Tag::Unassigned(CryptoKeyPath::get_registry_type().get_tag()))?;
+                    e.tag(Tag::Unassigned(
+                        CryptoKeyPath::get_registry_type().get_tag(),
+                    ))?;
                     CryptoKeyPath::encode(x, e, ctx)?;
                 }
                 None => {}
@@ -274,9 +287,11 @@ impl<C> minicbor::Encode<C> for CryptoHDKey {
                 Some(x) => {
                     e.int(
                         Int::try_from(CHILDREN)
-                            .map_err(|e| minicbor::encode::Error::message(e.to_string()))?
+                            .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
                     )?;
-                    e.tag(Tag::Unassigned(CryptoKeyPath::get_registry_type().get_tag()))?;
+                    e.tag(Tag::Unassigned(
+                        CryptoKeyPath::get_registry_type().get_tag(),
+                    ))?;
                     CryptoKeyPath::encode(x, e, ctx)?;
                 }
                 None => {}
@@ -286,11 +301,12 @@ impl<C> minicbor::Encode<C> for CryptoHDKey {
                 Some(x) => {
                     e.int(
                         Int::try_from(PARENT_FINGERPRINT)
-                            .map_err(|e| minicbor::encode::Error::message(e.to_string()))?)?
-                        .int(
-                            Int::try_from(u32::from_be_bytes(x))
-                                .map_err(|e| minicbor::encode::Error::message(e.to_string()))?
-                        )?;
+                            .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
+                    )?
+                    .int(
+                        Int::try_from(u32::from_be_bytes(x))
+                            .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
+                    )?;
                 }
                 None => {}
             }
@@ -299,8 +315,9 @@ impl<C> minicbor::Encode<C> for CryptoHDKey {
                 Some(x) => {
                     e.int(
                         Int::try_from(NAME)
-                            .map_err(|e| minicbor::encode::Error::message(e.to_string()))?)?
-                        .str(x)?;
+                            .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
+                    )?
+                    .str(x)?;
                 }
                 None => {}
             }
@@ -309,8 +326,9 @@ impl<C> minicbor::Encode<C> for CryptoHDKey {
                 Some(x) => {
                     e.int(
                         Int::try_from(NOTE)
-                            .map_err(|e| minicbor::encode::Error::message(e.to_string()))?)?
-                        .str(x)?;
+                            .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
+                    )?
+                    .str(x)?;
                 }
                 None => {}
             }
@@ -324,7 +342,8 @@ impl<'b, C> minicbor::Decode<'b, C> for CryptoHDKey {
     fn decode(d: &mut Decoder<'b>, ctx: &mut C) -> Result<Self, minicbor::decode::Error> {
         let mut result = CryptoHDKey::default();
         cbor_map(d, &mut result, |key, obj, d| {
-            let key = u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
+            let key =
+                u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
             match key {
                 IS_MASTER => {
                     obj.is_master = Some(d.bool()?);
@@ -351,14 +370,13 @@ impl<'b, C> minicbor::Decode<'b, C> for CryptoHDKey {
                     obj.children = Some(CryptoKeyPath::decode(d, ctx)?)
                 }
                 PARENT_FINGERPRINT => {
-                    obj.parent_fingerprint = Some(u32::to_be_bytes(u32::try_from(d.int()?).map_err(|e| minicbor::decode::Error::message(e.to_string()))?));
+                    obj.parent_fingerprint =
+                        Some(u32::to_be_bytes(u32::try_from(d.int()?).map_err(|e| {
+                            minicbor::decode::Error::message(e.to_string())
+                        })?));
                 }
-                NAME => {
-                    obj.name = Some(d.str()?.to_string())
-                }
-                NOTE => {
-                    obj.note = Some(d.str()?.to_string())
-                }
+                NAME => obj.name = Some(d.str()?.to_string()),
+                NOTE => obj.note = Some(d.str()?.to_string()),
                 _ => {}
             }
             Ok(())
@@ -367,7 +385,6 @@ impl<'b, C> minicbor::Decode<'b, C> for CryptoHDKey {
         Ok(result)
     }
 }
-
 
 impl To for CryptoHDKey {
     fn to_bytes(&self) -> URResult<Vec<u8>> {
@@ -383,12 +400,12 @@ impl FromCbor<CryptoHDKey> for CryptoHDKey {
 
 #[cfg(test)]
 mod tests {
-    use alloc::vec;
-    use alloc::vec::Vec;
     use crate::crypto_coin_info::{CoinType, CryptoCoinInfo, Network};
     use crate::crypto_hd_key::CryptoHDKey;
     use crate::crypto_key_path::{CryptoKeyPath, PathComponent};
     use crate::traits::{From as FromCbor, RegistryItem, To};
+    use alloc::vec;
+    use alloc::vec::Vec;
     use hex;
     use hex::FromHex;
 
@@ -437,7 +454,7 @@ mod tests {
         );
         assert_eq!(
             "ur:crypto-hdkey/onaxhdclaojlvoechgferkdpqdiabdrflawshlhdmdcemtfnlrctghchbdolvwsednvdztbgolaahdcxtottgostdkhfdahdlykkecbbweskrymwflvdylgerkloswtbrpfdbsticmwylklpahtaadehoyaoadamtaaddyoyadlecsdwykadykadykaewkadwkaycywlcscewfihbdaehn",
-            ur::encode(&*(hd_key.to_bytes().unwrap()), CryptoHDKey::get_registry_type().get_type()));
+            ur::encode(&(hd_key.to_bytes().unwrap()), CryptoHDKey::get_registry_type().get_type()));
     }
 
     #[test]
@@ -461,8 +478,8 @@ mod tests {
             "ced155c72456255881793514edc5bd9447e7f74abb88c6d6b6480fd016ee8c85",
             hex::encode(hd_key.chain_code.clone().unwrap())
         );
-        assert_eq!(false, hd_key.is_master());
-        assert_eq!(false, hd_key.is_private_key());
+        assert!(!hd_key.is_master());
+        assert!(!hd_key.is_private_key());
         assert_eq!(
             CoinType::Bitcoin,
             hd_key.get_use_info().unwrap().get_coin_type()

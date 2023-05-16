@@ -1,12 +1,12 @@
-use alloc::string::ToString;
-use alloc::vec::Vec;
-use minicbor::encode::Write;
-use minicbor::{Decoder, Encoder};
-use minicbor::data::Int;
 use crate::cbor::cbor_map;
 use crate::error::{URError, URResult};
-use crate::registry_types::{CRYPTO_COIN_INFO, RegistryType};
+use crate::registry_types::{RegistryType, CRYPTO_COIN_INFO};
 use crate::traits::{From as FromCbor, RegistryItem, To};
+use alloc::string::ToString;
+use alloc::vec::Vec;
+use minicbor::data::Int;
+use minicbor::encode::Write;
+use minicbor::{Decoder, Encoder};
 
 const COIN_TYPE: u8 = 1;
 const NETWORK: u8 = 2;
@@ -71,7 +71,6 @@ impl CryptoCoinInfo {
     }
 }
 
-
 impl RegistryItem for CryptoCoinInfo {
     fn get_registry_type() -> RegistryType<'static> {
         CRYPTO_COIN_INFO
@@ -79,49 +78,51 @@ impl RegistryItem for CryptoCoinInfo {
 }
 
 impl<C> minicbor::Encode<C> for CryptoCoinInfo {
-    fn encode<W: Write>(&self,
-                        e: &mut Encoder<W>,
-                        _ctx: &mut C) -> Result<(), minicbor::encode::Error<W::Error>> {
+    fn encode<W: Write>(
+        &self,
+        e: &mut Encoder<W>,
+        _ctx: &mut C,
+    ) -> Result<(), minicbor::encode::Error<W::Error>> {
         let mut size = 0;
         if let Some(_coin_type) = &self.coin_type {
-            size = size + 1;
+            size += 1;
         }
         if let Some(_network) = &self.network {
-            size = size + 1;
+            size += 1;
         }
         e.map(size)?;
         if let Some(coin_type) = &self.coin_type {
-            e.int(Int::from(COIN_TYPE))?.int(
-                Int::from(coin_type.clone() as u8)
-            )?;
+            e.int(Int::from(COIN_TYPE))?
+                .int(Int::from(coin_type.clone() as u8))?;
         }
 
         if let Some(network) = &self.network {
-            e.int(Int::from(NETWORK))?.int(
-                Int::from(network.clone() as u8)
-            )?;
+            e.int(Int::from(NETWORK))?
+                .int(Int::from(network.clone() as u8))?;
         }
         Ok(())
     }
 }
-
 
 impl<'b, C> minicbor::Decode<'b, C> for CryptoCoinInfo {
     fn decode(d: &mut Decoder<'b>, _ctx: &mut C) -> Result<Self, minicbor::decode::Error> {
         let mut result = CryptoCoinInfo::default();
 
         cbor_map(d, &mut result, |key, obj, d| {
-            let key = u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
+            let key =
+                u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
             match key {
                 COIN_TYPE => {
                     obj.coin_type = Some(CoinType::from_u32(
-                        u32::try_from(d.int()?).map_err(|e| minicbor::decode::Error::message(e.to_string()))?
+                        u32::try_from(d.int()?)
+                            .map_err(|e| minicbor::decode::Error::message(e.to_string()))?,
                     ));
                 }
                 NETWORK => {
-                    obj.network = Some(Network::from_u32(
-                        u32::try_from(d.int()?).map_err(|e| minicbor::decode::Error::message(e.to_string()))?
-                    ));
+                    obj.network =
+                        Some(Network::from_u32(u32::try_from(d.int()?).map_err(|e| {
+                            minicbor::decode::Error::message(e.to_string())
+                        })?));
                 }
                 _ => {}
             }
@@ -138,7 +139,6 @@ impl To for CryptoCoinInfo {
     }
 }
 
-
 impl FromCbor<CryptoCoinInfo> for CryptoCoinInfo {
     fn from_cbor(bytes: Vec<u8>) -> URResult<CryptoCoinInfo> {
         minicbor::decode(&bytes).map_err(|e| URError::CborDecodeError(e.to_string()))
@@ -147,10 +147,10 @@ impl FromCbor<CryptoCoinInfo> for CryptoCoinInfo {
 
 #[cfg(test)]
 mod tests {
-    use alloc::vec::Vec;
-    use crate::traits::{From as FromCbor, RegistryItem, To};
-    use hex::FromHex;
     use crate::crypto_coin_info::{CoinType, CryptoCoinInfo, Network};
+    use crate::traits::{From as FromCbor, RegistryItem, To};
+    use alloc::vec::Vec;
+    use hex::FromHex;
 
     #[test]
     fn test_encode() {
@@ -160,16 +160,16 @@ mod tests {
             hex::encode(crypto.to_bytes().unwrap()).to_lowercase()
         );
 
-        let ur = ur::encode(&*(crypto.to_bytes().unwrap()), CryptoCoinInfo::get_registry_type().get_type());
+        let ur = ur::encode(
+            &(crypto.to_bytes().unwrap()),
+            CryptoCoinInfo::get_registry_type().get_type(),
+        );
         assert_eq!(ur, "ur:crypto-coin-info/oeadaeaoadehfdbany");
     }
 
     #[test]
     fn test_decode() {
-        let bytes = Vec::from_hex(
-            "a201000201",
-        )
-            .unwrap();
+        let bytes = Vec::from_hex("a201000201").unwrap();
         let crypto = CryptoCoinInfo::from_cbor(bytes).unwrap();
         assert_eq!(crypto.get_network(), Network::TestNet);
         assert_eq!(crypto.get_coin_type(), CoinType::Bitcoin);

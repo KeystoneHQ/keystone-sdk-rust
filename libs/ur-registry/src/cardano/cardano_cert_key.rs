@@ -1,11 +1,9 @@
-
 use crate::cbor::cbor_map;
 use crate::crypto_key_path::CryptoKeyPath;
 use crate::error::{URError, URResult};
 use crate::registry_types::CRYPTO_KEYPATH;
 use crate::traits::{From as FromCbor, MapSize, To};
 use crate::types::Bytes;
-
 
 use alloc::string::ToString;
 use alloc::vec::Vec;
@@ -38,7 +36,7 @@ impl<C> minicbor::Encode<C> for CardanoCertKey {
 
         e.int(Int::from(KEY_PATH))?
             .tag(Tag::Unassigned(CRYPTO_KEYPATH.get_tag()))?;
-        &self.key_path.encode(e, _ctx)?;
+        self.key_path.encode(e, _ctx)?;
 
         Ok(())
     }

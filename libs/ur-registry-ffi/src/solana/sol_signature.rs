@@ -1,17 +1,17 @@
-use anyhow::Error;
 use anyhow::format_err;
+use anyhow::Error;
 use hex;
 use serde_json::json;
+use ur_registry::registry_types::SOL_SIGNATURE;
 use ur_registry::solana::sol_signature::SolSignature;
 use ur_registry::traits::From;
 use uuid::Uuid;
-use ur_registry::registry_types::SOL_SIGNATURE;
 
 use crate::export;
 
 export! {
     @Java_com_keystone_sdk_KeystoneNativeSDK_parseSolSignature
-	fn parse_sol_signature(ur_type: &str, cbor_hex: &str) -> String {
+    fn parse_sol_signature(ur_type: &str, cbor_hex: &str) -> String {
         if SOL_SIGNATURE.get_type() != ur_type {
             return json!({"error": "type not match"}).to_string();
         }
@@ -35,7 +35,6 @@ export! {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
 
@@ -45,7 +44,10 @@ mod tests {
         let sol_signature_cbor = "a201d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d025840d4f0a7bcd95bba1fbb1051885054730e3f47064288575aacc102fbbf6a9a14daa066991e360d3e3406c20c00a40973eff37c7d641e5b351ec4a99bfe86f335f7";
         let expect_result = "{\"request_id\":\"9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d\",\"signature\":\"d4f0a7bcd95bba1fbb1051885054730e3f47064288575aacc102fbbf6a9a14daa066991e360d3e3406c20c00a40973eff37c7d641e5b351ec4a99bfe86f335f7\"}";
 
-        assert_eq!(expect_result, parse_sol_signature("sol-signature", sol_signature_cbor));
+        assert_eq!(
+            expect_result,
+            parse_sol_signature("sol-signature", sol_signature_cbor)
+        );
     }
 
     #[test]
@@ -53,7 +55,10 @@ mod tests {
         let sol_signature_cbor = "a301d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d025841d4f0a7bcd95bba1fbb1051885054730e3f47064288575aacc102fbbf6a9a14daa066991e360d3e3406c20c00a40973eff37c7d641e5b351ec4a99bfe86f335f71303686b657973746f6e65";
         let expect_result = "{\"error\":\"type not match\"}";
 
-        assert_eq!(expect_result, parse_sol_signature("eth-signature", sol_signature_cbor));
+        assert_eq!(
+            expect_result,
+            parse_sol_signature("eth-signature", sol_signature_cbor)
+        );
     }
 
     #[test]
@@ -61,6 +66,9 @@ mod tests {
         let sol_signature_cbor = "a201";
         let expect_result = "{\"error\":\"signature is invalid\"}";
 
-        assert_eq!(expect_result, parse_sol_signature("sol-signature", sol_signature_cbor));
+        assert_eq!(
+            expect_result,
+            parse_sol_signature("sol-signature", sol_signature_cbor)
+        );
     }
 }

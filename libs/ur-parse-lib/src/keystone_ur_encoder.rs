@@ -72,7 +72,7 @@ mod tests {
     use alloc::vec::Vec;
     use hex::FromHex;
     use ur_registry::crypto_psbt::CryptoPSBT;
-    use ur_registry::traits::{RegistryItem};
+    use ur_registry::traits::RegistryItem;
 
     #[test]
     fn test_encode() {

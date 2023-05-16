@@ -26,11 +26,11 @@ impl_template_struct!(CardanoSignRequest {request_id: Option<Bytes>, sign_data: 
 impl MapSize for CardanoSignRequest {
     fn map_size(&self) -> u64 {
         let mut size = 3;
-        if let Some(_) = self.request_id {
-            size = size + 1;
+        if self.request_id.is_some() {
+            size += 1;
         }
-        if let Some(_) = self.origin {
-            size = size + 1;
+        if self.origin.is_some() {
+            size += 1;
         }
         size
     }
@@ -127,9 +127,9 @@ impl FromCbor<CardanoSignRequest> for CardanoSignRequest {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::crypto_key_path::CryptoKeyPath;
     use crate::crypto_key_path::PathComponent;
     use alloc::vec;
-    use crate::crypto_key_path::CryptoKeyPath;
     extern crate std;
 
     #[test]

@@ -1,13 +1,21 @@
+use crate::ur::UR;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use core::fmt;
 use ur::ur::Kind;
 use ur_registry::error::{URError, URResult};
-use ur_registry::registry_types::{URType};
-use crate::ur::UR;
+use ur_registry::registry_types::URType;
 
-pub fn probe_decode<T: TryFrom<Vec<u8>, Error = URError>>(part: String) -> URResult<URParseResult<T>> {
-    let mut ur_parse_result = URParseResult { is_multi_part: false, progress: 0, ur_type: None, data: None, decoder: None };
+pub fn probe_decode<T: TryFrom<Vec<u8>, Error = URError>>(
+    part: String,
+) -> URResult<URParseResult<T>> {
+    let mut ur_parse_result = URParseResult {
+        is_multi_part: false,
+        progress: 0,
+        ur_type: None,
+        data: None,
+        decoder: None,
+    };
     let decoded = ur::decode(&part).map_err(|e| URError::UrDecodeError(e.to_string()))?;
     match decoded.0 {
         Kind::SinglePart => {
@@ -21,7 +29,9 @@ pub fn probe_decode<T: TryFrom<Vec<u8>, Error = URError>>(part: String) -> URRes
         Kind::MultiPart => {
             ur_parse_result.is_multi_part = true;
             let mut decoder = ur::Decoder::default();
-            decoder.receive(&part).map_err(|e| URError::UrDecodeError(e.to_string()))?;
+            decoder
+                .receive(&part)
+                .map_err(|e| URError::UrDecodeError(e.to_string()))?;
             ur_parse_result.progress = decoder.progress();
             ur_parse_result.decoder = Some(KeystoneURDecoder { decoder })
         }
@@ -29,13 +39,13 @@ pub fn probe_decode<T: TryFrom<Vec<u8>, Error = URError>>(part: String) -> URRes
     Ok(ur_parse_result)
 }
 
-
-
 pub fn get_type(part: &String) -> URResult<URType> {
     let part = part.to_lowercase();
     let strip_scheme = part.strip_prefix("ur:").ok_or(URError::NotAUr)?;
-    let (type_, _) = strip_scheme.split_once('/').ok_or(URError::TypeUnspecified)?;
-    Ok(URType::from(type_)?)
+    let (type_, _) = strip_scheme
+        .split_once('/')
+        .ok_or(URError::TypeUnspecified)?;
+    URType::from(type_)
 }
 
 pub struct KeystoneURDecoder {
@@ -43,11 +53,24 @@ pub struct KeystoneURDecoder {
 }
 
 impl KeystoneURDecoder {
-    pub fn parse_ur<T: TryFrom<Vec<u8>, Error = URError>>(&mut self, part: String) -> URResult<MultiURParseResult<T>> {
-        let mut ur_parse_result = MultiURParseResult { is_complete: false, progress: 0, ur_type: None, data: None };
-        self.decoder.receive(&part).map_err(|e| URError::UrDecodeError(e.to_string()))?;
+    pub fn parse_ur<T: TryFrom<Vec<u8>, Error = URError>>(
+        &mut self,
+        part: String,
+    ) -> URResult<MultiURParseResult<T>> {
+        let mut ur_parse_result = MultiURParseResult {
+            is_complete: false,
+            progress: 0,
+            ur_type: None,
+            data: None,
+        };
+        self.decoder
+            .receive(&part)
+            .map_err(|e| URError::UrDecodeError(e.to_string()))?;
         if self.decoder.complete() {
-            let cbor = self.decoder.message().map_err(|e| URError::UrDecodeError(e.to_string()))?;
+            let cbor = self
+                .decoder
+                .message()
+                .map_err(|e| URError::UrDecodeError(e.to_string()))?;
             match cbor {
                 Some(cbor) => {
                     ur_parse_result.is_complete = true;
@@ -100,10 +123,10 @@ impl<T: fmt::Debug> fmt::Debug for URParseResult<T> {
 
 #[cfg(test)]
 mod tests {
+    use crate::keystone_ur_decoder::{probe_decode, MultiURParseResult, URParseResult};
     use alloc::string::ToString;
     use ur_registry::crypto_psbt::CryptoPSBT;
     use ur_registry::ethereum::eth_sign_request::EthSignRequest;
-    use crate::keystone_ur_decoder::{MultiURParseResult, probe_decode, URParseResult};
 
     #[test]
     fn test_decode_psbt() {
@@ -111,10 +134,11 @@ mod tests {
         let result: URParseResult<CryptoPSBT> = probe_decode(ur.to_string()).unwrap();
         if !result.is_multi_part {
             let crypto = result.data.unwrap();
-            assert_eq!("8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa",
-                       hex::encode(crypto.get_psbt()).to_lowercase());
+            assert_eq!(
+                "8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa",
+                hex::encode(crypto.get_psbt()).to_lowercase()
+            );
         }
-
 
         let ur1 = "ur:crypto-psbt/1-3/lpadaxcfaxiacyvwhdfhndhkadclhkaxhnlkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbnychpmiy";
         let ur2 = "ur:crypto-psbt/2-3/lpaoaxcfaxiacyvwhdfhndhkadclaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaylbntahvo";
@@ -122,7 +146,8 @@ mod tests {
         let result: URParseResult<CryptoPSBT> = probe_decode(ur1.to_string()).unwrap();
         if result.is_multi_part {
             let mut decoder = result.decoder.unwrap();
-            let _result: MultiURParseResult<CryptoPSBT> = decoder.parse_ur(ur2.to_string()).unwrap();
+            let _result: MultiURParseResult<CryptoPSBT> =
+                decoder.parse_ur(ur2.to_string()).unwrap();
             let result: MultiURParseResult<CryptoPSBT> = decoder.parse_ur(ur3.to_string()).unwrap();
             let psbt = result.data.unwrap();
             assert_eq!("8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa",
@@ -138,6 +163,6 @@ mod tests {
             let crypto = result.data.unwrap();
             assert_eq!("02ed04808459682f008459682f1b82520894e0cfe8a9f55942c6a70b845cd07a3a7d61a04325865af3107a400080c0",
                        hex::encode(crypto.get_sign_data()).to_lowercase());
-        }        
+        }
     }
 }

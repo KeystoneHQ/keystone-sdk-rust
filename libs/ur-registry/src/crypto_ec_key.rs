@@ -1,13 +1,13 @@
+use crate::cbor::cbor_map;
+use crate::error::{URError, URResult};
+use crate::registry_types::{RegistryType, CRYPTO_ECKEY};
+use crate::traits::{From as FromCbor, RegistryItem, To};
+use crate::types::Bytes;
 use alloc::string::ToString;
 use alloc::vec;
 use alloc::vec::Vec;
 use core::convert::From;
 use minicbor::data::Int;
-use crate::cbor::cbor_map;
-use crate::registry_types::{RegistryType, CRYPTO_ECKEY};
-use crate::traits::{From as FromCbor, RegistryItem, To};
-use crate::types::Bytes;
-use crate::error::{URResult, URError};
 
 const CURVE: u8 = 1;
 const PRIVATE: u8 = 2;
@@ -46,17 +46,11 @@ impl CryptoECKey {
     }
 
     pub fn get_curve(&self) -> i128 {
-        match self.curve {
-            Some(x) => x,
-            None => 0,
-        }
+        self.curve.unwrap_or(0)
     }
 
     pub fn get_is_private_key(&self) -> bool {
-        match self.is_private_key {
-            Some(x) => x,
-            None => false,
-        }
+        self.is_private_key.unwrap_or(false)
     }
 
     pub fn get_data(&self) -> Vec<u8> {
@@ -70,7 +64,6 @@ impl RegistryItem for CryptoECKey {
     }
 }
 
-
 impl<C> minicbor::Encode<C> for CryptoECKey {
     fn encode<W: minicbor::encode::Write>(
         &self,
@@ -80,16 +73,15 @@ impl<C> minicbor::Encode<C> for CryptoECKey {
         let mut size = 1;
 
         if let Some(_data) = self.curve {
-            size = size + 1;
+            size += 1;
         }
         if let Some(_data) = self.is_private_key {
-            size = size + 1;
+            size += 1;
         }
         e.map(size)?;
         if let Some(data) = self.curve {
             e.int(Int::from(CURVE))?.int(
-                Int::try_from(data)
-                    .map_err(|e| minicbor::encode::Error::message(e.to_string()))?
+                Int::try_from(data).map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
             )?;
         }
 
@@ -101,15 +93,19 @@ impl<C> minicbor::Encode<C> for CryptoECKey {
     }
 }
 
-
 impl<'b, C> minicbor::Decode<'b, C> for CryptoECKey {
     fn decode(
         d: &mut minicbor::Decoder<'b>,
         _ctx: &mut C,
     ) -> Result<Self, minicbor::decode::Error> {
-        let mut result = CryptoECKey { curve: None, is_private_key: None, data: vec![] };
+        let mut result = CryptoECKey {
+            curve: None,
+            is_private_key: None,
+            data: vec![],
+        };
         cbor_map(d, &mut result, |key, obj, d| {
-            let key = u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
+            let key =
+                u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
             match key {
                 CURVE => {
                     obj.curve = Some(core::convert::From::from(d.int()?));
@@ -142,9 +138,9 @@ impl FromCbor<CryptoECKey> for CryptoECKey {
 
 #[cfg(test)]
 mod tests {
-    use alloc::vec::Vec;
     use crate::crypto_ec_key::CryptoECKey;
     use crate::traits::{From as FromCbor, RegistryItem, To};
+    use alloc::vec::Vec;
     use hex::FromHex;
 
     #[test]
@@ -160,7 +156,10 @@ mod tests {
             hex::encode(crypto_ec_key.to_bytes().unwrap()).to_uppercase()
         );
 
-        let ur = ur::encode(&*(crypto_ec_key.to_bytes().unwrap()), CryptoECKey::get_registry_type().get_type());
+        let ur = ur::encode(
+            &(crypto_ec_key.to_bytes().unwrap()),
+            CryptoECKey::get_registry_type().get_type(),
+        );
         assert_eq!(ur, "ur:crypto-eckey/oeaoykaxhdcxlkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypkrphsmyid");
     }
 
@@ -169,10 +168,10 @@ mod tests {
         let bytes = Vec::from_hex(
             "A202F50358208C05C4B4F3E88840A4F4B5F155CFD69473EA169F3D0431B7A6787A23777F08AA",
         )
-            .unwrap();
+        .unwrap();
         let crypto_ec_key = CryptoECKey::from_cbor(bytes).unwrap();
         assert_eq!(crypto_ec_key.get_curve(), 0);
-        assert_eq!(crypto_ec_key.get_is_private_key(), true);
+        assert!(crypto_ec_key.get_is_private_key());
         assert_eq!(
             crypto_ec_key.get_data(),
             Vec::from_hex("8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa")

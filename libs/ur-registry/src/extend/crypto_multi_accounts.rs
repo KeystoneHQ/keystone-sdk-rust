@@ -1,15 +1,15 @@
+use crate::cbor::{cbor_array, cbor_map};
+use crate::crypto_hd_key::CryptoHDKey;
+use crate::error::{URError, URResult};
+use crate::registry_types::{RegistryType, CRYPTO_HDKEY, CRYPTO_MULTI_ACCOUNTS};
+use crate::traits::{From as FromCbor, RegistryItem, To};
+use crate::types::Fingerprint;
 use alloc::string::{String, ToString};
 use alloc::vec;
 use alloc::vec::Vec;
 use minicbor::data::{Int, Tag};
 use minicbor::encode::Write;
 use minicbor::{Decoder, Encoder};
-use crate::cbor::{cbor_array, cbor_map};
-use crate::crypto_hd_key::CryptoHDKey;
-use crate::error::{URError, URResult};
-use crate::registry_types::{CRYPTO_HDKEY, CRYPTO_MULTI_ACCOUNTS, RegistryType};
-use crate::traits::{RegistryItem, To, From as FromCbor};
-use crate::types::Fingerprint;
 
 const MASTER_FINGERPRINT: u8 = 1;
 const KEYS: u8 = 2;
@@ -56,7 +56,7 @@ impl CryptoMultiAccounts {
     }
 
     pub fn get_master_fingerprint(&self) -> Fingerprint {
-        self.master_fingerprint.clone()
+        self.master_fingerprint
     }
     pub fn get_keys(&self) -> Vec<CryptoHDKey> {
         self.keys.clone()
@@ -72,14 +72,15 @@ impl RegistryItem for CryptoMultiAccounts {
     }
 }
 
-
 impl<C> minicbor::Encode<C> for CryptoMultiAccounts {
-    fn encode<W: Write>(&self,
-                        e: &mut Encoder<W>,
-                        ctx: &mut C) -> Result<(), minicbor::encode::Error<W::Error>> {
+    fn encode<W: Write>(
+        &self,
+        e: &mut Encoder<W>,
+        ctx: &mut C,
+    ) -> Result<(), minicbor::encode::Error<W::Error>> {
         let mut size = 2;
-        if let Some(_) = &self.device {
-            size = size + 1;
+        if self.device.is_some() {
+            size += 1;
         }
         e.map(size)?;
 
@@ -93,23 +94,25 @@ impl<C> minicbor::Encode<C> for CryptoMultiAccounts {
         }
 
         if let Some(device) = &self.device {
-            e.int(Int::from(DEVICE))?
-                .str(device)?;
+            e.int(Int::from(DEVICE))?.str(device)?;
         }
 
         Ok(())
     }
 }
 
-
 impl<'b, C> minicbor::Decode<'b, C> for CryptoMultiAccounts {
     fn decode(d: &mut Decoder<'b>, ctx: &mut C) -> Result<Self, minicbor::decode::Error> {
         let mut result = CryptoMultiAccounts::default();
         cbor_map(d, &mut result, |key, obj, d| {
-            let key = u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
+            let key =
+                u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
             match key {
                 MASTER_FINGERPRINT => {
-                    obj.master_fingerprint = u32::to_be_bytes(u32::try_from(d.int()?).map_err(|e| minicbor::decode::Error::message(e.to_string()))?);
+                    obj.master_fingerprint = u32::to_be_bytes(
+                        u32::try_from(d.int()?)
+                            .map_err(|e| minicbor::decode::Error::message(e.to_string()))?,
+                    );
                 }
                 KEYS => {
                     let mut keys: Vec<CryptoHDKey> = vec![];
@@ -131,7 +134,6 @@ impl<'b, C> minicbor::Decode<'b, C> for CryptoMultiAccounts {
     }
 }
 
-
 impl To for CryptoMultiAccounts {
     fn to_bytes(&self) -> URResult<Vec<u8>> {
         minicbor::to_vec(self.clone()).map_err(|e| URError::CborEncodeError(e.to_string()))
@@ -146,13 +148,13 @@ impl FromCbor<CryptoMultiAccounts> for CryptoMultiAccounts {
 
 #[cfg(test)]
 mod tests {
-    use alloc::string::ToString;
-    use alloc::vec;
-    use alloc::vec::Vec;
     use crate::crypto_hd_key::CryptoHDKey;
     use crate::crypto_key_path::{CryptoKeyPath, PathComponent};
     use crate::extend::crypto_multi_accounts::CryptoMultiAccounts;
     use crate::traits::{From, To};
+    use alloc::string::ToString;
+    use alloc::vec;
+    use alloc::vec::Vec;
     use hex::FromHex;
 
     #[test]
@@ -204,7 +206,6 @@ mod tests {
 
     #[test]
     fn test_decode_multi() {
-
         let part= "UR:CRYPTO-MULTI-ACCOUNTS/OTADCYCNTIFDWTAOLNTAADDLOXAOWKAXHDCXSPTPFWOEWNLBTSPKRPAYTODMONECOLWLHDURZSCXSGYNINQDFLRHBYSSCHCFIHGUAMTAADDYOTADLOCSDWYKCFADYKYKAEYKAEYKAOCYCNTIFDWTAXAHASISGRIHKKJKJYJLJTIHTAADDLOXAOWKAXHDCXBSMDKOCXPRDERDVORHGSLFUTTYRTMUMKFTIOENGOGORLEMWPKIUOBYCHVACEJPVTAMTAADDYOTADLOCSDWYKCFADYKYKADYKAEYKAOCYCNTIFDWTAXAHASISGRIHKKJKJYJLJTIHTAADDLOXAOWKAXHDCXWZDKVSECEOURRKKEVWWYRDFGAELYNNPYMDPRAATKAYJKTYRFHSTSBANYZMGLGHPMAMTAADDYOTADLOCSDWYKCFADYKYKAOYKAEYKAOCYCNTIFDWTAXAHASISGRIHKKJKJYJLJTIHTAADDLOXAOWKAXHDCXGLAAUECPATIEADBGPKJNUEYKNNTLADOXTIMURTGWCPAYGSZSYABTVLISECSOJYTKAMTAADDYOTADLOCSDWYKCFADYKYKAXYKAEYKAOCYCNTIFDWTAXAHASISGRIHKKJKJYJLJTIHTAADDLOXAOWKAXHDCXMUJLWLCKPYPMKBNEDPIOGRDINYRYIYWLECBAONHDPMSPBGFYTDEHASKEMTLDFZINAMTAADDYOTADLOCSDWYKCFADYKYKAAYKAEYKAOCYCNTIFDWTAXAHASISGRIHKKJKJYJLJTIHTAADDLOXAOWKAXHDCXKEOLGWPEFSRSKEEMGAONWLMWVWKOISTPPEJZFRVEPKFWVDGAAMAHBTTIJSFSGSLDAMTAADDYOTADLOCSDWYKCFADYKYKAHYKAEYKAOCYCNTIFDWTAXAHASISGRIHKKJKJYJLJTIHAXISGRIHKKJKJYJLJTIHLDMEDATK";
         let decode_data = ur::decode(&part.to_lowercase());
         let crypto_multi_accounts = CryptoMultiAccounts::from_cbor(decode_data.unwrap().1).unwrap();

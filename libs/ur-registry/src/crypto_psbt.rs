@@ -1,11 +1,11 @@
+use crate::error::{URError, URResult};
+use crate::registry_types::{RegistryType, CRYPTO_PSBT};
+use crate::traits::{From as FromCbor, RegistryItem, To};
+use crate::types::Bytes;
 use alloc::string::ToString;
 use alloc::vec::Vec;
 use minicbor::encode::Write;
 use minicbor::{Decoder, Encoder};
-use crate::error::{URError, URResult};
-use crate::registry_types::{CRYPTO_PSBT, RegistryType};
-use crate::traits::{RegistryItem, To, From as FromCbor};
-use crate::types::Bytes;
 
 #[derive(Debug, Clone, Default)]
 pub struct CryptoPSBT {
@@ -33,19 +33,20 @@ impl RegistryItem for CryptoPSBT {
 }
 
 impl<C> minicbor::Encode<C> for CryptoPSBT {
-    fn encode<W: Write>(&self,
-                        e: &mut Encoder<W>,
-                        _ctx: &mut C) -> Result<(), minicbor::encode::Error<W::Error>> {
+    fn encode<W: Write>(
+        &self,
+        e: &mut Encoder<W>,
+        _ctx: &mut C,
+    ) -> Result<(), minicbor::encode::Error<W::Error>> {
         e.bytes(&self.psbt)?;
         Ok(())
     }
 }
 
-
 impl<'b, C> minicbor::Decode<'b, C> for CryptoPSBT {
     fn decode(d: &mut Decoder<'b>, _ctx: &mut C) -> Result<Self, minicbor::decode::Error> {
         Ok(Self {
-            psbt: d.bytes()?.to_vec()
+            psbt: d.bytes()?.to_vec(),
         })
     }
 }
@@ -64,10 +65,10 @@ impl FromCbor<CryptoPSBT> for CryptoPSBT {
 
 #[cfg(test)]
 mod tests {
-    use alloc::vec::Vec;
-    use crate::traits::{From as FromCbor, RegistryItem, To};
-    use hex::FromHex;
     use crate::crypto_psbt::CryptoPSBT;
+    use crate::traits::{RegistryItem};
+    use alloc::vec::Vec;
+    use hex::FromHex;
 
     #[test]
     fn test_encode() {
@@ -81,17 +82,20 @@ mod tests {
             hex::encode::<Vec<u8>>(result.clone()).to_uppercase()
         );
 
-        let ur  = ur::encode(&result, CryptoPSBT::get_registry_type().get_type());
+        let ur = ur::encode(&result, CryptoPSBT::get_registry_type().get_type());
         assert_eq!(ur, "ur:crypto-psbt/hdcxlkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypkvoonhknt");
     }
 
     #[test]
     fn test_decode() {
-        let bytes = Vec::from_hex(
-            "58208C05C4B4F3E88840A4F4B5F155CFD69473EA169F3D0431B7A6787A23777F08AA",
-        )
-            .unwrap();
+        let bytes =
+            Vec::from_hex("58208C05C4B4F3E88840A4F4B5F155CFD69473EA169F3D0431B7A6787A23777F08AA")
+                .unwrap();
         let crypto = CryptoPSBT::try_from(bytes).unwrap();
-        assert_eq!(crypto.get_psbt(), Vec::from_hex("8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa").unwrap());
+        assert_eq!(
+            crypto.get_psbt(),
+            Vec::from_hex("8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa")
+                .unwrap()
+        );
     }
 }

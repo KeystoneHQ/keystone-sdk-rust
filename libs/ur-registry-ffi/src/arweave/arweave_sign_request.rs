@@ -1,8 +1,8 @@
 use hex;
 use serde_json::json;
+use ur_registry::arweave::arweave_sign_request::{ArweaveSignRequest, SaltLen, SignType};
 use ur_registry::traits::To;
 use uuid::Uuid;
-use ur_registry::arweave::arweave_sign_request::{ArweaveSignRequest, SaltLen, SignType};
 
 use crate::export;
 
@@ -70,7 +70,6 @@ export! {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -86,11 +85,14 @@ mod tests {
 
         let expect_result = "{\"cbor\":\"a6011ae9181cf302d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d035901967b22666f726d6174223a322c226964223a22222c226c6173745f7478223a22675448344631615059587639314a704b6b6e39495336684877515a3141597949654352793251694f654145547749454d4d5878786e466a30656b42466c713939222c226f776e6572223a22222c2274616773223a5b7b226e616d65223a2256486c775a51222c2276616c7565223a2256484a68626e4e6d5a5849227d2c7b226e616d65223a22513278705a573530222c2276616c7565223a2251584a44623235755a574e30227d2c7b226e616d65223a22513278705a5735304c565a6c636e4e70623234222c2276616c7565223a224d5334774c6a49227d5d2c22746172676574223a226b796977315934796c7279475652777454617473472d494e3965773838474d6c592d795f4c473346784741222c227175616e74697479223a2231303030303030303030222c2264617461223a22222c22646174615f73697a65223a2230222c22646174615f726f6f74223a22222c22726577617264223a2239313037353734333836222c227369676e6174757265223a22227d0401050006696172636f6e6e656374\",\"type\":\"arweave-sign-request\"}";
 
-        assert_eq!(expect_result, generate_arweave_sign_request(
-            request_id, sign_data, sign_type, salt_len, xfp, "", origin
-        ));
+        assert_eq!(
+            expect_result,
+            generate_arweave_sign_request(
+                request_id, sign_data, sign_type, salt_len, xfp, "", origin
+            )
+        );
     }
-    
+
     #[test]
     fn test_generate_arweave_sign_request_xfp_error() {
         let request_id = "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d";
@@ -102,9 +104,12 @@ mod tests {
 
         let expect_result = "{\"error\":\"master fingerprint is invalid\"}";
 
-        assert_eq!(expect_result, generate_arweave_sign_request(
-            request_id, sign_data, sign_type, salt_len, xfp, "", origin
-        ));
+        assert_eq!(
+            expect_result,
+            generate_arweave_sign_request(
+                request_id, sign_data, sign_type, salt_len, xfp, "", origin
+            )
+        );
     }
 
     #[test]
@@ -118,8 +123,11 @@ mod tests {
 
         let expect_result = "{\"error\":\"salt length must be 0 or 32\"}";
 
-        assert_eq!(expect_result, generate_arweave_sign_request(
-            request_id, sign_data, sign_type, salt_len, xfp, "", origin
-        ));
+        assert_eq!(
+            expect_result,
+            generate_arweave_sign_request(
+                request_id, sign_data, sign_type, salt_len, xfp, "", origin
+            )
+        );
     }
 }

@@ -1,5 +1,5 @@
-use anyhow::{Error, format_err};
-use serde::{Serialize, Deserialize};
+use anyhow::{format_err, Error};
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize)]
 pub enum SupportedChains {
@@ -32,7 +32,7 @@ impl TryInto<SupportedChains> for i32 {
             2 => Ok(SupportedChains::LTC),
             5 => Ok(SupportedChains::DASH),
             145 => Ok(SupportedChains::BCH),
-            _ => Err(format_err!(""))
+            _ => Err(format_err!("")),
         }
     }
 }

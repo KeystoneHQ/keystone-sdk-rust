@@ -1,12 +1,12 @@
-use alloc::{format};
+use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
-use minicbor::data::{Tag, Int};
+use minicbor::data::{Int, Tag};
 
-use crate::cbor::{cbor_map, cbor_array};
+use crate::cbor::{cbor_array, cbor_map};
 use crate::crypto_key_path::CryptoKeyPath;
 use crate::error::{URError, URResult};
-use crate::registry_types::{RegistryType, UUID, COSMOS_SIGN_REQUEST};
+use crate::registry_types::{RegistryType, COSMOS_SIGN_REQUEST, UUID};
 use crate::traits::{From, RegistryItem, To};
 use crate::types::Bytes;
 
@@ -18,18 +18,16 @@ const ADDRESSES: u8 = 5;
 const ORIGIN: u8 = 6;
 
 #[derive(Clone, Debug)]
+#[derive(Default)]
 pub enum DataType {
+    #[default]
     Amino = 1,
     Direct = 2,
     Textual = 3,
     Message = 4,
 }
 
-impl Default for DataType {
-    fn default() -> Self {
-        DataType::Amino
-    }
-}
+
 
 impl DataType {
     pub fn from_u32(i: u32) -> Result<Self, String> {
@@ -128,8 +126,12 @@ impl RegistryItem for CosmosSignRequest {
     }
 }
 
-impl <C> minicbor::Encode<C> for CosmosSignRequest {
-    fn encode<W: minicbor::encode::Write>(&self, e: &mut minicbor::Encoder<W>, ctx: &mut C) -> Result<(), minicbor::encode::Error<W::Error>> {
+impl<C> minicbor::Encode<C> for CosmosSignRequest {
+    fn encode<W: minicbor::encode::Write>(
+        &self,
+        e: &mut minicbor::Encoder<W>,
+        ctx: &mut C,
+    ) -> Result<(), minicbor::encode::Error<W::Error>> {
         let mut size = 4;
         if self.addresses.is_some() {
             size += 1;
@@ -138,51 +140,77 @@ impl <C> minicbor::Encode<C> for CosmosSignRequest {
             size += 1;
         }
         e.map(size)?;
-        e.int(Int::try_from(REQUEST_ID).map_err(|e| minicbor::encode::Error::message(e.to_string()))?)?
-            .tag(Tag::Unassigned(UUID.get_tag()))?
-            .bytes(&self.get_request_id())?;
-        e.int(Int::try_from(SIGN_DATA).map_err(|e| minicbor::encode::Error::message(e.to_string()))?)?
-            .bytes(&self.get_sign_data())?;
-        e.int(Int::try_from(DATA_TYPE).map_err(|e| minicbor::encode::Error::message(e.to_string()))?)?
-            .int(Int::try_from(self.get_data_type() as u8).map_err(|e| minicbor::encode::Error::message(e.to_string()))?)?;
+        e.int(
+            Int::try_from(REQUEST_ID)
+                .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
+        )?
+        .tag(Tag::Unassigned(UUID.get_tag()))?
+        .bytes(&self.get_request_id())?;
+        e.int(
+            Int::try_from(SIGN_DATA)
+                .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
+        )?
+        .bytes(&self.get_sign_data())?;
+        e.int(
+            Int::try_from(DATA_TYPE)
+                .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
+        )?
+        .int(
+            Int::try_from(self.get_data_type() as u8)
+                .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
+        )?;
 
         let derivation_paths = self.get_derivation_paths();
-        if derivation_paths.len() == 0 {
-            return Result::Err(minicbor::encode::Error::message("derivation_paths is invalid"));
+        if derivation_paths.is_empty() {
+            return Result::Err(minicbor::encode::Error::message(
+                "derivation_paths is invalid",
+            ));
         }
-        e.int(Int::try_from(DERIVATION_PATHS).map_err(|e| minicbor::encode::Error::message(e.to_string()))?)?
-            .array(derivation_paths.len() as u64)?;
+        e.int(
+            Int::try_from(DERIVATION_PATHS)
+                .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
+        )?
+        .array(derivation_paths.len() as u64)?;
         for path in derivation_paths {
-            e.tag(Tag::Unassigned(CryptoKeyPath::get_registry_type().get_tag()))?;
+            e.tag(Tag::Unassigned(
+                CryptoKeyPath::get_registry_type().get_tag(),
+            ))?;
             CryptoKeyPath::encode(&path, e, ctx)?;
         }
 
         if let Some(addresses) = self.get_addresses() {
-            e.int(Int::try_from(ADDRESSES).map_err(|e| minicbor::encode::Error::message(e.to_string()))?)?
-                .array(addresses.len() as u64)?;
+            e.int(
+                Int::try_from(ADDRESSES)
+                    .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
+            )?
+            .array(addresses.len() as u64)?;
             for addr in addresses {
                 e.str(&addr)?;
             }
         }
         if let Some(origin) = self.get_origin() {
-            e.int(Int::try_from(ORIGIN).map_err(|e| minicbor::encode::Error::message(e.to_string()))?)?
-                .str(&origin)?;
+            e.int(
+                Int::try_from(ORIGIN)
+                    .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
+            )?
+            .str(&origin)?;
         }
         Ok(())
     }
 }
 
-impl <'b, C> minicbor::Decode<'b, C> for CosmosSignRequest {
+impl<'b, C> minicbor::Decode<'b, C> for CosmosSignRequest {
     fn decode(d: &mut minicbor::Decoder<'b>, ctx: &mut C) -> Result<Self, minicbor::decode::Error> {
         let mut result = CosmosSignRequest::default();
 
         cbor_map(d, &mut result, |key, obj, d| {
-            let key = u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
+            let key =
+                u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
             match key {
                 REQUEST_ID => {
                     let tag = d.tag()?;
                     if !tag.eq(&Tag::Unassigned(UUID.get_tag())) {
-                        return Result::Err(minicbor::decode::Error::message("UUID tag is invalid"))
+                        return Result::Err(minicbor::decode::Error::message("UUID tag is invalid"));
                     }
                     obj.request_id = d.bytes()?.to_vec();
                 }
@@ -190,13 +218,18 @@ impl <'b, C> minicbor::Decode<'b, C> for CosmosSignRequest {
                     obj.sign_data = d.bytes()?.to_vec();
                 }
                 DATA_TYPE => {
-                    obj.data_type = DataType::from_u32(d.u32()?).map_err(|err| minicbor::decode::Error::message(err))?;
+                    obj.data_type = DataType::from_u32(d.u32()?)
+                        .map_err(minicbor::decode::Error::message)?;
                 }
                 DERIVATION_PATHS => {
                     cbor_array(d, &mut obj.derivation_paths, |_key, obj, d| {
                         let tag = d.tag()?;
-                        if !tag.eq(&Tag::Unassigned(CryptoKeyPath::get_registry_type().get_tag())) {
-                            return Result::Err(minicbor::decode::Error::message("CryptoKeyPath tag is invalid"))
+                        if !tag.eq(&Tag::Unassigned(
+                            CryptoKeyPath::get_registry_type().get_tag(),
+                        )) {
+                            return Result::Err(minicbor::decode::Error::message(
+                                "CryptoKeyPath tag is invalid",
+                            ));
                         }
                         obj.push(CryptoKeyPath::decode(d, ctx)?);
                         Ok(())
@@ -233,6 +266,6 @@ impl To for CosmosSignRequest {
 
 impl From<CosmosSignRequest> for CosmosSignRequest {
     fn from_cbor(bytes: Vec<u8>) -> URResult<CosmosSignRequest> {
-        minicbor::decode(&bytes).map_err(|e| {URError::CborDecodeError(e.to_string())})
+        minicbor::decode(&bytes).map_err(|e| URError::CborDecodeError(e.to_string()))
     }
 }

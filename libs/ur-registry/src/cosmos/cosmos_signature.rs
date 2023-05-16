@@ -6,7 +6,7 @@ use crate::cbor::cbor_map;
 use crate::error::{URError, URResult};
 use crate::registry_types::{RegistryType, COSMOS_SIGNATURE, UUID};
 use crate::traits::{From, RegistryItem, To};
-use crate::types::{Bytes};
+use crate::types::Bytes;
 
 const REQUEST_ID: u8 = 1;
 const SIGNATURE: u8 = 2;
@@ -37,7 +37,11 @@ impl CosmosSignature {
     }
 
     pub fn new(request_id: Bytes, signature: Bytes, public_key: Bytes) -> Self {
-        CosmosSignature { request_id, signature, public_key }
+        CosmosSignature {
+            request_id,
+            signature,
+            public_key,
+        }
     }
 
     pub fn get_request_id(&self) -> Bytes {
@@ -57,31 +61,48 @@ impl RegistryItem for CosmosSignature {
     }
 }
 
-impl <C> minicbor::Encode<C> for CosmosSignature {
-    fn encode<W: minicbor::encode::Write>(&self, e: &mut minicbor::Encoder<W>, _ctx: &mut C) -> Result<(), minicbor::encode::Error<W::Error>> {
+impl<C> minicbor::Encode<C> for CosmosSignature {
+    fn encode<W: minicbor::encode::Write>(
+        &self,
+        e: &mut minicbor::Encoder<W>,
+        _ctx: &mut C,
+    ) -> Result<(), minicbor::encode::Error<W::Error>> {
         e.map(3)?;
-        e.int(Int::try_from(REQUEST_ID).map_err(|e| minicbor::encode::Error::message(e.to_string()))?)?
-            .tag(Tag::Unassigned(UUID.get_tag()))?
-            .bytes(&self.get_request_id())?;
-        e.int(Int::try_from(SIGNATURE).map_err(|e| minicbor::encode::Error::message(e.to_string()))?)?
-            .bytes(&self.get_signature())?;
-        e.int(Int::try_from(PUBLIC_KEY).map_err(|e| minicbor::encode::Error::message(e.to_string()))?)?
-            .bytes(&self.get_public_key())?;
+        e.int(
+            Int::try_from(REQUEST_ID)
+                .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
+        )?
+        .tag(Tag::Unassigned(UUID.get_tag()))?
+        .bytes(&self.get_request_id())?;
+        e.int(
+            Int::try_from(SIGNATURE)
+                .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
+        )?
+        .bytes(&self.get_signature())?;
+        e.int(
+            Int::try_from(PUBLIC_KEY)
+                .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
+        )?
+        .bytes(&self.get_public_key())?;
         Ok(())
     }
 }
 
-impl <'b, C> minicbor::Decode<'b, C> for CosmosSignature {
-    fn decode(d: &mut minicbor::Decoder<'b>, _ctx: &mut C) -> Result<Self, minicbor::decode::Error> {
+impl<'b, C> minicbor::Decode<'b, C> for CosmosSignature {
+    fn decode(
+        d: &mut minicbor::Decoder<'b>,
+        _ctx: &mut C,
+    ) -> Result<Self, minicbor::decode::Error> {
         let mut result = CosmosSignature::default();
 
         cbor_map(d, &mut result, |key, obj, d| {
-            let key = u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
+            let key =
+                u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
             match key {
                 REQUEST_ID => {
                     let tag = d.tag()?;
                     if !tag.eq(&Tag::Unassigned(UUID.get_tag())) {
-                        return Result::Err(minicbor::decode::Error::message("UUID tag is invalid"))
+                        return Result::Err(minicbor::decode::Error::message("UUID tag is invalid"));
                     }
                     obj.request_id = d.bytes()?.to_vec();
                 }
@@ -108,6 +129,6 @@ impl To for CosmosSignature {
 
 impl From<CosmosSignature> for CosmosSignature {
     fn from_cbor(bytes: Vec<u8>) -> URResult<CosmosSignature> {
-        minicbor::decode(&bytes).map_err(|e| {URError::CborDecodeError(e.to_string())})
+        minicbor::decode(&bytes).map_err(|e| URError::CborDecodeError(e.to_string()))
     }
 }

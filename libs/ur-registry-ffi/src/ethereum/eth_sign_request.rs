@@ -1,9 +1,9 @@
 use hex;
 use serde_json::json;
+use ur_registry::crypto_key_path::CryptoKeyPath;
+use ur_registry::ethereum::eth_sign_request::{DataType, EthSignRequest};
 use ur_registry::traits::To;
 use uuid::Uuid;
-use ur_registry::crypto_key_path::CryptoKeyPath;
-use ur_registry::ethereum::eth_sign_request::{EthSignRequest, DataType};
 
 use crate::export;
 
@@ -71,7 +71,6 @@ export! {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -89,11 +88,14 @@ mod tests {
 
         let expect_result = "{\"cbor\":\"a601d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d02584bf849808609184e72a00082271094000000000000000000000000000000000000000080a47f74657374320000000000000000000000000000000000000000000000000000006000578080800301040105d90130a2018a182cf501f501f500f401f4021a1234567807686d6574616d61736b\",\"type\":\"eth-sign-request\"}";
 
-        assert_eq!(expect_result, generate_eth_sign_request(
-            request_id, sign_data, data_type, chain_id, path, xfp, address, origin
-        ));
+        assert_eq!(
+            expect_result,
+            generate_eth_sign_request(
+                request_id, sign_data, data_type, chain_id, path, xfp, address, origin
+            )
+        );
     }
-    
+
     #[test]
     fn test_generate_eth_sign_request_path_error() {
         let request_id = "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d";
@@ -107,9 +109,12 @@ mod tests {
 
         let expect_result = "{\"error\":\"path is invalid\"}";
 
-        assert_eq!(expect_result, generate_eth_sign_request(
-            request_id, sign_data, data_type, chain_id, path, xfp, address, origin
-        ));
+        assert_eq!(
+            expect_result,
+            generate_eth_sign_request(
+                request_id, sign_data, data_type, chain_id, path, xfp, address, origin
+            )
+        );
     }
 
     #[test]
@@ -125,8 +130,11 @@ mod tests {
 
         let expect_result = "{\"error\":\"sign_data is invalid\"}";
 
-        assert_eq!(expect_result, generate_eth_sign_request(
-            request_id, sign_data, data_type, chain_id, path, xfp, address, origin
-        ));
+        assert_eq!(
+            expect_result,
+            generate_eth_sign_request(
+                request_id, sign_data, data_type, chain_id, path, xfp, address, origin
+            )
+        );
     }
 }

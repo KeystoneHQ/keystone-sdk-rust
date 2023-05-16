@@ -1,13 +1,13 @@
-use alloc::string::ToString;
-use alloc::vec::Vec;
-use minicbor::encode::Write;
-use minicbor::{Decoder, Encoder};
-use minicbor::data::{Int, Tag};
 use crate::cbor::cbor_map;
 use crate::error::{URError, URResult};
 use crate::registry_types::{RegistryType, NEAR_SIGNATURE, UUID};
-use crate::traits::{RegistryItem, To, From as FromCbor};
+use crate::traits::{From as FromCbor, RegistryItem, To};
 use crate::types::Bytes;
+use alloc::string::ToString;
+use alloc::vec::Vec;
+use minicbor::data::{Int, Tag};
+use minicbor::encode::Write;
+use minicbor::{Decoder, Encoder};
 
 const REQUEST_ID: u8 = 1;
 const SIGNATURE: u8 = 2;
@@ -32,7 +32,10 @@ impl NearSignature {
     }
 
     pub fn new(request_id: Option<Bytes>, signature: Vec<Bytes>) -> Self {
-        NearSignature { request_id, signature }
+        NearSignature {
+            request_id,
+            signature,
+        }
     }
 
     pub fn get_request_id(&self) -> Option<Bytes> {
@@ -50,12 +53,14 @@ impl RegistryItem for NearSignature {
 }
 
 impl<C> minicbor::Encode<C> for NearSignature {
-    fn encode<W: Write>(&self,
-                        e: &mut Encoder<W>,
-                        _ctx: &mut C) -> Result<(), minicbor::encode::Error<W::Error>> {
+    fn encode<W: Write>(
+        &self,
+        e: &mut Encoder<W>,
+        _ctx: &mut C,
+    ) -> Result<(), minicbor::encode::Error<W::Error>> {
         let mut size = 1;
-        if let Some(_) = &self.request_id {
-            size = size + 1;
+        if self.request_id.is_some() {
+            size += 1;
         }
         e.map(size)?;
         if let Some(request_id) = &self.request_id {
@@ -67,7 +72,7 @@ impl<C> minicbor::Encode<C> for NearSignature {
         let len = self.signature.len().try_into().unwrap();
         e.array(len)?;
         for ele in &self.signature {
-            e.bytes(&ele)?;
+            e.bytes(ele)?;
         }
         Ok(())
     }
@@ -77,7 +82,8 @@ impl<'b, C> minicbor::Decode<'b, C> for NearSignature {
     fn decode(d: &mut Decoder<'b>, _ctx: &mut C) -> Result<Self, minicbor::decode::Error> {
         let mut result = NearSignature::default();
         cbor_map(d, &mut result, |key, obj, d| {
-            let key = u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
+            let key =
+                u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
             match key {
                 REQUEST_ID => {
                     d.tag()?;
@@ -114,9 +120,9 @@ impl FromCbor<NearSignature> for NearSignature {
 
 #[cfg(test)]
 mod tests {
-    use alloc::vec;
-    use crate::traits::{From as FromCbor, To};
     use crate::near::near_signature::NearSignature;
+    use crate::traits::{From as FromCbor, To};
+    use alloc::vec;
 
     #[test]
     fn test_encode() {

@@ -1,12 +1,12 @@
-use alloc::{format};
+use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
-use minicbor::data::{Tag, Int};
+use minicbor::data::{Int, Tag};
 
-use crate::cbor::{cbor_map, cbor_array};
+use crate::cbor::{cbor_array, cbor_map};
 use crate::crypto_key_path::CryptoKeyPath;
 use crate::error::{URError, URResult};
-use crate::registry_types::{RegistryType, UUID, APTOS_SIGN_REQUEST};
+use crate::registry_types::{RegistryType, APTOS_SIGN_REQUEST, UUID};
 use crate::traits::{From, RegistryItem, To};
 use crate::types::Bytes;
 
@@ -17,19 +17,16 @@ const ACCOUNTS: u8 = 4;
 const ORIGIN: u8 = 5;
 const SIGN_TYPE: u8 = 6;
 
-
 #[derive(Clone, Debug)]
+#[derive(Default)]
 pub enum SignType {
+    #[default]
     Single = 1,
     Multi = 2,
     Message = 3,
 }
 
-impl Default for SignType {
-    fn default() -> Self {
-        SignType::Single
-    }
-}
+
 
 impl SignType {
     pub fn from_u32(i: u32) -> Result<Self, String> {
@@ -72,7 +69,10 @@ impl AptosSignRequest {
         self.sign_type = sign_type
     }
 
-    pub fn set_authentication_key_derivation_paths(&mut self, authentication_key_derivation_paths: Vec<CryptoKeyPath>) {
+    pub fn set_authentication_key_derivation_paths(
+        &mut self,
+        authentication_key_derivation_paths: Vec<CryptoKeyPath>,
+    ) {
         self.authentication_key_derivation_paths = authentication_key_derivation_paths;
     }
 
@@ -127,8 +127,12 @@ impl RegistryItem for AptosSignRequest {
     }
 }
 
-impl <C> minicbor::Encode<C> for AptosSignRequest {
-    fn encode<W: minicbor::encode::Write>(&self, e: &mut minicbor::Encoder<W>, ctx: &mut C) -> Result<(), minicbor::encode::Error<W::Error>> {
+impl<C> minicbor::Encode<C> for AptosSignRequest {
+    fn encode<W: minicbor::encode::Write>(
+        &self,
+        e: &mut minicbor::Encoder<W>,
+        ctx: &mut C,
+    ) -> Result<(), minicbor::encode::Error<W::Error>> {
         let mut size = 4;
         if self.accounts.is_some() {
             size += 1;
@@ -137,51 +141,77 @@ impl <C> minicbor::Encode<C> for AptosSignRequest {
             size += 1;
         }
         e.map(size)?;
-        e.int(Int::try_from(REQUEST_ID).map_err(|e| minicbor::encode::Error::message(e.to_string()))?)?
-            .tag(Tag::Unassigned(UUID.get_tag()))?
-            .bytes(&self.get_request_id())?;
-        e.int(Int::try_from(SIGN_DATA).map_err(|e| minicbor::encode::Error::message(e.to_string()))?)?
-            .bytes(&self.get_sign_data())?;
+        e.int(
+            Int::try_from(REQUEST_ID)
+                .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
+        )?
+        .tag(Tag::Unassigned(UUID.get_tag()))?
+        .bytes(&self.get_request_id())?;
+        e.int(
+            Int::try_from(SIGN_DATA)
+                .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
+        )?
+        .bytes(&self.get_sign_data())?;
 
         let authentication_key_derivation_paths = self.get_authentication_key_derivation_paths();
-        if authentication_key_derivation_paths.len() == 0 {
-            return Err(minicbor::encode::Error::message("authentication key derivation paths is invalid"));
+        if authentication_key_derivation_paths.is_empty() {
+            return Err(minicbor::encode::Error::message(
+                "authentication key derivation paths is invalid",
+            ));
         }
-        e.int(Int::try_from(AUTHENTICATION_KEY_DERIVATION_PATHS).map_err(|e| minicbor::encode::Error::message(e.to_string()))?)?
-            .array(authentication_key_derivation_paths.len() as u64)?;
+        e.int(
+            Int::try_from(AUTHENTICATION_KEY_DERIVATION_PATHS)
+                .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
+        )?
+        .array(authentication_key_derivation_paths.len() as u64)?;
         for path in authentication_key_derivation_paths {
-            e.tag(Tag::Unassigned(CryptoKeyPath::get_registry_type().get_tag()))?;
+            e.tag(Tag::Unassigned(
+                CryptoKeyPath::get_registry_type().get_tag(),
+            ))?;
             CryptoKeyPath::encode(&path, e, ctx)?;
         }
 
         if let Some(accounts) = self.get_accounts() {
-            e.int(Int::try_from(ACCOUNTS).map_err(|e| minicbor::encode::Error::message(e.to_string()))?)?
-                .array(accounts.len() as u64)?;
+            e.int(
+                Int::try_from(ACCOUNTS)
+                    .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
+            )?
+            .array(accounts.len() as u64)?;
             for addr in accounts {
                 e.bytes(&addr)?;
             }
         }
         if let Some(origin) = self.get_origin() {
-            e.int(Int::try_from(ORIGIN).map_err(|e| minicbor::encode::Error::message(e.to_string()))?)?
-                .str(&origin)?;
+            e.int(
+                Int::try_from(ORIGIN)
+                    .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
+            )?
+            .str(&origin)?;
         }
-        e.int(Int::try_from(SIGN_TYPE).map_err(|e| minicbor::encode::Error::message(e.to_string()))?)?
-            .int(Int::try_from(self.get_sign_type() as u8).map_err(|e| minicbor::encode::Error::message(e.to_string()))?)?;
+        e.int(
+            Int::try_from(SIGN_TYPE)
+                .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
+        )?
+        .int(
+            Int::try_from(self.get_sign_type() as u8)
+                .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
+        )?;
         Ok(())
     }
 }
 
-impl <'b, C> minicbor::Decode<'b, C> for AptosSignRequest {
+impl<'b, C> minicbor::Decode<'b, C> for AptosSignRequest {
     fn decode(d: &mut minicbor::Decoder<'b>, ctx: &mut C) -> Result<Self, minicbor::decode::Error> {
         let mut result = AptosSignRequest::default();
 
         cbor_map(d, &mut result, |key, obj, d| {
-            let key = u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
+            let key =
+                u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
             match key {
                 REQUEST_ID => {
                     let tag = d.tag()?;
                     if !tag.eq(&Tag::Unassigned(UUID.get_tag())) {
-                        return Err(minicbor::decode::Error::message("UUID tag is invalid"))
+                        return Err(minicbor::decode::Error::message("UUID tag is invalid"));
                     }
                     obj.request_id = d.bytes()?.to_vec();
                 }
@@ -189,14 +219,22 @@ impl <'b, C> minicbor::Decode<'b, C> for AptosSignRequest {
                     obj.sign_data = d.bytes()?.to_vec();
                 }
                 AUTHENTICATION_KEY_DERIVATION_PATHS => {
-                    cbor_array(d, &mut obj.authentication_key_derivation_paths, |_key, obj, d| {
-                        let tag = d.tag()?;
-                        if !tag.eq(&Tag::Unassigned(CryptoKeyPath::get_registry_type().get_tag())) {
-                            return Err(minicbor::decode::Error::message("CryptoKeyPath tag is invalid"))
-                        }
-                        obj.push(CryptoKeyPath::decode(d, ctx)?);
-                        Ok(())
-                    })?;
+                    cbor_array(
+                        d,
+                        &mut obj.authentication_key_derivation_paths,
+                        |_key, obj, d| {
+                            let tag = d.tag()?;
+                            if !tag.eq(&Tag::Unassigned(
+                                CryptoKeyPath::get_registry_type().get_tag(),
+                            )) {
+                                return Err(minicbor::decode::Error::message(
+                                    "CryptoKeyPath tag is invalid",
+                                ));
+                            }
+                            obj.push(CryptoKeyPath::decode(d, ctx)?);
+                            Ok(())
+                        },
+                    )?;
                 }
                 ACCOUNTS => {
                     if obj.accounts.is_none() {
@@ -214,7 +252,8 @@ impl <'b, C> minicbor::Decode<'b, C> for AptosSignRequest {
                     obj.origin = Some(d.str()?.to_string());
                 }
                 SIGN_TYPE => {
-                    obj.sign_type = SignType::from_u32(d.u32()?).map_err(|err| minicbor::decode::Error::message(err))?;
+                    obj.sign_type = SignType::from_u32(d.u32()?)
+                        .map_err(minicbor::decode::Error::message)?;
                 }
                 _ => {}
             }
@@ -232,6 +271,6 @@ impl To for AptosSignRequest {
 
 impl From<AptosSignRequest> for AptosSignRequest {
     fn from_cbor(bytes: Vec<u8>) -> URResult<AptosSignRequest> {
-        minicbor::decode(&bytes).map_err(|e| {URError::CborDecodeError(e.to_string())})
+        minicbor::decode(&bytes).map_err(|e| URError::CborDecodeError(e.to_string()))
     }
 }

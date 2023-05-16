@@ -1,7 +1,6 @@
 use alloc::string::String;
 use thiserror::Error;
 
-
 #[derive(Error, Debug, PartialEq)]
 pub enum URError {
     #[error("cbor decode failed, reason: `{0}`")]
