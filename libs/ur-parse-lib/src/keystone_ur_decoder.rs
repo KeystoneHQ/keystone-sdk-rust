@@ -1,11 +1,12 @@
 use alloc::string::{String, ToString};
+use alloc::vec::Vec;
 use core::fmt;
 use ur::ur::Kind;
 use ur_registry::error::{URError, URResult};
 use ur_registry::registry_types::{URType};
 use crate::ur::UR;
 
-pub fn probe_decode<T: ur_registry::traits::From<T>>(part: String) -> URResult<URParseResult<T>> {
+pub fn probe_decode<T: TryFrom<Vec<u8>, Error = URError>>(part: String) -> URResult<URParseResult<T>> {
     let mut ur_parse_result = URParseResult { is_multi_part: false, progress: 0, ur_type: None, data: None, decoder: None };
     let decoded = ur::decode(&part).map_err(|e| URError::UrDecodeError(e.to_string()))?;
     match decoded.0 {
@@ -29,6 +30,7 @@ pub fn probe_decode<T: ur_registry::traits::From<T>>(part: String) -> URResult<U
 }
 
 
+
 pub fn get_type(part: &String) -> URResult<URType> {
     let part = part.to_lowercase();
     let strip_scheme = part.strip_prefix("ur:").ok_or(URError::NotAUr)?;
@@ -41,7 +43,7 @@ pub struct KeystoneURDecoder {
 }
 
 impl KeystoneURDecoder {
-    pub fn parse_ur<T: ur_registry::traits::From<T>>(&mut self, part: String) -> URResult<MultiURParseResult<T>> {
+    pub fn parse_ur<T: TryFrom<Vec<u8>, Error = URError>>(&mut self, part: String) -> URResult<MultiURParseResult<T>> {
         let mut ur_parse_result = MultiURParseResult { is_complete: false, progress: 0, ur_type: None, data: None };
         self.decoder.receive(&part).map_err(|e| URError::UrDecodeError(e.to_string()))?;
         if self.decoder.complete() {

@@ -1,10 +1,9 @@
-use alloc::format;
 #[macro_export]
 macro_rules! impl_ur_try_from_cbor_bytes {
     ($name: ident) => {
-        impl TryFrom<Bytes> for $name {
+        impl TryFrom<Vec<u8>> for $name {
             type Error = URError;
-            fn try_from(value: Bytes) -> URResult<Self> {
+            fn try_from(value: Vec<u8>) -> URResult<Self> {
                 minicbor::decode(&value).map_err(|e| URError::CborDecodeError(e.to_string()))
             }
         }
@@ -14,10 +13,10 @@ macro_rules! impl_ur_try_from_cbor_bytes {
 #[macro_export]
 macro_rules! impl_ur_try_into_cbor_bytes {
     ($name: ident) => {
-        impl TryInto<Bytes> for $name {
+        impl TryInto<Vec<u8>> for $name {
             type Error = URError;
 
-            fn try_into(self) -> URResult<Bytes> {
+            fn try_into(self) -> URResult<Vec<u8>> {
                 minicbor::to_vec(self.clone()).map_err(|e| URError::CborDecodeError(e.to_string()))
             }
         }
@@ -25,14 +24,14 @@ macro_rules! impl_ur_try_into_cbor_bytes {
 }
 
 #[macro_export]
-macro_rules! impl_from_into_cbor_bytes {
-    ($name: ident) => {
-        impl_ur_try_from_cbor_bytes!($name);
-        impl_ur_try_into_cbor_bytes!($name);
+macro_rules! impl_cbor_bytes {
+    ($($name: ident,) *) => {
+        $(
+         impl_ur_try_from_cbor_bytes!($name);
+         impl_ur_try_into_cbor_bytes!($name);
+        )*
     };
 }
-
-use paste::paste;
 
 #[macro_export]
 macro_rules! impl_template_struct {
@@ -42,6 +41,16 @@ macro_rules! impl_template_struct {
             $(
               $field: $t,
             )*
+        }
+
+        impl $name {
+            pub fn new($($field: $t), *) -> Self {
+                Self {
+                    $(
+                        $field
+                    ), *
+                }
+            }
         }
 
         paste::item! {

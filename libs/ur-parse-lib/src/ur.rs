@@ -1,7 +1,6 @@
 use alloc::vec::Vec;
-use ur_registry::error::URResult;
+use ur_registry::error::{URError, URResult};
 use ur_registry::registry_types::URType;
-use ur_registry::traits::From;
 
 pub struct UR {
     ur_type: URType,
@@ -13,9 +12,8 @@ impl UR {
         UR { ur_type, data }
     }
 
-    pub fn parse<T: From<T>> (&self) -> URResult<(URType, T)> {
-        let result = T::from_cbor(self.data.clone())?;
+    pub fn parse<T: TryFrom<Vec<u8>, Error = URError>>(&self) -> URResult<(URType, T)> {
+        let result = T::try_from(self.data.clone())?;
         Ok((self.ur_type.clone(), result))
     }
-
 }

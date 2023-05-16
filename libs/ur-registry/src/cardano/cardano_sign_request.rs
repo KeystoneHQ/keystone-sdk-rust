@@ -3,8 +3,11 @@ use crate::cardano::cardano_utxo::CardanoUTXO;
 use crate::cbor::{cbor_array, cbor_map};
 use crate::crypto_key_path::CryptoKeyPath;
 use crate::error::{URError, URResult};
-use crate::registry_types::{RegistryType, CARDANO_SIGN_REQUEST, CRYPTO_KEYPATH, UUID, CARDANO_UTXO, CARDANO_CERT_KEY};
-use crate::traits::{From as FromCbor, RegistryItem, To};
+use crate::impl_template_struct;
+use crate::registry_types::{
+    RegistryType, CARDANO_CERT_KEY, CARDANO_SIGN_REQUEST, CARDANO_UTXO, CRYPTO_KEYPATH, UUID,
+};
+use crate::traits::{From as FromCbor, MapSize, RegistryItem, To};
 use crate::types::Bytes;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
@@ -18,67 +21,10 @@ const UTXOS: u8 = 3;
 const CERT_KEYS: u8 = 4;
 const ORIGIN: u8 = 5;
 
-#[derive(Debug, Clone, Default)]
-pub struct CardanoSignRequest {
-    request_id: Option<Bytes>,
-    sign_data: Bytes,
-    utxos: Vec<CardanoUTXO>,
-    cert_keys: Vec<CardanoCertKey>,
-    origin: Option<String>,
-}
+impl_template_struct!(CardanoSignRequest {request_id: Option<Bytes>, sign_data: Bytes, utxos: Vec<CardanoUTXO>, cert_keys: Vec<CardanoCertKey>, origin: Option<String>});
 
-impl CardanoSignRequest {
-    pub fn default() -> Self {
-        Default::default()
-    }
-    pub fn set_request_id(&mut self, id: Option<Bytes>) {
-        self.request_id = id;
-    }
-    pub fn set_sign_data(&mut self, data: Bytes) {
-        self.sign_data = data
-    }
-    pub fn set_utxos(&mut self, utxos: Vec<CardanoUTXO>) {
-        self.utxos = utxos;
-    }
-    pub fn set_cert_keys(&mut self, cert_keys: Vec<CardanoCertKey>) {
-        self.cert_keys = cert_keys;
-    }
-    pub fn set_origin(&mut self, origin: Option<String>) {
-        self.origin = origin;
-    }
-    pub fn get_request_id(&self) -> Option<Bytes> {
-        self.request_id.clone()
-    }
-    pub fn get_sign_data(&self) -> Bytes {
-        self.sign_data.clone()
-    }
-    pub fn get_utxos(&self) -> Vec<CardanoUTXO> {
-        self.utxos.clone()
-    }
-    pub fn get_cert_keys(&self) -> Vec<CardanoCertKey> {
-        self.cert_keys.clone()
-    }
-    pub fn get_origin(&self) -> Option<String> {
-        self.origin.clone()
-    }
-
-    pub fn new(
-        request_id: Option<Bytes>,
-        sign_data: Bytes,
-        utxos: Vec<CardanoUTXO>,
-        cert_keys: Vec<CardanoCertKey>,
-        origin: Option<String>,
-    ) -> Self {
-        Self {
-            request_id,
-            sign_data,
-            utxos,
-            cert_keys,
-            origin,
-        }
-    }
-
-    fn get_map_size(&self) -> u64 {
+impl MapSize for CardanoSignRequest {
+    fn map_size(&self) -> u64 {
         let mut size = 3;
         if let Some(_) = self.request_id {
             size = size + 1;
@@ -98,7 +44,7 @@ impl RegistryItem for CardanoSignRequest {
 
 impl<C> minicbor::Encode<C> for CardanoSignRequest {
     fn encode<W: Write>(&self, e: &mut Encoder<W>, _ctx: &mut C) -> Result<(), Error<W::Error>> {
-        e.map(self.get_map_size())?;
+        e.map(self.map_size())?;
 
         if let Some(request_id) = &self.request_id {
             e.int(Int::from(REQUEST_ID))?
@@ -185,8 +131,6 @@ mod tests {
     use alloc::vec;
 
     extern crate std;
-
-    use std::println;
 
     #[test]
     fn test_construct() {
