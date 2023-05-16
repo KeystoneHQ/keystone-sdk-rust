@@ -75,12 +75,13 @@ mod tests {
             psbt: Vec::from_hex("8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa")
                 .unwrap(),
         };
+        let result: Vec<u8> = crypto.try_into().unwrap();
         assert_eq!(
             "58208C05C4B4F3E88840A4F4B5F155CFD69473EA169F3D0431B7A6787A23777F08AA",
-            hex::encode(crypto.to_bytes().unwrap()).to_uppercase()
+            hex::encode::<Vec<u8>>(result.clone()).to_uppercase()
         );
 
-        let ur  = ur::encode(&*(crypto.to_bytes().unwrap()), CryptoPSBT::get_registry_type().get_type());
+        let ur  = ur::encode(&result, CryptoPSBT::get_registry_type().get_type());
         assert_eq!(ur, "ur:crypto-psbt/hdcxlkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypkvoonhknt");
     }
 
@@ -90,7 +91,7 @@ mod tests {
             "58208C05C4B4F3E88840A4F4B5F155CFD69473EA169F3D0431B7A6787A23777F08AA",
         )
             .unwrap();
-        let crypto = CryptoPSBT::from_cbor(bytes).unwrap();
+        let crypto = CryptoPSBT::try_from(bytes).unwrap();
         assert_eq!(crypto.get_psbt(), Vec::from_hex("8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa").unwrap());
     }
 }
