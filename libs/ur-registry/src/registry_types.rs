@@ -1,53 +1,34 @@
-use alloc::string::{String, ToString};
 use crate::error::{URError, URResult};
+use alloc::string::{String, ToString};
 
 #[derive(Clone, Debug)]
 pub enum URType {
     CryptoPsbt(String),
     CryptoAccount(String),
     EthSignRequest(String),
-    Bytes(String)
+    Bytes(String),
 }
 
 impl URType {
     pub fn from(type_str: &str) -> URResult<URType> {
         match type_str {
-            "crypto-psbt" => {
-                Ok(URType::CryptoPsbt(type_str.to_string()))
-            }
-            "crypto-account" => {
-                Ok(URType::CryptoAccount(type_str.to_string()))
-            }
-            "bytes" => {
-                Ok(URType::Bytes(type_str.to_string()))
-            }
-            "eth-sign-request" => {
-                Ok(URType::EthSignRequest(type_str.to_string()))
-            }
-            _ => {
-                Err(URError::NotSupportURTypeError(type_str.to_string()))
-            }
+            "crypto-psbt" => Ok(URType::CryptoPsbt(type_str.to_string())),
+            "crypto-account" => Ok(URType::CryptoAccount(type_str.to_string())),
+            "bytes" => Ok(URType::Bytes(type_str.to_string())),
+            "eth-sign-request" => Ok(URType::EthSignRequest(type_str.to_string())),
+            _ => Err(URError::NotSupportURTypeError(type_str.to_string())),
         }
     }
 
     pub fn get_type_str(&self) -> String {
         match self {
-            URType::CryptoPsbt(type_str) => {
-                type_str.to_string()
-            }
-            URType::CryptoAccount(type_str) => {
-                type_str.to_string()
-            }
-            URType::Bytes(type_str) => {
-                type_str.to_string()
-            }
-            URType::EthSignRequest(type_str) => {
-                type_str.to_string()
-            }
-	}
+            URType::CryptoPsbt(type_str) => type_str.to_string(),
+            URType::CryptoAccount(type_str) => type_str.to_string(),
+            URType::Bytes(type_str) => type_str.to_string(),
+            URType::EthSignRequest(type_str) => type_str.to_string(),
+        }
     }
 }
-
 
 pub struct RegistryType<'a>(&'a str, Option<u64>);
 
