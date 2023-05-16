@@ -1,42 +1,53 @@
+use crate::error::URError;
 use alloc::string::ToString;
 use alloc::vec::Vec;
 use core2::io::{Read, Write};
 use libflate::gzip::{Decoder, Encoder};
 use prost::bytes::Bytes;
 use prost::Message;
-use crate::error::URError;
 
 pub fn parse_protobuf<T>(bytes: Vec<u8>) -> Result<T, URError>
-    where T: Message + Default {
+where
+    T: Message + Default,
+{
     Message::decode(Bytes::from(bytes)).map_err(|e| URError::ProtobufDecodeError(e.to_string()))
 }
 
-pub fn serialize_protobuf<T>(data: T) -> Vec<u8> where T: Message + Default {
+pub fn serialize_protobuf<T>(data: T) -> Vec<u8>
+where
+    T: Message + Default,
+{
     data.encode_to_vec()
 }
 
 pub fn unzip(bytes: Vec<u8>) -> Result<Vec<u8>, URError> {
-    let mut decoder = Decoder::new(&bytes[..]).map_err(|e| URError::GzipDecodeError(e.to_string()))?;
+    let mut decoder =
+        Decoder::new(&bytes[..]).map_err(|e| URError::GzipDecodeError(e.to_string()))?;
     let mut buf = Vec::new();
     Read::read(&mut decoder, &mut buf).map_err(|e| URError::GzipDecodeError(e.to_string()))?;
-    Read::read_to_end(&mut decoder, &mut buf).map_err(|e| URError::GzipDecodeError(e.to_string()))?;
+    Read::read_to_end(&mut decoder, &mut buf)
+        .map_err(|e| URError::GzipDecodeError(e.to_string()))?;
     Ok(buf)
 }
 
 pub fn zip(bytes: &Vec<u8>) -> Result<Vec<u8>, URError> {
     let mut encoder = Encoder::new(Vec::new()).unwrap();
-    encoder.write_all(bytes).map_err(|e| URError::GzipEncodeError(e.to_string()))?;
-    let compressed = encoder.finish().into_result().map_err(|e| URError::GzipEncodeError(e.to_string()))?;
+    encoder
+        .write_all(bytes)
+        .map_err(|e| URError::GzipEncodeError(e.to_string()))?;
+    let compressed = encoder
+        .finish()
+        .into_result()
+        .map_err(|e| URError::GzipEncodeError(e.to_string()))?;
     Ok(compressed)
 }
 
 #[cfg(test)]
 mod tests {
-    use alloc::vec::Vec;
-    use hex::FromHex;
     use crate::pb::protobuf_parser::{parse_protobuf, serialize_protobuf, unzip, zip};
     use crate::pb::protoc::Base;
-
+    use alloc::vec::Vec;
+    use hex::FromHex;
 
     #[test]
     fn test_protobuf() {

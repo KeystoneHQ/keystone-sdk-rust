@@ -1,14 +1,14 @@
-use alloc::string::{String, ToString};
-use alloc::vec::Vec;
-use minicbor::encode::Write;
-use minicbor::{Decoder, Encoder};
-use minicbor::data::{Int, Tag};
 use crate::cbor::cbor_map;
 use crate::crypto_key_path::CryptoKeyPath;
 use crate::error::{URError, URResult};
-use crate::registry_types::{CRYPTO_KEYPATH, RegistryType, UUID, NEAR_SIGN_REQUEST};
-use crate::traits::{RegistryItem, To, From as FromCbor};
+use crate::registry_types::{RegistryType, CRYPTO_KEYPATH, NEAR_SIGN_REQUEST, UUID};
+use crate::traits::{From as FromCbor, RegistryItem, To};
 use crate::types::Bytes;
+use alloc::string::{String, ToString};
+use alloc::vec::Vec;
+use minicbor::data::{Int, Tag};
+use minicbor::encode::Write;
+use minicbor::{Decoder, Encoder};
 
 const REQUEST_ID: u8 = 1;
 const SIGN_DATA: u8 = 2;
@@ -103,9 +103,11 @@ impl RegistryItem for NearSignRequest {
 }
 
 impl<C> minicbor::Encode<C> for NearSignRequest {
-    fn encode<W: Write>(&self,
-                        e: &mut Encoder<W>,
-                        _ctx: &mut C) -> Result<(), minicbor::encode::Error<W::Error>> {
+    fn encode<W: Write>(
+        &self,
+        e: &mut Encoder<W>,
+        _ctx: &mut C,
+    ) -> Result<(), minicbor::encode::Error<W::Error>> {
         e.map(self.get_map_size())?;
 
         if let Some(request_id) = &self.request_id {
@@ -126,25 +128,23 @@ impl<C> minicbor::Encode<C> for NearSignRequest {
         CryptoKeyPath::encode(&self.derivation_path, e, _ctx)?;
 
         if let Some(account) = &self.account {
-            e.int(Int::from(ACCOUNT))?
-                .bytes(account)?;
+            e.int(Int::from(ACCOUNT))?.bytes(account)?;
         }
 
         if let Some(origin) = &self.origin {
-            e.int(Int::from(ORIGIN))?
-                .str(origin)?;
+            e.int(Int::from(ORIGIN))?.str(origin)?;
         }
 
         Ok(())
     }
 }
 
-
 impl<'b, C> minicbor::Decode<'b, C> for NearSignRequest {
     fn decode(d: &mut Decoder<'b>, _ctx: &mut C) -> Result<Self, minicbor::decode::Error> {
         let mut result = NearSignRequest::default();
         cbor_map(d, &mut result, |key, obj, d| {
-            let key = u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
+            let key =
+                u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
             match key {
                 REQUEST_ID => {
                     d.tag()?;
@@ -177,7 +177,6 @@ impl<'b, C> minicbor::Decode<'b, C> for NearSignRequest {
     }
 }
 
-
 impl To for NearSignRequest {
     fn to_bytes(&self) -> URResult<Vec<u8>> {
         minicbor::to_vec(self.clone()).map_err(|e| URError::CborEncodeError(e.to_string()))
@@ -192,13 +191,13 @@ impl FromCbor<NearSignRequest> for NearSignRequest {
 
 #[cfg(test)]
 mod tests {
+    use crate::crypto_key_path::{CryptoKeyPath, PathComponent};
+    use crate::near::near_sign_request::NearSignRequest;
+    use crate::traits::{From, To};
     use alloc::string::ToString;
     use alloc::vec;
     use alloc::vec::Vec;
     use hex::FromHex;
-    use crate::crypto_key_path::{CryptoKeyPath, PathComponent};
-    use crate::near::near_sign_request::NearSignRequest;
-    use crate::traits::{To, From};
 
     #[test]
     fn test_encode() {
@@ -215,7 +214,11 @@ mod tests {
             hex::decode("4000000039666363303732306130313664336331653834396438366231366437313339653034336566633438616464316337386633396333643266303065653938633037009FCC0720A016D3C1E849D86B16D7139E043EFC48ADD1C78F39C3D2F00EE98C07823E0CA1957100004000000039666363303732306130313664336331653834396438366231366437313339653034336566633438616464316337386633396333643266303065653938633037F0787E1CB1C22A1C63C24A37E4C6C656DD3CB049E6B7C17F75D01F0859EFB7D80100000003000000A1EDCCCE1BC2D3000000000000").unwrap(),
         ];
         let sign_request = NearSignRequest::new(
-            request_id, sign_data, crypto_key_path, None, Some("nearwallet".to_string())
+            request_id,
+            sign_data,
+            crypto_key_path,
+            None,
+            Some("nearwallet".to_string()),
         );
 
         assert_eq!(
@@ -236,7 +239,10 @@ mod tests {
             hex::decode("4000000039666363303732306130313664336331653834396438366231366437313339653034336566633438616464316337386633396333643266303065653938633037009FCC0720A016D3C1E849D86B16D7139E043EFC48ADD1C78F39C3D2F00EE98C07823E0CA1957100004000000039666363303732306130313664336331653834396438366231366437313339653034336566633438616464316337386633396333643266303065653938633037F0787E1CB1C22A1C63C24A37E4C6C656DD3CB049E6B7C17F75D01F0859EFB7D80100000003000000A1EDCCCE1BC2D3000000000000").unwrap(),
         ];
 
-        assert_eq!("44'/397'/0'", sign_request.derivation_path.get_path().unwrap());
+        assert_eq!(
+            "44'/397'/0'",
+            sign_request.derivation_path.get_path().unwrap()
+        );
         assert_eq!(request_id, sign_request.get_request_id());
         assert_eq!(sign_data, sign_request.get_sign_data());
     }

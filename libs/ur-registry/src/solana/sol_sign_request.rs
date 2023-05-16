@@ -1,15 +1,15 @@
-use alloc::format;
-use alloc::string::{String, ToString};
-use alloc::vec::Vec;
-use minicbor::encode::Write;
-use minicbor::{Decoder, Encoder};
-use minicbor::data::{Int, Tag};
 use crate::cbor::cbor_map;
 use crate::crypto_key_path::CryptoKeyPath;
 use crate::error::{URError, URResult};
-use crate::registry_types::{CRYPTO_KEYPATH, RegistryType, SOL_SIGN_REQUEST, UUID};
-use crate::traits::{RegistryItem, To, From as FromCbor};
+use crate::registry_types::{RegistryType, CRYPTO_KEYPATH, SOL_SIGN_REQUEST, UUID};
+use crate::traits::{From as FromCbor, RegistryItem, To};
 use crate::types::Bytes;
+use alloc::format;
+use alloc::string::{String, ToString};
+use alloc::vec::Vec;
+use minicbor::data::{Int, Tag};
+use minicbor::encode::Write;
+use minicbor::{Decoder, Encoder};
 
 const REQUEST_ID: u8 = 1;
 const SIGN_DATA: u8 = 2;
@@ -140,9 +140,11 @@ impl RegistryItem for SolSignRequest {
 }
 
 impl<C> minicbor::Encode<C> for SolSignRequest {
-    fn encode<W: Write>(&self,
-                        e: &mut Encoder<W>,
-                        _ctx: &mut C) -> Result<(), minicbor::encode::Error<W::Error>> {
+    fn encode<W: Write>(
+        &self,
+        e: &mut Encoder<W>,
+        _ctx: &mut C,
+    ) -> Result<(), minicbor::encode::Error<W::Error>> {
         e.map(self.get_map_size())?;
 
         if let Some(request_id) = &self.request_id {
@@ -151,21 +153,18 @@ impl<C> minicbor::Encode<C> for SolSignRequest {
                 .bytes(request_id)?;
         }
 
-        e.int(Int::from(SIGN_DATA))?
-            .bytes(&self.sign_data)?;
+        e.int(Int::from(SIGN_DATA))?.bytes(&self.sign_data)?;
 
         e.int(Int::from(DERIVATION_PATH))?;
         e.tag(Tag::Unassigned(CRYPTO_KEYPATH.get_tag()))?;
         CryptoKeyPath::encode(&self.derivation_path, e, _ctx)?;
 
         if let Some(address) = &self.address {
-            e.int(Int::from(ADDRESS))?
-                .bytes(address)?;
+            e.int(Int::from(ADDRESS))?.bytes(address)?;
         }
 
         if let Some(origin) = &self.origin {
-            e.int(Int::from(ORIGIN))?
-                .str(origin)?;
+            e.int(Int::from(ORIGIN))?.str(origin)?;
         }
 
         e.int(Int::from(SIGN_TYPE))?
@@ -175,12 +174,12 @@ impl<C> minicbor::Encode<C> for SolSignRequest {
     }
 }
 
-
 impl<'b, C> minicbor::Decode<'b, C> for SolSignRequest {
     fn decode(d: &mut Decoder<'b>, _ctx: &mut C) -> Result<Self, minicbor::decode::Error> {
         let mut result = SolSignRequest::default();
         cbor_map(d, &mut result, |key, obj, d| {
-            let key = u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
+            let key =
+                u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
             match key {
                 REQUEST_ID => {
                     d.tag()?;
@@ -200,10 +199,11 @@ impl<'b, C> minicbor::Decode<'b, C> for SolSignRequest {
                     obj.origin = Some(d.str()?.to_string());
                 }
                 SIGN_TYPE => {
-                    obj.sign_type =
-                        SignType::from_u32(u32::try_from(d.int()?)
-                            .map_err(|e| minicbor::decode::Error::message(e.to_string()))?)
-                            .map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
+                    obj.sign_type = SignType::from_u32(
+                        u32::try_from(d.int()?)
+                            .map_err(|e| minicbor::decode::Error::message(e.to_string()))?,
+                    )
+                    .map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
                 }
                 _ => {}
             }
@@ -212,7 +212,6 @@ impl<'b, C> minicbor::Decode<'b, C> for SolSignRequest {
         Ok(result)
     }
 }
-
 
 impl To for SolSignRequest {
     fn to_bytes(&self) -> URResult<Vec<u8>> {
@@ -228,13 +227,13 @@ impl FromCbor<SolSignRequest> for SolSignRequest {
 
 #[cfg(test)]
 mod tests {
+    use crate::crypto_key_path::{CryptoKeyPath, PathComponent};
+    use crate::solana::sol_sign_request::{SignType, SolSignRequest};
+    use crate::traits::{From as FromCbor, To};
     use alloc::string::ToString;
     use alloc::vec;
     use alloc::vec::Vec;
-    use crate::traits::{From as FromCbor, To};
     use hex::FromHex;
-    use crate::crypto_key_path::{CryptoKeyPath, PathComponent};
-    use crate::solana::sol_sign_request::{SignType, SolSignRequest};
 
     #[test]
     fn test_encode() {
@@ -247,9 +246,30 @@ mod tests {
         let components = vec![path1, path2, path3, path4];
         let crypto_key_path = CryptoKeyPath::new(components, Some(source_fingerprint), None);
 
-        let request_id = Some([155, 29, 235, 77, 59, 125, 75, 173, 155, 221, 43, 13, 123, 61, 203, 109].to_vec());
-        let sign_data = [1, 0, 1, 3, 200, 216, 66, 162, 241, 127, 215, 170, 182, 8, 206, 46, 165, 53, 166, 233, 88, 223, 250, 32, 202, 246, 105, 179, 71, 185, 17, 196, 23, 25, 101, 83, 15, 149, 118, 32, 178, 40, 186, 226, 185, 76, 130, 221, 212, 192, 147, 152, 58, 103, 54, 85, 85, 183, 55, 236, 125, 220, 17, 23, 230, 28, 114, 224, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 41, 92, 194, 241, 243, 159, 54, 4, 113, 132, 150, 234, 0, 103, 109, 106, 114, 236, 102, 173, 9, 217, 38, 227, 236, 227, 79, 86, 95, 24, 210, 1, 2, 2, 0, 1, 12, 2, 0, 0, 0, 0, 225, 245, 5, 0, 0, 0, 0].to_vec();
-        let sol_sign_request = SolSignRequest::new(request_id, sign_data, crypto_key_path, None, Some("solflare".to_string()), SignType::Transaction);
+        let request_id = Some(
+            [
+                155, 29, 235, 77, 59, 125, 75, 173, 155, 221, 43, 13, 123, 61, 203, 109,
+            ]
+            .to_vec(),
+        );
+        let sign_data = [
+            1, 0, 1, 3, 200, 216, 66, 162, 241, 127, 215, 170, 182, 8, 206, 46, 165, 53, 166, 233,
+            88, 223, 250, 32, 202, 246, 105, 179, 71, 185, 17, 196, 23, 25, 101, 83, 15, 149, 118,
+            32, 178, 40, 186, 226, 185, 76, 130, 221, 212, 192, 147, 152, 58, 103, 54, 85, 85, 183,
+            55, 236, 125, 220, 17, 23, 230, 28, 114, 224, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 41, 92, 194, 241, 243, 159,
+            54, 4, 113, 132, 150, 234, 0, 103, 109, 106, 114, 236, 102, 173, 9, 217, 38, 227, 236,
+            227, 79, 86, 95, 24, 210, 1, 2, 2, 0, 1, 12, 2, 0, 0, 0, 0, 225, 245, 5, 0, 0, 0, 0,
+        ]
+        .to_vec();
+        let sol_sign_request = SolSignRequest::new(
+            request_id,
+            sign_data,
+            crypto_key_path,
+            None,
+            Some("solflare".to_string()),
+            SignType::Transaction,
+        );
         assert_eq!(
             "a501d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d02589601000103c8d842a2f17fd7aab608ce2ea535a6e958dffa20caf669b347b911c4171965530f957620b228bae2b94c82ddd4c093983a67365555b737ec7ddc1117e61c72e0000000000000000000000000000000000000000000000000000000000000000010295cc2f1f39f3604718496ea00676d6a72ec66ad09d926e3ece34f565f18d201020200010c0200000000e1f5050000000003d90130a20188182cf51901f5f500f500f5021a121212120568736f6c666c6172650601",
             hex::encode(sol_sign_request.to_bytes().unwrap()).to_lowercase()
@@ -263,7 +283,10 @@ mod tests {
         )
             .unwrap();
         let sol_sign_request = SolSignRequest::from_cbor(bytes).unwrap();
-        assert_eq!("44'/501'/0'/0'", sol_sign_request.derivation_path.get_path().unwrap());
+        assert_eq!(
+            "44'/501'/0'/0'",
+            sol_sign_request.derivation_path.get_path().unwrap()
+        );
         assert_eq!(SignType::Transaction, sol_sign_request.get_sign_type());
     }
 }

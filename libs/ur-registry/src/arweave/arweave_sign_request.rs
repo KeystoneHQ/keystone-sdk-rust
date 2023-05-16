@@ -1,14 +1,14 @@
+use crate::cbor::cbor_map;
+use crate::error::{URError, URResult};
+use crate::registry_types::{RegistryType, NEAR_SIGN_REQUEST, UUID};
+use crate::traits::{From as FromCbor, RegistryItem, To};
+use crate::types::{Bytes, Fingerprint};
 use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+use minicbor::data::{Int, Tag};
 use minicbor::encode::Write;
 use minicbor::{Decoder, Encoder};
-use minicbor::data::{Int, Tag};
-use crate::cbor::cbor_map;
-use crate::error::{URError, URResult};
-use crate::registry_types::{RegistryType, UUID, NEAR_SIGN_REQUEST};
-use crate::traits::{RegistryItem, To, From as FromCbor};
-use crate::types::{Bytes, Fingerprint};
 
 const MASTER_FINGERPRINT: u8 = 1;
 const REQUEST_ID: u8 = 2;
@@ -18,12 +18,11 @@ const SALT_LEN: u8 = 5;
 const ORIGIN: u8 = 6;
 const ACCOUNT: u8 = 7;
 
-
 #[derive(Clone, Debug, PartialEq)]
 pub enum SignType {
     Transaction = 1,
     DataItem = 2,
-    Message = 3
+    Message = 3,
 }
 
 impl Default for SignType {
@@ -49,7 +48,7 @@ impl SignType {
 #[derive(Clone, Debug, PartialEq)]
 pub enum SaltLen {
     Zero = 0,
-    Digest = 32
+    Digest = 32,
 }
 
 impl Default for SaltLen {
@@ -134,7 +133,9 @@ impl ArweaveSignRequest {
             origin,
         }
     }
-    pub fn get_master_fingerprint(&self) -> Fingerprint { self.master_fingerprint.clone() }
+    pub fn get_master_fingerprint(&self) -> Fingerprint {
+        self.master_fingerprint.clone()
+    }
     pub fn get_request_id(&self) -> Option<Bytes> {
         self.request_id.clone()
     }
@@ -176,15 +177,17 @@ impl RegistryItem for ArweaveSignRequest {
 }
 
 impl<C> minicbor::Encode<C> for ArweaveSignRequest {
-    fn encode<W: Write>(&self,
-                        e: &mut Encoder<W>,
-                        _ctx: &mut C) -> Result<(), minicbor::encode::Error<W::Error>> {
+    fn encode<W: Write>(
+        &self,
+        e: &mut Encoder<W>,
+        _ctx: &mut C,
+    ) -> Result<(), minicbor::encode::Error<W::Error>> {
         e.map(self.get_map_size())?;
 
-        e.int(Int::from(MASTER_FINGERPRINT))?
-            .int(Int::try_from(u32::from_be_bytes(self.master_fingerprint))
-                .map_err(|e| minicbor::encode::Error::message(e.to_string()))?
-            )?;
+        e.int(Int::from(MASTER_FINGERPRINT))?.int(
+            Int::try_from(u32::from_be_bytes(self.master_fingerprint))
+                .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
+        )?;
 
         if let Some(request_id) = &self.request_id {
             e.int(Int::from(REQUEST_ID))?
@@ -192,8 +195,7 @@ impl<C> minicbor::Encode<C> for ArweaveSignRequest {
                 .bytes(request_id)?;
         }
 
-        e.int(Int::from(SIGN_DATA))?
-            .bytes(&self.sign_data)?;
+        e.int(Int::from(SIGN_DATA))?.bytes(&self.sign_data)?;
 
         e.int(Int::from(SIGN_TYPE))?
             .int(Int::from(self.sign_type.clone() as u8))?;
@@ -202,28 +204,27 @@ impl<C> minicbor::Encode<C> for ArweaveSignRequest {
             .u32(self.salt_len.clone() as u32)?;
 
         if let Some(account) = &self.account {
-            e.int(Int::from(ACCOUNT))?
-                .bytes(account)?;
+            e.int(Int::from(ACCOUNT))?.bytes(account)?;
         }
 
         if let Some(origin) = &self.origin {
-            e.int(Int::from(ORIGIN))?
-                .str(origin)?;
+            e.int(Int::from(ORIGIN))?.str(origin)?;
         }
 
         Ok(())
     }
 }
 
-
 impl<'b, C> minicbor::Decode<'b, C> for ArweaveSignRequest {
     fn decode(d: &mut Decoder<'b>, _ctx: &mut C) -> Result<Self, minicbor::decode::Error> {
         let mut result = ArweaveSignRequest::default();
         cbor_map(d, &mut result, |key, obj, d| {
-            let key = u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
+            let key =
+                u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
             match key {
                 MASTER_FINGERPRINT => {
-                    let mfp = u32::try_from(d.int()?).map_err(|e| minicbor::decode::Error::message(e.to_string()));
+                    let mfp = u32::try_from(d.int()?)
+                        .map_err(|e| minicbor::decode::Error::message(e.to_string()));
                     obj.master_fingerprint = u32::to_be_bytes(mfp?);
                 }
                 REQUEST_ID => {
@@ -234,16 +235,18 @@ impl<'b, C> minicbor::Decode<'b, C> for ArweaveSignRequest {
                     obj.sign_data = d.bytes()?.to_vec();
                 }
                 SIGN_TYPE => {
-                    obj.sign_type =
-                        SignType::from_u32(u32::try_from(d.int()?)
-                            .map_err(|e| minicbor::decode::Error::message(e.to_string()))?)
-                            .map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
+                    obj.sign_type = SignType::from_u32(
+                        u32::try_from(d.int()?)
+                            .map_err(|e| minicbor::decode::Error::message(e.to_string()))?,
+                    )
+                    .map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
                 }
                 SALT_LEN => {
-                    obj.salt_len =
-                        SaltLen::from_u32(u32::try_from(d.int()?)
-                            .map_err(|e| minicbor::decode::Error::message(e.to_string()))?)
-                            .map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
+                    obj.salt_len = SaltLen::from_u32(
+                        u32::try_from(d.int()?)
+                            .map_err(|e| minicbor::decode::Error::message(e.to_string()))?,
+                    )
+                    .map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
                 }
                 ACCOUNT => {
                     obj.account = Some(d.bytes()?.to_vec());
@@ -259,7 +262,6 @@ impl<'b, C> minicbor::Decode<'b, C> for ArweaveSignRequest {
     }
 }
 
-
 impl To for ArweaveSignRequest {
     fn to_bytes(&self) -> URResult<Vec<u8>> {
         minicbor::to_vec(self.clone()).map_err(|e| URError::CborEncodeError(e.to_string()))
@@ -274,23 +276,36 @@ impl FromCbor<ArweaveSignRequest> for ArweaveSignRequest {
 
 #[cfg(test)]
 mod tests {
+    use crate::arweave::arweave_sign_request::{ArweaveSignRequest, SaltLen, SignType};
+    use crate::traits::{From, To};
     use alloc::string::ToString;
     use alloc::vec::Vec;
     use hex::FromHex;
-    use crate::arweave::arweave_sign_request::{ArweaveSignRequest, SaltLen, SignType};
-    use crate::traits::{To, From};
 
     #[test]
     fn test_encode() {
         let master_fingerprint: [u8; 4] = [233, 24, 28, 243];
-        let request_id: Option<Vec<u8>> = Some([155, 29, 235,  77,  59, 125, 75, 173, 155, 221, 43, 13, 123,  61, 203, 109].to_vec());
-        let sign_data = hex::decode("af78f85b29d88a61ee49d36e84139ec8511c558f14612413f1503b8e6959adca").unwrap();
+        let request_id: Option<Vec<u8>> = Some(
+            [
+                155, 29, 235, 77, 59, 125, 75, 173, 155, 221, 43, 13, 123, 61, 203, 109,
+            ]
+            .to_vec(),
+        );
+        let sign_data =
+            hex::decode("af78f85b29d88a61ee49d36e84139ec8511c558f14612413f1503b8e6959adca")
+                .unwrap();
         let sign_type = SignType::Transaction;
         let salt_len = SaltLen::Zero;
         let origin = Some("arconnect".to_string());
 
         let sign_request = ArweaveSignRequest::new(
-            master_fingerprint, request_id, sign_data, sign_type, salt_len, None, origin
+            master_fingerprint,
+            request_id,
+            sign_data,
+            sign_type,
+            salt_len,
+            None,
+            origin,
         );
 
         assert_eq!(
@@ -307,8 +322,15 @@ mod tests {
 
         let sign_request = ArweaveSignRequest::from_cbor(bytes).unwrap();
 
-        let request_id = Some([155, 29, 235,  77,  59, 125, 75, 173, 155, 221, 43, 13, 123,  61, 203, 109].to_vec());
-        let sign_data = hex::decode("af78f85b29d88a61ee49d36e84139ec8511c558f14612413f1503b8e6959adca").unwrap();
+        let request_id = Some(
+            [
+                155, 29, 235, 77, 59, 125, 75, 173, 155, 221, 43, 13, 123, 61, 203, 109,
+            ]
+            .to_vec(),
+        );
+        let sign_data =
+            hex::decode("af78f85b29d88a61ee49d36e84139ec8511c558f14612413f1503b8e6959adca")
+                .unwrap();
 
         assert_eq!([233, 24, 28, 243], sign_request.get_master_fingerprint());
         assert_eq!(request_id, sign_request.get_request_id());

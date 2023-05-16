@@ -721,8 +721,9 @@ pub struct Payload {
 }
 /// Nested message and enum types in `Payload`.
 pub mod payload {
-    #[derive(serde::Serialize, serde::Deserialize)]
     #[derive(
+        serde::Serialize,
+        serde::Deserialize,
         Clone,
         Copy,
         Debug,
@@ -731,7 +732,7 @@ pub mod payload {
         Hash,
         PartialOrd,
         Ord,
-        ::prost::Enumeration
+        ::prost::Enumeration,
     )]
     #[repr(i32)]
     pub enum Type {

@@ -1,13 +1,13 @@
-use alloc::string::ToString;
-use alloc::vec::Vec;
-use minicbor::encode::Write;
-use minicbor::{Decoder, Encoder};
-use minicbor::data::{Int};
 use crate::cbor::cbor_map;
 use crate::error::{URError, URResult};
 use crate::registry_types::{RegistryType, KEYSTONE_SIGN_RESULT};
-use crate::traits::{RegistryItem, To, From as FromCbor};
+use crate::traits::{From as FromCbor, RegistryItem, To};
 use crate::types::Bytes;
+use alloc::string::ToString;
+use alloc::vec::Vec;
+use minicbor::data::Int;
+use minicbor::encode::Write;
+use minicbor::{Decoder, Encoder};
 
 const SIGN_RESULT: u8 = 1;
 
@@ -26,7 +26,9 @@ impl KeystoneSignResult {
     }
 
     pub fn new(signature: Bytes) -> Self {
-        KeystoneSignResult { sign_result: signature }
+        KeystoneSignResult {
+            sign_result: signature,
+        }
     }
 
     pub fn get_sign_result(&self) -> Bytes {
@@ -41,22 +43,23 @@ impl RegistryItem for KeystoneSignResult {
 }
 
 impl<C> minicbor::Encode<C> for KeystoneSignResult {
-    fn encode<W: Write>(&self,
-                        e: &mut Encoder<W>,
-                        _ctx: &mut C) -> Result<(), minicbor::encode::Error<W::Error>> {
+    fn encode<W: Write>(
+        &self,
+        e: &mut Encoder<W>,
+        _ctx: &mut C,
+    ) -> Result<(), minicbor::encode::Error<W::Error>> {
         e.map(1)?;
-        e.int(Int::from(SIGN_RESULT))?
-            .bytes(&self.sign_result)?;
+        e.int(Int::from(SIGN_RESULT))?.bytes(&self.sign_result)?;
         Ok(())
     }
 }
-
 
 impl<'b, C> minicbor::Decode<'b, C> for KeystoneSignResult {
     fn decode(d: &mut Decoder<'b>, _ctx: &mut C) -> Result<Self, minicbor::decode::Error> {
         let mut result = KeystoneSignResult::default();
         cbor_map(d, &mut result, |key, obj, d| {
-            let key = u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
+            let key =
+                u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
             match key {
                 SIGN_RESULT => {
                     obj.sign_result = d.bytes()?.to_vec();
@@ -83,10 +86,10 @@ impl FromCbor<KeystoneSignResult> for KeystoneSignResult {
 
 #[cfg(test)]
 mod tests {
-    use alloc::vec::Vec;
-    use crate::traits::{From as FromCbor, To};
-    use hex::FromHex;
     use crate::keystone::keystone_sign_result::KeystoneSignResult;
+    use crate::traits::{From as FromCbor, To};
+    use alloc::vec::Vec;
+    use hex::FromHex;
 
     #[test]
     fn test_encode() {

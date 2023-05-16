@@ -1,18 +1,17 @@
-use alloc::string::ToString;
-use alloc::vec;
-use alloc::vec::Vec;
-use minicbor::encode::Write;
-use minicbor::{Decoder, Encoder};
-use minicbor::data::{Int, Tag};
 use crate::cbor::{cbor_array, cbor_map};
 use crate::crypto_ec_key::CryptoECKey;
 use crate::crypto_hd_key::CryptoHDKey;
 use crate::registry_types::{CRYPTO_ECKEY, CRYPTO_HDKEY};
 use crate::traits::RegistryItem;
+use alloc::string::ToString;
+use alloc::vec;
+use alloc::vec::Vec;
+use minicbor::data::{Int, Tag};
+use minicbor::encode::Write;
+use minicbor::{Decoder, Encoder};
 
 const THRESHOLD_KEY: u8 = 1;
 const KEYS_KEY: u8 = 2;
-
 
 #[derive(Clone, Debug, Default)]
 pub struct MultiKey {
@@ -26,8 +25,16 @@ impl MultiKey {
         Default::default()
     }
 
-    pub fn new(threshold: u32, ec_keys: Option<Vec<CryptoECKey>>, hd_keys: Option<Vec<CryptoHDKey>>) -> Self {
-        MultiKey { threshold, ec_keys, hd_keys }
+    pub fn new(
+        threshold: u32,
+        ec_keys: Option<Vec<CryptoECKey>>,
+        hd_keys: Option<Vec<CryptoHDKey>>,
+    ) -> Self {
+        MultiKey {
+            threshold,
+            ec_keys,
+            hd_keys,
+        }
     }
 
     pub fn get_threshold(&self) -> u32 {
@@ -55,14 +62,15 @@ impl MultiKey {
 }
 
 impl<C> minicbor::Encode<C> for MultiKey {
-    fn encode<W: Write>(&self,
-                        e: &mut Encoder<W>,
-                        ctx: &mut C) -> Result<(), minicbor::encode::Error<W::Error>> {
+    fn encode<W: Write>(
+        &self,
+        e: &mut Encoder<W>,
+        ctx: &mut C,
+    ) -> Result<(), minicbor::encode::Error<W::Error>> {
         let size = self.get_map_size();
         e.map(size)?;
-        e.int(Int::from(THRESHOLD_KEY))?.int(
-            Int::from(self.threshold)
-        )?;
+        e.int(Int::from(THRESHOLD_KEY))?
+            .int(Int::from(self.threshold))?;
         if let Some(ec_keys) = &self.ec_keys {
             e.int(Int::from(KEYS_KEY))?;
             e.array(ec_keys.len() as u64)?;
@@ -84,15 +92,16 @@ impl<C> minicbor::Encode<C> for MultiKey {
     }
 }
 
-
 impl<'b, C> minicbor::Decode<'b, C> for MultiKey {
     fn decode(d: &mut Decoder<'b>, ctx: &mut C) -> Result<Self, minicbor::decode::Error> {
         let mut result = MultiKey::default();
         cbor_map(d, &mut result, |key, obj, d| {
-            let key = u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
+            let key =
+                u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
             match key {
                 THRESHOLD_KEY => {
-                    obj.threshold = u32::try_from(d.int()?).map_err(|e| minicbor::decode::Error::message(e.to_string()))?
+                    obj.threshold = u32::try_from(d.int()?)
+                        .map_err(|e| minicbor::decode::Error::message(e.to_string()))?
                 }
                 KEYS_KEY => {
                     cbor_array(d, obj, |_index, obj, d| {

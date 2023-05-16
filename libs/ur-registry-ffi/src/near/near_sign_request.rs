@@ -1,9 +1,9 @@
 use hex;
 use serde_json::json;
-use ur_registry::traits::To;
-use uuid::Uuid;
 use ur_registry::crypto_key_path::CryptoKeyPath;
 use ur_registry::near::near_sign_request::NearSignRequest;
+use ur_registry::traits::To;
+use uuid::Uuid;
 
 use crate::export;
 
@@ -80,7 +80,6 @@ export! {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -96,11 +95,12 @@ mod tests {
 
         let expect_result = "{\"cbor\":\"a401d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d028158e64000000039666363303732306130313664336331653834396438366231366437313339653034336566633438616464316337386633396333643266303065653938633037009fcc0720a016d3c1e849d86b16d7139e043efc48add1c78f39c3d2f00ee98c07823e0ca1957100004000000039666363303732306130313664336331653834396438366231366437313339653034336566633438616464316337386633396333643266303065653938633037f0787e1cb1c22a1c63c24a37e4c6c656dd3cb049e6b7c17f75d01f0859efb7d80100000003000000a1edccce1bc2d300000000000003d90130a20186182cf519018df500f5021af23f9fd2056a6e65617277616c6c6574\",\"type\":\"near-sign-request\"}";
 
-        assert_eq!(expect_result, generate_near_sign_request(
-            request_id, sign_data, path, xfp, account, origin
-        ));
+        assert_eq!(
+            expect_result,
+            generate_near_sign_request(request_id, sign_data, path, xfp, account, origin)
+        );
     }
-    
+
     #[test]
     fn test_generate_near_sign_request_path_error() {
         let request_id = "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d";
@@ -112,9 +112,10 @@ mod tests {
 
         let err_result_derivation_path = "{\"error\":\"xfp is invalid\"}";
 
-        assert_eq!(err_result_derivation_path, generate_near_sign_request(
-            request_id, sign_data, path, xfp, account, origin
-        ));
+        assert_eq!(
+            err_result_derivation_path,
+            generate_near_sign_request(request_id, sign_data, path, xfp, account, origin)
+        );
     }
 
     #[test]
@@ -125,11 +126,12 @@ mod tests {
         let xfp = "F23F9FD2";
         let account = "";
         let origin = "nearwallet";
-        
+
         let err_result = "{\"error\":\"sign data is invalid\"}";
 
-        assert_eq!(err_result, generate_near_sign_request(
-            request_id, sign_data, path, xfp, account, origin
-        ));
+        assert_eq!(
+            err_result,
+            generate_near_sign_request(request_id, sign_data, path, xfp, account, origin)
+        );
     }
 }

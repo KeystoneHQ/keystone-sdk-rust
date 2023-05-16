@@ -1,10 +1,10 @@
 use hex;
 use serde_json::json;
-use ur_registry::traits::To;
 use ur_registry::keystone::keystone_sign_request::KeystoneSignRequest;
+use ur_registry::traits::To;
 
 use crate::export;
-use crate::keystone::keystone_tx_transfer::{construct_tx};
+use crate::keystone::keystone_tx_transfer::construct_tx;
 
 export! {
     @Java_com_keystone_sdk_KeystoneNativeSDK_generateKeystoneSignRequest
@@ -48,7 +48,6 @@ export! {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -80,9 +79,12 @@ mod tests {
         let expect_result = "{\"cbor\":\"a1015901521f8b0800000000000003554dbd4ac35018a57109591a3b954e25089542c8fdcbfd01076d435188c56aa1b4dbfd726f86621bdb6aeb63f4117c0171f701140437717655c4ddcdacc2e1c0399c1fd7a95507cb6e616cf36c595c175971d978774ad7ed11da53bd8404cf8eb7930ebbb53d05d8586026a4204cc8409b5081312101640450930137cd879f8fc75fb4efc2d6715f76fdb7767057f10e75ac2003adb5c5184a4125a3cc1253b2248cdad85245e218e398674c532ba51560320444cb9c73ea571a275e0711c531e22001b4ca8414880b2aca8ae4561829297025142e1711d51cebdc2a2c72886364c180a219ad3fdd7fb941751631d68a482b422522d46e79413a5ea6054c8e59a686c3d57c9180596d4657eb851a93014d6fc6c2dff6db076570a2faf3796a6f954912bbe8acec664d3a17b99c15d3e9f9911e51fffbf5d3ad5782eae9ff9b3fce1eec266c010000\",\"type\":\"keystone-sign-request\"}";
         let timestamp = 1681871353647;
 
-        assert_eq!(expect_result, generate_keystone_sign_request(
-            request_id, coin_type, sign_data, xfp, origin, timestamp
-        ));
+        assert_eq!(
+            expect_result,
+            generate_keystone_sign_request(
+                request_id, coin_type, sign_data, xfp, origin, timestamp
+            )
+        );
     }
 
     #[test]
@@ -96,8 +98,11 @@ mod tests {
 
         let err_result_derivation_path = "{\"error\":\"transaction data is invalid\"}";
 
-        assert_eq!(err_result_derivation_path, generate_keystone_sign_request(
-            request_id, coin_type, sign_data, xfp, origin, timestamp
-        ));
+        assert_eq!(
+            err_result_derivation_path,
+            generate_keystone_sign_request(
+                request_id, coin_type, sign_data, xfp, origin, timestamp
+            )
+        );
     }
 }

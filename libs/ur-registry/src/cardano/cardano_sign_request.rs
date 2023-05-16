@@ -127,9 +127,9 @@ impl FromCbor<CardanoSignRequest> for CardanoSignRequest {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::crypto_key_path::CryptoKeyPath;
     use crate::crypto_key_path::PathComponent;
     use alloc::vec;
-    use crate::crypto_key_path::CryptoKeyPath;
     extern crate std;
 
     #[test]
