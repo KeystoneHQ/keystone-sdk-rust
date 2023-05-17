@@ -30,4 +30,5 @@ pub mod registry_types;
 pub mod script_expression;
 pub mod solana;
 pub mod traits;
+pub mod sui;
 mod types;
