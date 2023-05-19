@@ -10,5 +10,6 @@ pub mod near;
 pub mod solana;
 pub mod tron;
 mod util;
+pub mod sui;
 
 ffi_support::define_string_destructor!(keystone_sdk_destroy_string);

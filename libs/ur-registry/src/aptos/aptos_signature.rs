@@ -4,7 +4,7 @@ use minicbor::data::{Int, Tag};
 
 use crate::cbor::cbor_map;
 use crate::error::{URError, URResult};
-use crate::registry_types::{RegistryType, COSMOS_SIGNATURE, UUID};
+use crate::registry_types::{RegistryType, UUID, APTOS_SIGNATURE};
 use crate::traits::{From, RegistryItem, To};
 use crate::types::Bytes;
 
@@ -57,7 +57,7 @@ impl AptosSignature {
 
 impl RegistryItem for AptosSignature {
     fn get_registry_type() -> RegistryType<'static> {
-        COSMOS_SIGNATURE
+        APTOS_SIGNATURE
     }
 }
 
