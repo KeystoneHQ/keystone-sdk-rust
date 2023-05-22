@@ -9,6 +9,7 @@ pub mod keystone;
 pub mod near;
 pub mod solana;
 pub mod tron;
+pub mod cardano;
 mod util;
 pub mod sui;
 
