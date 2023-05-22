@@ -50,3 +50,7 @@ const char* parse_near_signature(struct ExternError*, const char* ur_type, const
 const char* parse_arweave_account(struct ExternError*, const char* ur_type, const char* cbor_hex);
 const char* generate_arweave_sign_request(struct ExternError*, const char* request_id, const char* sign_data, const int sign_type, const int salt_len, const char* xfp, const char* account, const char* origin);
 const char* parse_arweave_signature(struct ExternError*, const char* ur_type, const char* cbor_hex);
+
+// Cardano
+const char* generate_cardano_sign_request(struct ExternError*, const char* request_id, const char* sign_data, const char* utxos, const char* cert_keys, const char* origin);
+const char* parse_cardano_signature(struct ExternError*, const char* ur_type, const char* cbor_hex);
