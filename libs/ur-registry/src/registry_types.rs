@@ -6,6 +6,7 @@ pub enum URType {
     CryptoPsbt(String),
     CryptoAccount(String),
     EthSignRequest(String),
+    SolSignRequest(String),
     Bytes(String),
 }
 
@@ -16,6 +17,7 @@ impl URType {
             "crypto-account" => Ok(URType::CryptoAccount(type_str.to_string())),
             "bytes" => Ok(URType::Bytes(type_str.to_string())),
             "eth-sign-request" => Ok(URType::EthSignRequest(type_str.to_string())),
+            "sol-sign-request" => Ok(URType::SolSignRequest(type_str.to_string())),
             _ => Err(URError::NotSupportURTypeError(type_str.to_string())),
         }
     }
@@ -26,6 +28,7 @@ impl URType {
             URType::CryptoAccount(type_str) => type_str.to_string(),
             URType::Bytes(type_str) => type_str.to_string(),
             URType::EthSignRequest(type_str) => type_str.to_string(),
+            URType::SolSignRequest(type_str) => type_str.to_string(),
         }
     }
 }
