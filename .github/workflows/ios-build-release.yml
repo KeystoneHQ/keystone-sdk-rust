@@ -26,12 +26,14 @@ jobs:
                 rustup target add aarch64-apple-ios x86_64-apple-ios aarch64-apple-ios-sim
                 make generate_xcframework
             - name: Move and zip Framework
+              id: zip-and-sha
               run: |
                 mv target/URRegistryFFI.xcframework URRegistryFFI.xcframework
                 zip -r URRegistryFFI.xcframework.zip URRegistryFFI.xcframework
                 echo "XCFramework Checksum: $(shasum -a 256 URRegistryFFI.xcframework.zip | cut -b 1-64)"
                 XCF_CHECKSUM=$(shasum -a 256 URRegistryFFI.xcframework.zip | cut -b 1-64)
                 echo "XCFramework Checksum: $XCF_CHECKSUM" >> $GITHUB_STEP_SUMMARY
+                echo "FRAMEWORK_CHECKSUM=$XCF_CHECKSUM" >> $GITHUB_OUTPUT
             - name: Attach artifact
               uses: actions/upload-artifact@v3
               with:
@@ -46,5 +48,5 @@ jobs:
                 tag: ${{ github.ref }}
                 overwrite: true
                 make_latest: false
-                body: "iOS XCFramework Checksum: $(shasum -a 256 URRegistryFFI.xcframework.zip | cut -b 1-64)"
+                body: "iOS XCFramework Checksum: ${{ steps.zip-and-sha.outputs.FRAMEWORK_CHECKSUM }}"
         
