@@ -1,5 +1,8 @@
 name: iOS Build and Release
 
+permissions:
+  contents: write
+
 on:
   push:
     tags:  
@@ -36,7 +39,7 @@ jobs:
                 path: URRegistryFFI.xcframework.zip
             - name: Upload XCFramework to Release
               if: github.ref_type == 'tag'
-              uses: svenstaro/upload-release-action@2.5.0
+              uses: svenstaro/upload-release-action@2.6.0
               with:
                 file: URRegistryFFI.xcframework.zip
                 asset_name: URRegistryFFI.xcframework.zip
