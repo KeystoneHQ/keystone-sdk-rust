@@ -11,7 +11,7 @@ on:
 
 jobs:
     build_ios:
-        name: Build Android+iOS Frameworks
+        name: Build iOS Frameworks
         runs-on: macos-latest
         steps:
             - name: Checkout sources
@@ -40,7 +40,7 @@ jobs:
               with:
                 file: URRegistryFFI.xcframework.zip
                 asset_name: URRegistryFFI.xcframework.zip
-                tag: ${{ github.event.base_ref }}
+                tag: ${{ github.ref }}
                 overwrite: true
                 make_latest: false
                 body: "iOS XCFramework Checksum: $(shasum -a 256 URRegistryFFI.xcframework.zip | cut -b 1-64)"
