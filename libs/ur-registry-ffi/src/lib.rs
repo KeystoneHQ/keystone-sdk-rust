@@ -10,6 +10,7 @@ pub mod near;
 pub mod solana;
 pub mod tron;
 pub mod cardano;
+pub mod xrp;
 mod util;
 pub mod sui;
 
