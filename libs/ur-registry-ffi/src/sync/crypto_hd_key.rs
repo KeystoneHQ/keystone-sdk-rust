@@ -29,22 +29,9 @@ impl core::convert::From<&CryptoHDKey> for Account {
     fn from(value: &CryptoHDKey) -> Account {
         let hd_path = value
             .get_origin()
-            .unwrap()
-            .get_components()
-            .iter()
-            .map(|path| {
-                format!(
-                    "{}{}",
-                    if path.is_wildcard() {
-                        "*".to_string()
-                    } else {
-                        path.get_index().unwrap_or_default().to_string()
-                    },
-                    if path.is_hardened() { "'" } else { "" }
-                )
-            })
-            .collect::<Vec<String>>()
-            .join("/");
+            .unwrap_or_default()
+            .get_path()
+            .unwrap_or_default();
         let coin_type = value
             .get_origin()
             .unwrap_or_default()
