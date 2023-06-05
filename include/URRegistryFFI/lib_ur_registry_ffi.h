@@ -13,8 +13,8 @@ const char* parse_crypto_account(struct ExternError*, const char* ur_type, const
 const char* parse_crypto_multi_accounts(struct ExternError*, const char* ur_type, const char* cbor_hex);
 
 // Utils
-const char* get_uncompressed_key(struct ExternError*, const char* compressed_key)
-const char* derive_public_key(struct ExternError*, const char* xpub, const char* path)
+const char* get_uncompressed_key(struct ExternError*, const char* compressed_key);
+const char* derive_public_key(struct ExternError*, const char* xpub, const char* path);
 
 // BTC
 const char* generate_crypto_psbt(struct ExternError*, const char* psbt_hex);
