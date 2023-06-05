@@ -1,80 +1,22 @@
 use crate::export;
-use crate::util::chain::map_coin_type;
 use anyhow::format_err;
 use anyhow::Error;
 use hex;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use ur_registry::crypto_hd_key::CryptoHDKey;
 use ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
 use ur_registry::registry_types::CRYPTO_MULTI_ACCOUNTS;
 use ur_registry::traits::From;
+use crate::sync::crypto_hd_key::Account;
 
 pub type Bytes = Vec<u8>;
 pub type Fingerprint = [u8; 4];
 
 #[derive(Default, Clone, Debug, Serialize, Deserialize)]
 pub struct MultiAccounts {
-    master_fingerprint: String,
-    keys: Vec<Account>,
-    device: Option<String>,
-}
-
-#[derive(Default, Clone, Debug, Serialize, Deserialize)]
-pub struct Account {
-    chain: String,
-    path: String,
-    public_key: String,
-    name: String,
-    chain_code: String,
-    extended_public_key: String,
-}
-
-impl core::convert::From<&CryptoHDKey> for Account {
-    fn from(value: &CryptoHDKey) -> Account {
-        let hd_path = value
-            .get_origin()
-            .unwrap()
-            .get_components()
-            .iter()
-            .map(|path| {
-                format!(
-                    "{}{}",
-                    if path.is_wildcard() {
-                        "*".to_string()
-                    } else {
-                        path.get_index().unwrap_or_default().to_string()
-                    },
-                    if path.is_hardened() { "'" } else { "" }
-                )
-            })
-            .collect::<Vec<String>>()
-            .join("/");
-        let coin_type = value
-            .get_origin()
-            .unwrap_or_default()
-            .get_components()
-            .to_vec()[1]
-            .get_index()
-            .unwrap_or_default();
-        let chain_code = hex::encode(value.get_chain_code().unwrap_or_default());
-        let mut xpub = "".to_string();
-        if !chain_code.is_empty()
-            && value.get_parent_fingerprint().is_some()
-            && value.get_origin().is_some()
-        {
-            xpub = value.get_bip32_key();
-        }
-
-        Account {
-            chain: map_coin_type(coin_type),
-            path: format!("m/{}", hd_path),
-            public_key: hex::encode(value.get_key()),
-            name: value.get_name().unwrap_or_default(),
-            chain_code,
-            extended_public_key: xpub,
-        }
-    }
+    pub master_fingerprint: String,
+    pub keys: Vec<Account>,
+    pub device: Option<String>,
 }
 
 impl Into<MultiAccounts> for CryptoMultiAccounts {
