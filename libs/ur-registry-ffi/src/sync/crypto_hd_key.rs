@@ -7,6 +7,7 @@ use serde_json::json;
 use ur_registry::crypto_hd_key::CryptoHDKey;
 use ur_registry::registry_types::{CRYPTO_HDKEY};
 use ur_registry::traits::From;
+use crate::util_internal::account_helper::gen_extra_data;
 use crate::util_internal::chain::map_coin_type;
 
 #[derive(Default, Clone, Debug, Serialize, Deserialize)]
@@ -20,7 +21,8 @@ pub struct Account {
     #[serde(skip_serializing_if = "Option::is_none")]
     note: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    xfp: Option<String>
+    xfp: Option<String>,
+    extra: String
 }
 
 impl core::convert::From<&CryptoHDKey> for Account {
@@ -71,6 +73,7 @@ impl core::convert::From<&CryptoHDKey> for Account {
             extended_public_key: xpub,
             note: value.get_note(),
             xfp,
+            extra: gen_extra_data(coin_type)
         }
     }
 }
@@ -102,7 +105,7 @@ mod tests {
     #[test]
     fn test_parse_crypto_hd_key() {
         let hd_key_cbor = "a902f403582102cc6d7834204653ff10e0047a2395343cc6df081e76c88d5eee83f346f0b21cb7045820712a9187e5c60c573a5acce855445376e1b74c240e417fe8cb2a8fdfd78d2d9d05d90131a201183c020006d90130a30186182cf5183cf500f5021af23f9fd2030307d90130a2018400f480f40300081a483c932809684b657973746f6e650a706163636f756e742e7374616e64617264";
-        let expect_result = "{\"chain\":\"ETH\",\"chain_code\":\"712a9187e5c60c573a5acce855445376e1b74c240e417fe8cb2a8fdfd78d2d9d\",\"extended_public_key\":\"xpub6CBZfsQuZgVnvTcScAAXSxtX5jdMHtX5LdRuygnTScMBbKyjsxznd8XMEqDntdY1jigmjunwRwHsQs3xusYQBVFbvLdN4YLzH8caLSSiAoV\",\"name\":\"Keystone\",\"note\":\"account.standard\",\"path\":\"m/44'/60'/0'\",\"public_key\":\"02cc6d7834204653ff10e0047a2395343cc6df081e76c88d5eee83f346f0b21cb7\",\"xfp\":\"f23f9fd2\"}";
+        let expect_result = r#"{"chain":"ETH","chain_code":"712a9187e5c60c573a5acce855445376e1b74c240e417fe8cb2a8fdfd78d2d9d","extended_public_key":"xpub6CBZfsQuZgVnvTcScAAXSxtX5jdMHtX5LdRuygnTScMBbKyjsxznd8XMEqDntdY1jigmjunwRwHsQs3xusYQBVFbvLdN4YLzH8caLSSiAoV","extra":"{\"okx\":{\"chainId\":1}}","name":"Keystone","note":"account.standard","path":"m/44'/60'/0'","public_key":"02cc6d7834204653ff10e0047a2395343cc6df081e76c88d5eee83f346f0b21cb7","xfp":"f23f9fd2"}"#;
 
         assert_eq!(
             expect_result,
