@@ -63,6 +63,12 @@ pub const ETH_SIGNATURE: RegistryType = RegistryType("eth-signature", Some(402))
 // SOL
 pub const SOL_SIGN_REQUEST: RegistryType = RegistryType("sol-sign-request", Some(1101));
 pub const SOL_SIGNATURE: RegistryType = RegistryType("sol-signature", Some(1102));
+
+// QR hardware call
+pub const QR_HARDWARE_CALL: RegistryType = RegistryType("qr-hardware-call", Some(1201));
+pub const KEY_DERIVATION_CALL: RegistryType = RegistryType("key-derivation-call", Some(1301));
+pub const KEY_DERIVATION_SCHEMA: RegistryType = RegistryType("key-derivation-schema", Some(1302));
+
 // Near
 pub const NEAR_SIGN_REQUEST: RegistryType = RegistryType("near-sign-request", Some(2101));
 pub const NEAR_SIGNATURE: RegistryType = RegistryType("near-signature", Some(2102));

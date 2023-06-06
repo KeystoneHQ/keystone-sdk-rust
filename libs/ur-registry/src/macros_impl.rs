@@ -26,6 +26,7 @@ use crate::near::{near_sign_request::NearSignRequest, near_signature::NearSignat
 use crate::solana::{sol_sign_request::SolSignRequest, sol_signature::SolSignature};
 use crate::sui::sui_sign_request::SuiSignRequest;
 use crate::sui::sui_signature::SuiSignature;
+use crate::extend::{key_derivation_schema::KeyDerivationSchema, key_derivation::KeyDerivationCall, qr_hardware_call::QRHardwareCall};
 use crate::{impl_cbor_bytes, impl_ur_try_from_cbor_bytes, impl_ur_try_into_cbor_bytes};
 use alloc::string::ToString;
 use alloc::vec::Vec;
@@ -61,4 +62,7 @@ impl_cbor_bytes!(
     SolSignature,
     SuiSignRequest,
     SuiSignature,
+    KeyDerivationSchema,
+    KeyDerivationCall,
+    QRHardwareCall,
 );
