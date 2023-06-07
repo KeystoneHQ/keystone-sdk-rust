@@ -7,6 +7,11 @@ pub enum URType {
     CryptoAccount(String),
     EthSignRequest(String),
     SolSignRequest(String),
+    NearSignRequest(String),
+    ArweaveSignRequest(String),
+    AptosSignRequest(String),
+    CardanoSignRequest(String),
+    SuiSignRequest(String),
     Bytes(String),
 }
 
@@ -18,6 +23,11 @@ impl URType {
             "bytes" => Ok(URType::Bytes(type_str.to_string())),
             "eth-sign-request" => Ok(URType::EthSignRequest(type_str.to_string())),
             "sol-sign-request" => Ok(URType::SolSignRequest(type_str.to_string())),
+            "arweave-sign-request" => Ok(URType::ArweaveSignRequest(type_str.to_string())),
+            "near-sign-request" => Ok(URType::NearSignRequest(type_str.to_string())),
+            "aptos-sign-request" => Ok(URType::AptosSignRequest(type_str.to_string())),
+            "sui-sign-request" => Ok(URType::SuiSignRequest(type_str.to_string())),
+            "cardano-sign-request" => Ok(URType::CardanoSignRequest(type_str.to_string())),
             _ => Err(URError::NotSupportURTypeError(type_str.to_string())),
         }
     }
@@ -29,6 +39,11 @@ impl URType {
             URType::Bytes(type_str) => type_str.to_string(),
             URType::EthSignRequest(type_str) => type_str.to_string(),
             URType::SolSignRequest(type_str) => type_str.to_string(),
+            URType::NearSignRequest(type_str) => type_str.to_string(),
+            URType::ArweaveSignRequest(type_str) => type_str.to_string(),
+            URType::AptosSignRequest(type_str) => type_str.to_string(),
+            URType::CardanoSignRequest(type_str) => type_str.to_string(),
+            URType::SuiSignRequest(type_str) => type_str.to_string(),
         }
     }
 }
