@@ -150,7 +150,7 @@ mod tests {
                 PathComponent::new(Some(501), true).unwrap(),
                 PathComponent::new(Some(0), true).unwrap(),
                 PathComponent::new(Some(0), true).unwrap(),
-                PathComponent::new(Some(0), false).unwrap(),
+                PathComponent::new(Some(0), true).unwrap(),
             ],
             None,
             None,
@@ -161,12 +161,12 @@ mod tests {
             KeyDerivationCall::new(schemas)
         ), None);
         let bytes: Vec<u8> = call.try_into().unwrap();
-        assert_eq!("a2010002d90515a10182d90516a101d90130a10186182cf500f500f5d90516a201d90130a1018a182cf51901f5f500f500f500f40201", hex::encode(bytes));
+        assert_eq!("a2010002d90515a10182d90516a101d90130a10186182cf500f500f5d90516a201d90130a1018a182cf51901f5f500f500f500f50201", hex::encode(bytes));
     }
 
     #[test]
     fn test_decode() {
-        let ur_bytes = hex::decode("a2010002d90515a10182d90516a101d90130a10186182cf500f500f5d90516a201d90130a1018a182cf51901f5f500f500f500f40201").unwrap();
+        let ur_bytes = hex::decode("a2010002d90515a10182d90516a101d90130a10186182cf500f500f5d90516a201d90130a1018a182cf51901f5f500f500f500f50201").unwrap();
         let call = QRHardwareCall::try_from(ur_bytes).unwrap();
         assert_eq!(CallType::KeyDerivation as u32, call.get_call_type() as u32);
         assert_eq!(None, call.get_origin());
@@ -180,7 +180,7 @@ mod tests {
                 assert_eq!(Curve::Secp256k1 as u32, schema1.get_curve_or_default() as u32);
                 assert_eq!(DerivationAlgo::Slip10 as u32, schema1.get_algo_or_default() as u32);
                 let schema2 = schemas.get(1).unwrap();
-                assert_eq!("44'/501'/0'/0'/0", schema2.get_key_path().get_path().unwrap());
+                assert_eq!("44'/501'/0'/0'/0'", schema2.get_key_path().get_path().unwrap());
                 assert_eq!(Curve::Ed25519 as u32, schema2.get_curve_or_default() as u32);
                 assert_eq!(DerivationAlgo::Slip10 as u32, schema2.get_algo_or_default() as u32);
             }
