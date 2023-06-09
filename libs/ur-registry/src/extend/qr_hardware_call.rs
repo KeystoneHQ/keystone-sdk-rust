@@ -186,4 +186,34 @@ mod tests {
             }
         }
     }
+
+    #[test]
+    fn test_encode2() {
+        let key_path1 = CryptoKeyPath::new(
+            vec![
+                PathComponent::new(Some(1852), true).unwrap(),
+                PathComponent::new(Some(1815), true).unwrap(),
+                PathComponent::new(Some(0), true).unwrap(),
+            ],
+            None,
+            None,
+        );
+        let schema1 = KeyDerivationSchema::new(key_path1, Some(Curve::Ed25519), Some(DerivationAlgo::Bip32Ed25519));
+        let key_path2 = CryptoKeyPath::new(
+            vec![
+                PathComponent::new(Some(1852), true).unwrap(),
+                PathComponent::new(Some(1815), true).unwrap(),
+                PathComponent::new(Some(1), true).unwrap(),
+            ],
+            None,
+            None,
+        );
+        let schema2 = KeyDerivationSchema::new(key_path2, Some(Curve::Ed25519), Some(DerivationAlgo::Bip32Ed25519));
+        let schemas = vec![schema1, schema2];
+        let call = QRHardwareCall::new(CallType::KeyDerivation, CallParams::KeyDerivation(
+            KeyDerivationCall::new(schemas)
+        ), None);
+        let bytes: Vec<u8> = call.try_into().unwrap();
+        assert_eq!("a2010002d90515a10182d90516a301d90130a1018619073cf5190717f500f502010301d90516a301d90130a1018619073cf5190717f501f502010301", hex::encode(bytes));
+    }
 }

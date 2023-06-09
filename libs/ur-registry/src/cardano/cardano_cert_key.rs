@@ -1,8 +1,8 @@
 use crate::cbor::cbor_map;
 use crate::crypto_key_path::CryptoKeyPath;
 use crate::error::{URError, URResult};
-use crate::registry_types::CRYPTO_KEYPATH;
-use crate::traits::{From as FromCbor, MapSize, To};
+use crate::registry_types::{CARDANO_CERT_KEY, CRYPTO_KEYPATH, RegistryType};
+use crate::traits::{From as FromCbor, MapSize, RegistryItem, To};
 use crate::types::Bytes;
 
 use alloc::string::ToString;
@@ -21,6 +21,12 @@ impl_template_struct!(CardanoCertKey {
     key_hash: Bytes,
     key_path: CryptoKeyPath
 });
+
+impl RegistryItem for CardanoCertKey {
+    fn get_registry_type() -> RegistryType<'static> {
+        CARDANO_CERT_KEY
+    }
+}
 
 impl MapSize for CardanoCertKey {
     fn map_size(&self) -> u64 {

@@ -1,7 +1,7 @@
 use crate::cbor::cbor_map;
 use crate::impl_template_struct;
-use crate::registry_types::UUID;
-use crate::traits::{MapSize};
+use crate::registry_types::{CARDANO_SIGNATURE, RegistryType, UUID};
+use crate::traits::{MapSize, RegistryItem};
 use crate::types::Bytes;
 use alloc::string::ToString;
 use minicbor::data::{Int, Tag};
@@ -15,6 +15,12 @@ impl_template_struct!(CardanoSignature {
     request_id: Option<Bytes>,
     witness_set: Bytes
 });
+
+impl RegistryItem for CardanoSignature {
+    fn get_registry_type() -> RegistryType<'static> {
+        CARDANO_SIGNATURE
+    }
+}
 
 impl MapSize for CardanoSignature {
     fn map_size(&self) -> u64 {
