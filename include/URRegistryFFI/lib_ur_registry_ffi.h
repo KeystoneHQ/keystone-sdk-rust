@@ -41,7 +41,7 @@ const char* generate_aptos_sign_request(struct ExternError*, const char* request
 const char* parse_aptos_signature(struct ExternError*, const char* ur_type, const char* cbor_hex);
 
 // Sui
-const char* generate_sui_sign_request(struct ExternError*, const char* request_id, const char* sign_data, const int sign_type, const char* accounts, const char* origin);
+const char* generate_sui_sign_request(struct ExternError*, const char* request_id, const char* intent_message, const char* accounts, const char* origin);
 const char* parse_sui_signature(struct ExternError*, const char* ur_type, const char* cbor_hex);
 
 // Keystone
