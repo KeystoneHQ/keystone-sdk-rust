@@ -4,6 +4,7 @@ use alloc::string::{String, ToString};
 #[derive(Clone, Debug)]
 pub enum URType {
     CryptoPsbt(String),
+    CryptoMultiAccounts(String),
     CryptoAccount(String),
     EthSignRequest(String),
     SolSignRequest(String),
@@ -19,6 +20,7 @@ impl URType {
     pub fn from(type_str: &str) -> URResult<URType> {
         match type_str {
             "crypto-psbt" => Ok(URType::CryptoPsbt(type_str.to_string())),
+            "crypto-multi-accounts" => Ok(URType::CryptoMultiAccounts(type_str.to_string())),
             "crypto-account" => Ok(URType::CryptoAccount(type_str.to_string())),
             "bytes" => Ok(URType::Bytes(type_str.to_string())),
             "eth-sign-request" => Ok(URType::EthSignRequest(type_str.to_string())),
@@ -35,6 +37,7 @@ impl URType {
     pub fn get_type_str(&self) -> String {
         match self {
             URType::CryptoPsbt(type_str) => type_str.to_string(),
+            URType::CryptoMultiAccounts(type_str) => type_str.to_string(),
             URType::CryptoAccount(type_str) => type_str.to_string(),
             URType::Bytes(type_str) => type_str.to_string(),
             URType::EthSignRequest(type_str) => type_str.to_string(),
