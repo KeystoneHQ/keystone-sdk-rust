@@ -10,8 +10,12 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v2
 
-      - name: Install nightly toolchain
-        uses: dtolnay/rust-toolchain@nightly
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly-2023-06-26
+          override: true
+          target: x86_64-apple-darwin
+          components: rustfmt
 
       - name: Run Test
-        run: cargo test
+        run: cargo +nightly-2023-06-26 test
