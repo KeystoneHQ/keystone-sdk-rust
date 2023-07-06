@@ -19,8 +19,12 @@ jobs:
         steps:
             - name: Checkout sources
               uses: actions/checkout@v3
-            - name: Install nightly toolchain
-              uses: dtolnay/rust-toolchain@nightly
+            - uses: actions-rs/toolchain@v1
+              with:
+                toolchain: nightly-2023-06-26
+                override: true
+                target: x86_64-apple-darwin
+                components: rustfmt
             - name: Build iOS Framework
               run: |
                 rustup target add aarch64-apple-ios x86_64-apple-ios aarch64-apple-ios-sim
