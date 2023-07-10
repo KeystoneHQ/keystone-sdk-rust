@@ -10,6 +10,7 @@ use crate::cardano::{
 };
 use crate::cosmos::{cosmos_sign_request::CosmosSignRequest, cosmos_signature::CosmosSignature};
 use crate::cosmos::{evm_sign_request::EvmSignRequest};
+use crate::cosmos::{evm_signature::EvmSignature};
 use crate::crypto_account::CryptoAccount;
 use crate::crypto_coin_info::CryptoCoinInfo;
 use crate::crypto_ec_key::CryptoECKey;
@@ -52,6 +53,7 @@ impl_cbor_bytes!(
     ArweaveSignature,
     CosmosSignRequest,
     EvmSignRequest,
+    EvmSignature,
     CosmosSignature,
     EthSignRequest,
     EthSignature,
