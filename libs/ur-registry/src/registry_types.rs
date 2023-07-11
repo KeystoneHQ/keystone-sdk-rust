@@ -12,6 +12,8 @@ pub enum URType {
     ArweaveSignRequest(String),
     AptosSignRequest(String),
     CardanoSignRequest(String),
+    CosmosSignRequest(String),
+    EvmSignRequest(String),
     SuiSignRequest(String),
     Bytes(String),
 }
@@ -26,6 +28,8 @@ impl URType {
             "eth-sign-request" => Ok(URType::EthSignRequest(type_str.to_string())),
             "sol-sign-request" => Ok(URType::SolSignRequest(type_str.to_string())),
             "arweave-sign-request" => Ok(URType::ArweaveSignRequest(type_str.to_string())),
+            "cosmos-sign-request" => Ok(URType::CosmosSignRequest(type_str.to_string())),
+            "evm-sign-request" => Ok(URType::EvmSignRequest(type_str.to_string())),
             "near-sign-request" => Ok(URType::NearSignRequest(type_str.to_string())),
             "aptos-sign-request" => Ok(URType::AptosSignRequest(type_str.to_string())),
             "sui-sign-request" => Ok(URType::SuiSignRequest(type_str.to_string())),
@@ -47,6 +51,8 @@ impl URType {
             URType::AptosSignRequest(type_str) => type_str.to_string(),
             URType::CardanoSignRequest(type_str) => type_str.to_string(),
             URType::SuiSignRequest(type_str) => type_str.to_string(),
+            URType::CosmosSignRequest(type_str) => type_str.to_string(),
+            URType::EvmSignRequest(type_str) => type_str.to_string(),
         }
     }
 }
@@ -97,6 +103,9 @@ pub const ARWEAVE_SIGNATURE: RegistryType = RegistryType("arweave-signature", So
 // Cosmos
 pub const COSMOS_SIGN_REQUEST: RegistryType = RegistryType("cosmos-sign-request", Some(4101));
 pub const COSMOS_SIGNATURE: RegistryType = RegistryType("cosmos-signature", Some(4102));
+// EVM
+pub const EVM_SIGN_REQUEST: RegistryType = RegistryType("evm-sign-request", Some(4101));
+pub const EVM_SIGNATURE: RegistryType = RegistryType("evm-signature", Some(4102));
 // Tron
 pub const TRON_SIGN_REQUEST: RegistryType = RegistryType("tron-sign-request", Some(5201));
 pub const TRON_SIGNATURE: RegistryType = RegistryType("tron-signature", Some(5202));
