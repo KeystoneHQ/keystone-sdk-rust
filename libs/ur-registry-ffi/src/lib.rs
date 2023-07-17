@@ -2,6 +2,7 @@ pub mod aptos;
 pub mod arweave;
 pub mod bitcoin;
 pub mod cosmos;
+pub mod evm;
 pub mod ethereum;
 mod export;
 pub mod sync;

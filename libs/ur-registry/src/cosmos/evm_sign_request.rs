@@ -1,15 +1,14 @@
 use alloc::format;
 use alloc::string::{String, ToString};
-use alloc::vec::Vec;
 use core::convert::From;
 use minicbor::data::{Int, Tag};
 
-use crate::cbor::{cbor_map};
+use crate::cbor::cbor_map;
 use crate::crypto_key_path::CryptoKeyPath;
 use crate::impl_template_struct;
 use crate::registry_types::{RegistryType, UUID, EVM_SIGN_REQUEST, CRYPTO_KEYPATH};
 use crate::types::Bytes;
-use crate::traits::{From as FromCbor, MapSize, RegistryItem, To};
+use crate::traits::{MapSize, RegistryItem};
 
 const REQUEST_ID: u8 = 1;
 const SIGN_DATA: u8 = 2;
@@ -142,6 +141,7 @@ impl<'b, C> minicbor::Decode<'b, C> for EvmSignRequest {
 #[cfg(test)]
 mod tests {
     use alloc::vec;
+    use alloc::vec::Vec;
     use hex::FromHex;
     use crate::crypto_key_path::PathComponent;
     use super::*;
