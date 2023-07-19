@@ -12,7 +12,7 @@ pub mod solana;
 pub mod tron;
 pub mod cardano;
 mod util_internal;
-mod utils;
+pub mod utils;
 pub mod sui;
 
 ffi_support::define_string_destructor!(keystone_sdk_destroy_string);
