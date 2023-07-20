@@ -3,7 +3,7 @@ Pod::Spec.new do |spec|
   spec.version      = "0.1.1"
   spec.summary      = "An BC-UR registry implementation with rust-lang"
   spec.homepage     = "https://github.com/KeystoneHQ/keystone-sdk-rust"
-  spec.license      = { :type => "MIT", :file => "LICENSE.md" }
+  spec.license      = { :type => 'Copyright', :text => 'Copyright 2023 Keystone' }
   spec.author       = "Keystone"
   spec.social_media_url   = "https://twitter.com/KeystoneWallet"
   spec.swift_version = "5.0"
