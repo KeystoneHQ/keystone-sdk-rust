@@ -14,12 +14,14 @@ const NETWORK: u8 = 2;
 #[derive(Clone, Debug, PartialEq)]
 pub enum CoinType {
     Bitcoin = 0,
+    Ethereum = 60,
 }
 
 impl CoinType {
     pub fn from_u32(i: u32) -> CoinType {
         match i {
             0 => CoinType::Bitcoin,
+            60 => CoinType::Ethereum,
             _ => CoinType::Bitcoin,
         }
     }
