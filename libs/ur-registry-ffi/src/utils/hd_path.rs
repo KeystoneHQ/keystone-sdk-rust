@@ -77,7 +77,7 @@ export! {
             Ok(path) => path,
             Err(_) => HDPath::empty()
         };
-        json!({"result": result}).to_string()
+        json!(result).to_string()
     }
 }
 
@@ -89,7 +89,7 @@ mod tests {
     #[test]
     fn test_parse_hd_path() {
         let hd_path = "m/44'/60'/0'/0/0";
-        let expect_result = r#"{"result":{"account":{"hardened":true,"index":0},"address_index":{"hardened":false,"index":0},"change":{"hardened":false,"index":0},"coin_type":{"hardened":true,"index":60},"purpose":{"hardened":true,"index":44}}}"#;
+        let expect_result = r#"{"account":{"hardened":true,"index":0},"address_index":{"hardened":false,"index":0},"change":{"hardened":false,"index":0},"coin_type":{"hardened":true,"index":60},"purpose":{"hardened":true,"index":44}}"#;
 
         assert_eq!(expect_result, parse_hd_path(hd_path))
     }
@@ -97,7 +97,7 @@ mod tests {
     #[test]
     fn test_parse_hd_path_given_eth_xpub_path() {
         let hd_path = "M/44\'/60\'/0\'";
-        let expect_result = r#"{"result":{"account":{"hardened":true,"index":0},"address_index":null,"change":null,"coin_type":{"hardened":true,"index":60},"purpose":{"hardened":true,"index":44}}}"#;
+        let expect_result = r#"{"account":{"hardened":true,"index":0},"address_index":null,"change":null,"coin_type":{"hardened":true,"index":60},"purpose":{"hardened":true,"index":44}}"#;
 
         assert_eq!(expect_result, parse_hd_path(hd_path))
     }
@@ -105,7 +105,7 @@ mod tests {
     #[test]
     fn test_parse_hd_path_given_empty_path() {
         let hd_path = "";
-        let expect_result = r#"{"result":{"account":null,"address_index":null,"change":null,"coin_type":null,"purpose":null}}"#;
+        let expect_result = r#"{"account":null,"address_index":null,"change":null,"coin_type":null,"purpose":null}"#;
 
         assert_eq!(expect_result, parse_hd_path(hd_path))
     }

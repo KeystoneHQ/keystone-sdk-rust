@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
   spec.name         = "URRegistryFFI"
-  spec.version      = "0.2.0"
+  spec.version      = "0.2.2"
   spec.summary      = "An BC-UR registry implementation with rust-lang"
   spec.homepage     = "https://github.com/KeystoneHQ/keystone-sdk-rust"
   spec.license      = { :type => 'Copyright', :text => 'Copyright 2023 Keystone' }
@@ -9,6 +9,6 @@ Pod::Spec.new do |spec|
   spec.swift_version = "5.6"
   spec.platform = :ios, '13.0'
   spec.static_framework = true
-  spec.source       = { :http => "https://github.com/KeystoneHQ/keystone-sdk-rust/releases/download/sdk-0.1.1/URRegistryFFI.xcframework.zip", :type => "zip" }
+  spec.source       = { :http => "https://github.com/KeystoneHQ/keystone-sdk-rust/releases/download/sdk-0.1.3/URRegistryFFI.xcframework.zip", :type => "zip" }
   spec.ios.vendored_frameworks = 'URRegistryFFI.xcframework'
 end
