@@ -6,6 +6,7 @@ use ur_registry::traits::To;
 use uuid::Uuid;
 
 use crate::export;
+use crate::util_internal::string_helper::remove_prefix_0x;
 
 export! {
     @Java_com_keystone_sdk_KeystoneNativeSDK_generateSolSignRequest
@@ -38,7 +39,7 @@ export! {
             Ok(v) => v,
             Err(_) => return json!({"error": "uuid is invalid"}).to_string(),
         }.as_bytes().to_vec();
-        let sign_date_bytes = match hex::decode(sign_data) {
+        let sign_date_bytes = match hex::decode(remove_prefix_0x(sign_data)) {
             Ok(v) => v,
             Err(_) => return json!({"error": "sign data is invalid"}).to_string(),
         };
