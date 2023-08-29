@@ -9,6 +9,7 @@ use ur_registry::traits::To;
 use uuid::Uuid;
 
 use crate::export;
+use crate::util_internal::string_helper::remove_prefix_0x;
 
 use super::tron_transfer::raw_to_tx;
 
@@ -39,7 +40,7 @@ export! {
             Ok(v) => v,
             Err(_) => return json!({"error": "uuid is invalid"}).to_string(),
         };
-        let sign_data_bytes = match hex::decode(sign_data) {
+        let sign_data_bytes = match hex::decode(remove_prefix_0x(sign_data)) {
             Ok(v) => v,
             Err(_) => return json!({"error": "sign data is invalid"}).to_string(),
         };

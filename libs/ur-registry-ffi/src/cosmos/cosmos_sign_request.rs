@@ -7,6 +7,7 @@ use ur_registry::traits::To;
 use uuid::Uuid;
 
 use crate::export;
+use crate::util_internal::string_helper::remove_prefix_0x;
 
 #[derive(Deserialize)]
 struct Account {
@@ -63,7 +64,7 @@ export! {
             Ok(v) => v,
             Err(_) => return json!({"error": "data type is invalid"}).to_string(),
         };
-        let sign_date_bytes = match hex::decode(sign_data) {
+        let sign_date_bytes = match hex::decode(remove_prefix_0x(sign_data)) {
             Ok(v) => v,
             Err(_) => return json!({"error": "sign data is invalid"}).to_string(),
         };

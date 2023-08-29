@@ -5,6 +5,7 @@ use ur_registry::traits::To;
 use uuid::Uuid;
 
 use crate::export;
+use crate::util_internal::string_helper::remove_prefix_0x;
 
 export! {
     @Java_com_keystone_sdk_KeystoneNativeSDK_generateArweaveSignRequest
@@ -31,7 +32,7 @@ export! {
             Err(_) => return json!({"error": "length of master fingerprint must be exactly 8"}).to_string(),
         };
 
-        let sign_date_bytes = match hex::decode(sign_data) {
+        let sign_date_bytes = match hex::decode(remove_prefix_0x(sign_data)) {
             Ok(v) => v,
             Err(_) => return json!({"error": "sign_data is invalid"}).to_string(),
         };

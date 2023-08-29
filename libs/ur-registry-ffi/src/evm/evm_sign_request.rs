@@ -7,6 +7,7 @@ use ur_registry::cosmos::evm_sign_request::{EvmSignRequest, SignDataType};
 use ur_registry::registry_types::EVM_SIGN_REQUEST;
 
 use crate::export;
+use crate::util_internal::string_helper::remove_prefix_0x;
 
 #[derive(Deserialize)]
 struct Account {
@@ -29,7 +30,7 @@ export! {
             Ok(v) => v,
             Err(_) => return json!({"error": "uuid is invalid"}).to_string(),
         }.as_bytes().to_vec();
-        let sign_data_bytes = match hex::decode(sign_data) {
+        let sign_data_bytes = match hex::decode(remove_prefix_0x(sign_data)) {
             Ok(v) => v,
             Err(_) => return json!({"error": "sign data is invalid"}).to_string(),
         };

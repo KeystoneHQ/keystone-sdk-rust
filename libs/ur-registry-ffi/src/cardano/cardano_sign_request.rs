@@ -8,6 +8,7 @@ use ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
 use serde::Deserialize;
 
 use crate::export;
+use crate::util_internal::string_helper::remove_prefix_0x;
 
 #[derive(Deserialize)]
 struct Utxo {
@@ -125,7 +126,7 @@ export! {
             Ok(v) => v,
             Err(_) => return json!({"error": "uuid is invalid"}).to_string(),
         }.as_bytes().to_vec();
-        let sign_data_bytes = match hex::decode(sign_data) {
+        let sign_data_bytes = match hex::decode(remove_prefix_0x(sign_data)) {
             Ok(v) => v,
             Err(_) => return json!({"error": "sign data is invalid"}).to_string(),
         };

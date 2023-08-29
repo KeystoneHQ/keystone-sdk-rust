@@ -7,6 +7,7 @@ use ur_registry::sui::sui_sign_request::SuiSignRequest;
 use uuid::Uuid;
 
 use crate::export;
+use crate::util_internal::string_helper::remove_prefix_0x;
 
 #[derive(Deserialize)]
 struct Account {
@@ -67,7 +68,7 @@ export! {
             return json!({"error": "accounts is invalid"}).to_string();
         }
 
-        let intent_message_bytes = match hex::decode(intent_message) {
+        let intent_message_bytes = match hex::decode(remove_prefix_0x(intent_message)) {
             Ok(v) => v,
             Err(_) => return json!({"error": "intent message is invalid"}).to_string(),
         };

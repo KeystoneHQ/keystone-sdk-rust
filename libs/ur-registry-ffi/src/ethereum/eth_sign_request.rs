@@ -6,6 +6,7 @@ use ur_registry::traits::To;
 use uuid::Uuid;
 
 use crate::export;
+use crate::util_internal::string_helper::remove_prefix_0x;
 
 export! {
     @Java_com_keystone_sdk_KeystoneNativeSDK_generateETHSignRequest
@@ -39,7 +40,8 @@ export! {
             Ok(v) => v,
             Err(_) => return json!({"error": "uuid is invalid"}).to_string(),
         }.as_bytes().to_vec();
-        let sign_date_bytes = match hex::decode(sign_data) {
+
+        let sign_date_bytes = match hex::decode(remove_prefix_0x(sign_data)) {
             Ok(v) => v,
             Err(_) => return json!({"error": "sign_data is invalid"}).to_string(),
         };
@@ -79,6 +81,27 @@ mod tests {
     fn test_generate_eth_sign_request() {
         let request_id = "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d";
         let sign_data = "f849808609184e72a00082271094000000000000000000000000000000000000000080a47f7465737432000000000000000000000000000000000000000000000000000000600057808080";
+        let path = "m/44'/1'/1'/0/1";
+        let xfp = "12345678";
+        let chain_id: i32 = 1;
+        let address = "";
+        let origin = "metamask";
+        let data_type = 1;
+
+        let expect_result = "{\"cbor\":\"a601d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d02584bf849808609184e72a00082271094000000000000000000000000000000000000000080a47f74657374320000000000000000000000000000000000000000000000000000006000578080800301040105d90130a2018a182cf501f501f500f401f4021a1234567807686d6574616d61736b\",\"type\":\"eth-sign-request\"}";
+
+        assert_eq!(
+            expect_result,
+            generate_eth_sign_request(
+                request_id, sign_data, data_type, chain_id, path, xfp, address, origin
+            )
+        );
+    }
+
+    #[test]
+    fn test_generate_eth_sign_request_given_sign_data_with_prefix() {
+        let request_id = "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d";
+        let sign_data = "0xf849808609184e72a00082271094000000000000000000000000000000000000000080a47f7465737432000000000000000000000000000000000000000000000000000000600057808080";
         let path = "m/44'/1'/1'/0/1";
         let xfp = "12345678";
         let chain_id: i32 = 1;

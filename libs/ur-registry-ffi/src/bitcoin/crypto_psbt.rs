@@ -8,6 +8,7 @@ use ur_registry::traits::From;
 use ur_registry::traits::To;
 
 use crate::export;
+use crate::util_internal::string_helper::remove_prefix_0x;
 
 export! {
     @Java_com_keystone_sdk_KeystoneNativeSDK_parseCryptoPSBT
@@ -17,7 +18,7 @@ export! {
         }
 
         let parse = || -> Result<String, Error> {
-            let cbor = hex::decode(cbor_hex.to_string())?;
+            let cbor = hex::decode(remove_prefix_0x(cbor_hex).to_string())?;
             let psbt = CryptoPSBT::from_cbor(cbor).map_err(|_| format_err!(""))?;
             let psbt_hex = hex::encode(psbt.get_psbt());
             Ok(psbt_hex)
