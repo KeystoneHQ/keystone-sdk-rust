@@ -23,7 +23,7 @@ bip32 = "0.5.0"
 
 [lib]
 name = "ur_registry_ffi"
-crate-type = ["cdylib", "staticlib"]
+crate-type = ["cdylib"]
 
 [features]
 default = ["jni"]
