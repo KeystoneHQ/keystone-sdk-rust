@@ -15,6 +15,7 @@ const MASTER_FINGERPRINT: u8 = 1;
 const KEYS: u8 = 2;
 const DEVICE: u8 = 3;
 const DEVICE_ID: u8 = 4;
+const DEVICE_VERSION: u8 = 5;
 
 #[derive(Default, Clone, Debug)]
 pub struct CryptoMultiAccounts {
@@ -22,6 +23,7 @@ pub struct CryptoMultiAccounts {
     keys: Vec<CryptoHDKey>,
     device: Option<String>,
     device_id: Option<String>,
+    device_version: Option<String>,
 }
 
 impl CryptoMultiAccounts {
@@ -49,17 +51,21 @@ impl CryptoMultiAccounts {
         self.device_id = Some(device_id);
     }
 
+    pub fn set_device_version(&mut self, device_version: String) { self.device_version = Some(device_version); }
+
     pub fn new(
         master_fingerprint: Fingerprint,
         keys: Vec<CryptoHDKey>,
         device: Option<String>,
         device_id: Option<String>,
+        device_version: Option<String>,
     ) -> CryptoMultiAccounts {
         CryptoMultiAccounts {
             master_fingerprint,
             keys,
             device,
             device_id,
+            device_version,
         }
     }
 
@@ -75,6 +81,7 @@ impl CryptoMultiAccounts {
     pub fn get_device_id(&self) -> Option<String> {
         self.device_id.clone()
     }
+    pub fn get_device_version(&self) -> Option<String> { self.device_version.clone() }
 }
 
 impl RegistryItem for CryptoMultiAccounts {
@@ -96,6 +103,9 @@ impl<C> minicbor::Encode<C> for CryptoMultiAccounts {
         if self.device_id.is_some() {
             size += 1;
         }
+        if self.device_version.is_some() {
+            size += 1;
+        }
         e.map(size)?;
 
         e.int(Int::from(MASTER_FINGERPRINT))?
@@ -112,6 +122,9 @@ impl<C> minicbor::Encode<C> for CryptoMultiAccounts {
         }
         if let Some(device_id) = &self.device_id {
             e.int(Int::from(DEVICE_ID))?.str(device_id)?;
+        }
+        if let Some(device_version) = &self.device_version {
+            e.int(Int::from(DEVICE_VERSION))?.str(device_version)?;
         }
 
         Ok(())
@@ -145,6 +158,9 @@ impl<'b, C> minicbor::Decode<'b, C> for CryptoMultiAccounts {
                 }
                 DEVICE_ID => {
                     obj.device_id = Some(d.str()?.to_string());
+                }
+                DEVICE_VERSION => {
+                    obj.device_version = Some(d.str()?.to_string());
                 }
                 _ => {}
             }
@@ -205,8 +221,9 @@ mod tests {
             vec![crypto_hdkey],
             Some("keystone".to_string()),
             Some("28475c8d80f6c06bafbe46a7d1750f3fcf2565f7".to_string()),
+            Some("1.0.0".to_string()),
         );
-        assert_eq!("a4011ae9181cf30281d9012fa203582102eae4b876a8696134b868f88cc2f51f715f2dbedb7446b8e6edf3d4541c4eb67b06d90130a10188182cf51901f5f500f500f503686b657973746f6e6504782832383437356338643830663663303662616662653436613764313735306633666366323536356637", hex::encode(crypto_multi_accounts.to_bytes().unwrap()));
+        assert_eq!("a5011ae9181cf30281d9012fa203582102eae4b876a8696134b868f88cc2f51f715f2dbedb7446b8e6edf3d4541c4eb67b06d90130a10188182cf51901f5f500f500f503686b657973746f6e65047828323834373563386438306636633036626166626534366137643137353066336663663235363566370565312e302e30", hex::encode(crypto_multi_accounts.to_bytes().unwrap()));
         // let result = crypto_multi_accounts
         //     .to_ur_encoder(400)
         //     .next_part()
@@ -216,18 +233,19 @@ mod tests {
 
     #[test]
     fn test_decode() {
-        let crypto_multi_accounts = CryptoMultiAccounts::from_cbor(Vec::from_hex("a3011ae9181cf30281d9012fa203582102eae4b876a8696134b868f88cc2f51f715f2dbedb7446b8e6edf3d4541c4eb67b06d90130a10188182cf51901f5f500f500f503686b657973746f6e65").unwrap()).unwrap();
+        let crypto_multi_accounts = CryptoMultiAccounts::from_cbor(Vec::from_hex("a5011ae9181cf30281d9012fa203582102eae4b876a8696134b868f88cc2f51f715f2dbedb7446b8e6edf3d4541c4eb67b06d90130a10188182cf51901f5f500f500f503686b657973746f6e65047828323834373563386438306636633036626166626534366137643137353066336663663235363566370565312e302e30").unwrap()).unwrap();
         assert_eq!(
             crypto_multi_accounts.master_fingerprint,
             [0xe9, 0x18, 0x1c, 0xf3]
         );
         assert_eq!(crypto_multi_accounts.device, Some("keystone".to_string()));
         assert_eq!(crypto_multi_accounts.keys.len(), 1);
+        assert_eq!(crypto_multi_accounts.device_version, Some("1.0.0".to_string()));
     }
 
     #[test]
     fn test_decode_multi() {
-        let part= "UR:CRYPTO-MULTI-ACCOUNTS/OTADCYCNTIFDWTAOLNTAADDLOXAOWKAXHDCXSPTPFWOEWNLBTSPKRPAYTODMONECOLWLHDURZSCXSGYNINQDFLRHBYSSCHCFIHGUAMTAADDYOTADLOCSDWYKCFADYKYKAEYKAEYKAOCYCNTIFDWTAXAHASISGRIHKKJKJYJLJTIHTAADDLOXAOWKAXHDCXBSMDKOCXPRDERDVORHGSLFUTTYRTMUMKFTIOENGOGORLEMWPKIUOBYCHVACEJPVTAMTAADDYOTADLOCSDWYKCFADYKYKADYKAEYKAOCYCNTIFDWTAXAHASISGRIHKKJKJYJLJTIHTAADDLOXAOWKAXHDCXWZDKVSECEOURRKKEVWWYRDFGAELYNNPYMDPRAATKAYJKTYRFHSTSBANYZMGLGHPMAMTAADDYOTADLOCSDWYKCFADYKYKAOYKAEYKAOCYCNTIFDWTAXAHASISGRIHKKJKJYJLJTIHTAADDLOXAOWKAXHDCXGLAAUECPATIEADBGPKJNUEYKNNTLADOXTIMURTGWCPAYGSZSYABTVLISECSOJYTKAMTAADDYOTADLOCSDWYKCFADYKYKAXYKAEYKAOCYCNTIFDWTAXAHASISGRIHKKJKJYJLJTIHTAADDLOXAOWKAXHDCXMUJLWLCKPYPMKBNEDPIOGRDINYRYIYWLECBAONHDPMSPBGFYTDEHASKEMTLDFZINAMTAADDYOTADLOCSDWYKCFADYKYKAAYKAEYKAOCYCNTIFDWTAXAHASISGRIHKKJKJYJLJTIHTAADDLOXAOWKAXHDCXKEOLGWPEFSRSKEEMGAONWLMWVWKOISTPPEJZFRVEPKFWVDGAAMAHBTTIJSFSGSLDAMTAADDYOTADLOCSDWYKCFADYKYKAHYKAEYKAOCYCNTIFDWTAXAHASISGRIHKKJKJYJLJTIHAXISGRIHKKJKJYJLJTIHLDMEDATK";
+        let part = "UR:CRYPTO-MULTI-ACCOUNTS/OTADCYCNTIFDWTAOLNTAADDLOXAOWKAXHDCXSPTPFWOEWNLBTSPKRPAYTODMONECOLWLHDURZSCXSGYNINQDFLRHBYSSCHCFIHGUAMTAADDYOTADLOCSDWYKCFADYKYKAEYKAEYKAOCYCNTIFDWTAXAHASISGRIHKKJKJYJLJTIHTAADDLOXAOWKAXHDCXBSMDKOCXPRDERDVORHGSLFUTTYRTMUMKFTIOENGOGORLEMWPKIUOBYCHVACEJPVTAMTAADDYOTADLOCSDWYKCFADYKYKADYKAEYKAOCYCNTIFDWTAXAHASISGRIHKKJKJYJLJTIHTAADDLOXAOWKAXHDCXWZDKVSECEOURRKKEVWWYRDFGAELYNNPYMDPRAATKAYJKTYRFHSTSBANYZMGLGHPMAMTAADDYOTADLOCSDWYKCFADYKYKAOYKAEYKAOCYCNTIFDWTAXAHASISGRIHKKJKJYJLJTIHTAADDLOXAOWKAXHDCXGLAAUECPATIEADBGPKJNUEYKNNTLADOXTIMURTGWCPAYGSZSYABTVLISECSOJYTKAMTAADDYOTADLOCSDWYKCFADYKYKAXYKAEYKAOCYCNTIFDWTAXAHASISGRIHKKJKJYJLJTIHTAADDLOXAOWKAXHDCXMUJLWLCKPYPMKBNEDPIOGRDINYRYIYWLECBAONHDPMSPBGFYTDEHASKEMTLDFZINAMTAADDYOTADLOCSDWYKCFADYKYKAAYKAEYKAOCYCNTIFDWTAXAHASISGRIHKKJKJYJLJTIHTAADDLOXAOWKAXHDCXKEOLGWPEFSRSKEEMGAONWLMWVWKOISTPPEJZFRVEPKFWVDGAAMAHBTTIJSFSGSLDAMTAADDYOTADLOCSDWYKCFADYKYKAHYKAEYKAOCYCNTIFDWTAXAHASISGRIHKKJKJYJLJTIHAXISGRIHKKJKJYJLJTIHLDMEDATK";
         let decode_data = ur::decode(&part.to_lowercase());
         let crypto_multi_accounts = CryptoMultiAccounts::from_cbor(decode_data.unwrap().1).unwrap();
         assert_eq!(
