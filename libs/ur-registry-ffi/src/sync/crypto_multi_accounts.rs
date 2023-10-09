@@ -18,6 +18,7 @@ pub struct MultiAccounts {
     pub keys: Vec<Account>,
     pub device: Option<String>,
     pub device_id: Option<String>,
+    pub device_version: Option<String>,
 }
 
 impl Into<MultiAccounts> for CryptoMultiAccounts {
@@ -31,6 +32,7 @@ impl Into<MultiAccounts> for CryptoMultiAccounts {
                 .collect(),
             device: self.get_device(),
             device_id: self.get_device_id(),
+            device_version: self.get_device_version(),
         }
     }
 }
@@ -62,7 +64,7 @@ mod tests {
     #[test]
     fn test_parse_crypto_multi_accounts() {
         let multi_accounts_cbor = "a3011ae9181cf30281d9012fa203582102eae4b876a8696134b868f88cc2f51f715f2dbedb7446b8e6edf3d4541c4eb67b06d90130a10188182cf51901f5f500f500f503686b657973746f6e65";
-        let expect_result = "{\"device\":\"keystone\",\"device_id\":null,\"keys\":[{\"chain\":\"SOL\",\"chain_code\":\"\",\"extended_public_key\":\"\",\"extra\":{\"okx\":{\"chain_id\":501}},\"name\":\"\",\"path\":\"m/44'/501'/0'/0'\",\"public_key\":\"02eae4b876a8696134b868f88cc2f51f715f2dbedb7446b8e6edf3d4541c4eb67b\"}],\"master_fingerprint\":\"e9181cf3\"}";
+        let expect_result = "{\"device\":\"keystone\",\"device_id\":null,\"device_version\":null,\"keys\":[{\"chain\":\"SOL\",\"chain_code\":\"\",\"extended_public_key\":\"\",\"extra\":{\"okx\":{\"chain_id\":501}},\"name\":\"\",\"path\":\"m/44'/501'/0'/0'\",\"public_key\":\"02eae4b876a8696134b868f88cc2f51f715f2dbedb7446b8e6edf3d4541c4eb67b\"}],\"master_fingerprint\":\"e9181cf3\"}";
 
         assert_eq!(
             expect_result,
@@ -73,7 +75,18 @@ mod tests {
     #[test]
     fn test_parse_crypto_multi_accounts_with_device_id() {
         let multi_accounts_cbor = "a4011ae9181cf30281d9012fa203582102eae4b876a8696134b868f88cc2f51f715f2dbedb7446b8e6edf3d4541c4eb67b06d90130a10188182cf51901f5f500f500f503686b657973746f6e6504782832383437356338643830663663303662616662653436613764313735306633666366323536356637";
-        let expect_result = "{\"device\":\"keystone\",\"device_id\":\"28475c8d80f6c06bafbe46a7d1750f3fcf2565f7\",\"keys\":[{\"chain\":\"SOL\",\"chain_code\":\"\",\"extended_public_key\":\"\",\"extra\":{\"okx\":{\"chain_id\":501}},\"name\":\"\",\"path\":\"m/44'/501'/0'/0'\",\"public_key\":\"02eae4b876a8696134b868f88cc2f51f715f2dbedb7446b8e6edf3d4541c4eb67b\"}],\"master_fingerprint\":\"e9181cf3\"}";
+        let expect_result = "{\"device\":\"keystone\",\"device_id\":\"28475c8d80f6c06bafbe46a7d1750f3fcf2565f7\",\"device_version\":null,\"keys\":[{\"chain\":\"SOL\",\"chain_code\":\"\",\"extended_public_key\":\"\",\"extra\":{\"okx\":{\"chain_id\":501}},\"name\":\"\",\"path\":\"m/44'/501'/0'/0'\",\"public_key\":\"02eae4b876a8696134b868f88cc2f51f715f2dbedb7446b8e6edf3d4541c4eb67b\"}],\"master_fingerprint\":\"e9181cf3\"}";
+
+        assert_eq!(
+            expect_result,
+            parse_crypto_multi_accounts("crypto-multi-accounts", multi_accounts_cbor)
+        );
+    }
+
+    #[test]
+    fn test_parse_crypto_multi_accounts_with_device_version() {
+        let multi_accounts_cbor = "a5011ae9181cf30281d9012fa203582102eae4b876a8696134b868f88cc2f51f715f2dbedb7446b8e6edf3d4541c4eb67b06d90130a10188182cf51901f5f500f500f503686b657973746f6e65047828323834373563386438306636633036626166626534366137643137353066336663663235363566370565312e302e30";
+        let expect_result = "{\"device\":\"keystone\",\"device_id\":\"28475c8d80f6c06bafbe46a7d1750f3fcf2565f7\",\"device_version\":\"1.0.0\",\"keys\":[{\"chain\":\"SOL\",\"chain_code\":\"\",\"extended_public_key\":\"\",\"extra\":{\"okx\":{\"chain_id\":501}},\"name\":\"\",\"path\":\"m/44'/501'/0'/0'\",\"public_key\":\"02eae4b876a8696134b868f88cc2f51f715f2dbedb7446b8e6edf3d4541c4eb67b\"}],\"master_fingerprint\":\"e9181cf3\"}";
 
         assert_eq!(
             expect_result,
@@ -86,7 +99,7 @@ mod tests {
         // feed illegal large weekend demand typical brick bid dilemma between gasp art
 
         let multi_accounts_cbor = "a3011aa424853c0281d9012fa4035821034af544244d31619d773521a1a366373c485ff89de50bea543c2b14cccfbb6a500458208dc2427d8ab23caab07729f88f089a3cfa2cfffcd7d1e507f983c0d44a5dbd3506d90130a10186182cf500f500f5081a149439dc03686b657973746f6e65";
-        let expect_result = "{\"device\":\"keystone\",\"device_id\":null,\"keys\":[{\"chain\":\"BTC\",\"chain_code\":\"8dc2427d8ab23caab07729f88f089a3cfa2cfffcd7d1e507f983c0d44a5dbd35\",\"extended_public_key\":\"xpub6BoYPFH1MivLdh2BWZuRu6LfuaVSkVak5wsDxjjkAWcUM2QPKyeCHXMgDfRJFvKZhqA4vM5vsgcD6C5ot9eThnFHstgPntNzBLUdLeKS7Zt\",\"extra\":{\"okx\":{\"chain_id\":0}},\"name\":\"\",\"path\":\"m/44'/0'/0'\",\"public_key\":\"034af544244d31619d773521a1a366373c485ff89de50bea543c2b14cccfbb6a50\"}],\"master_fingerprint\":\"a424853c\"}";
+        let expect_result = "{\"device\":\"keystone\",\"device_id\":null,\"device_version\":null,\"keys\":[{\"chain\":\"BTC\",\"chain_code\":\"8dc2427d8ab23caab07729f88f089a3cfa2cfffcd7d1e507f983c0d44a5dbd35\",\"extended_public_key\":\"xpub6BoYPFH1MivLdh2BWZuRu6LfuaVSkVak5wsDxjjkAWcUM2QPKyeCHXMgDfRJFvKZhqA4vM5vsgcD6C5ot9eThnFHstgPntNzBLUdLeKS7Zt\",\"extra\":{\"okx\":{\"chain_id\":0}},\"name\":\"\",\"path\":\"m/44'/0'/0'\",\"public_key\":\"034af544244d31619d773521a1a366373c485ff89de50bea543c2b14cccfbb6a50\"}],\"master_fingerprint\":\"a424853c\"}";
 
         assert_eq!(
             expect_result,
