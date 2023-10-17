@@ -37,6 +37,9 @@ where
     F: FnMut(u64, &mut T, &mut Decoder<'b>) -> Result<(), minicbor::decode::Error>,
 {
     let entries = d.array()?;
+    if let Some(0) = entries {
+        return Ok(());
+    }
     let mut index = 0;
     loop {
         (cb)(index, obj, d)?;
