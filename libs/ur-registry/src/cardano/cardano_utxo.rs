@@ -20,7 +20,7 @@ const ADDRESS: u8 = 5;
 impl_template_struct!(CardanoUTXO {
     transaction_hash: Bytes,
     index: u32,
-    amount: u64,
+    amount: String,
     key_path: CryptoKeyPath,
     address: String
 });
@@ -46,7 +46,7 @@ impl<C> minicbor::Encode<C> for CardanoUTXO {
 
         e.int(Int::from(INDEX))?.u32(self.get_index())?;
 
-        e.int(Int::from(AMOUNT))?.u64(self.get_amount())?;
+        e.int(Int::from(AMOUNT))?.str(&self.amount)?;
 
         e.int(Int::from(KEY_PATH))?
             .tag(Tag::Unassigned(CRYPTO_KEYPATH.get_tag()))?;
@@ -68,7 +68,7 @@ impl<'b, C> minicbor::Decode<'b, C> for CardanoUTXO {
             match key {
                 TRANSACTION_HASH => obj.set_transaction_hash(d.bytes()?.to_vec()),
                 INDEX => obj.set_index(d.u32()?),
-                AMOUNT => obj.set_amount(d.u64()?),
+                AMOUNT => obj.set_amount(d.str()?.to_string()),
                 KEY_PATH => {
                     d.tag()?;
                     obj.set_key_path(CryptoKeyPath::decode(d, _ctx)?);
