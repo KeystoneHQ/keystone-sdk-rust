@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
   spec.name         = "URRegistryFFI"
-  spec.version      = "0.2.3"
+  spec.version      = "0.2.5"
   spec.summary      = "An BC-UR registry implementation with rust-lang"
   spec.homepage     = "https://github.com/KeystoneHQ/keystone-sdk-rust"
   spec.license      = { :type => 'Copyright', :text => 'Copyright 2023 Keystone' }
