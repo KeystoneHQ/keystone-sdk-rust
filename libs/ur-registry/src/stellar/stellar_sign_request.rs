@@ -19,15 +19,15 @@ const ORIGIN: u8 = 6;
 #[derive(Clone, Debug, Default)]
 pub enum DataType {
     #[default]
-    Transaction = 8,
+    Transaction = 1,
 }
 
 impl DataType {
     pub fn from_u32(i: u32) -> Result<Self, String> {
         match i {
-            8 => Ok(DataType::Transaction),
+            1 => Ok(DataType::Transaction),
             x => Err(format!(
-                "invalid value for data_type in stellar-sign-request, expected (8), received {:?}",
+                "invalid value for data_type in stellar-sign-request, expected (1), received {:?}",
                 x
             )),
         }
