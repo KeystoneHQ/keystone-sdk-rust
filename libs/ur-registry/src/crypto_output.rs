@@ -195,6 +195,21 @@ mod tests {
             "d90190d90196a201020282d90132a1035821022f01e5e15cca351daff3843fb70f3c2f0a1bdd05e5af888a67784ef3e10a2a01d90132a103582103acd484e2f0c7f65309ad178a9f559abde09796974c57e714c35f110dfc27ccbe",
             hex::encode(crypto.to_bytes().unwrap()).to_lowercase()
         );
+
+        let script_expressions = vec![
+            ScriptExpression::Taproot,
+        ];
+        let bytes =
+            Vec::from_hex("03fff97bd5755eeea420453a14355235d382f6472f8568a18b2f057a1460297556")
+                .unwrap();
+
+        let ec_keys = CryptoECKey::new(None, None, bytes);
+        let crypto = CryptoOutput::new(script_expressions, Some(ec_keys), None, None);
+
+        assert_eq!(
+            "d90199d90132a103582103fff97bd5755eeea420453a14355235d382f6472f8568a18b2f057a1460297556",
+            hex::encode(crypto.to_bytes().unwrap()).to_lowercase()
+        );
     }
 
     #[test]
@@ -209,5 +224,16 @@ mod tests {
             crypto.get_script_expressions()
         );
         assert_eq!(2, crypto.get_multi_key().unwrap().get_threshold());
+
+        let bytes = Vec::from_hex(
+            "d90199d90132a103582103fff97bd5755eeea420453a14355235d382f6472f8568a18b2f057a1460297556",
+        )
+            .unwrap();
+        let crypto = CryptoOutput::from_cbor(bytes).unwrap();
+
+        assert_eq!(
+            vec![ScriptExpression::Taproot],
+            crypto.get_script_expressions()
+        );
     }
 }

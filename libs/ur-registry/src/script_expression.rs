@@ -57,6 +57,14 @@ const RAW_SCRIPT: ScriptExpressionValue = ScriptExpressionValue {
     tag_value: 408,
     expression: "raw",
 };
+const TAPROOT: ScriptExpressionValue = ScriptExpressionValue {
+    tag_value: 409,
+    expression: "tr",
+};
+const COSIGNER: ScriptExpressionValue = ScriptExpressionValue {
+    tag_value: 410,
+    expression: "cosigner",
+};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum ScriptExpression {
@@ -70,6 +78,8 @@ pub enum ScriptExpression {
     SortedMultiSig,
     Address,
     RawScript,
+    Taproot,
+    Cosigner,
     Undefine(u64),
 }
 
@@ -86,6 +96,8 @@ impl ScriptExpression {
             407 => ScriptExpression::SortedMultiSig,
             307 => ScriptExpression::Address,
             408 => ScriptExpression::RawScript,
+            409 => ScriptExpression::Taproot,
+            410 => ScriptExpression::Cosigner,
             _ => ScriptExpression::Undefine(tag_value),
         }
     }
@@ -102,6 +114,8 @@ impl ScriptExpression {
             ScriptExpression::SortedMultiSig => SORTED_MULTI_SIG.get_tag_value(),
             ScriptExpression::Address => ADDRESS.get_tag_value(),
             ScriptExpression::RawScript => RAW_SCRIPT.get_tag_value(),
+            ScriptExpression::Taproot => TAPROOT.get_tag_value(),
+            ScriptExpression::Cosigner => COSIGNER.get_tag_value(),
             ScriptExpression::Undefine(tag_value) => *tag_value as u32,
         }
     }
@@ -118,6 +132,8 @@ impl ScriptExpression {
             ScriptExpression::SortedMultiSig => SORTED_MULTI_SIG.get_expression(),
             ScriptExpression::Address => ADDRESS.get_expression(),
             ScriptExpression::RawScript => RAW_SCRIPT.get_expression(),
+            ScriptExpression::Taproot => TAPROOT.get_expression(),
+            ScriptExpression::Cosigner => COSIGNER.get_expression(),
             ScriptExpression::Undefine(tag_value) => {
                 format!("tag value is {}, undefine expression", tag_value)
             }
