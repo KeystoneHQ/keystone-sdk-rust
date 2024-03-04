@@ -6,8 +6,8 @@ extern crate core;
 
 pub mod aptos;
 pub mod arweave;
+pub mod bitcoin;
 pub mod bytes;
-pub mod btc;
 pub mod cardano;
 mod cbor;
 pub mod cosmos;
@@ -30,6 +30,6 @@ pub mod pb;
 pub mod registry_types;
 pub mod script_expression;
 pub mod solana;
-pub mod traits;
 pub mod sui;
+pub mod traits;
 mod types;

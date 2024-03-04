@@ -1,14 +1,13 @@
+use crate::cbor::{cbor_array, cbor_map};
+use crate::crypto_key_path::CryptoKeyPath;
+use crate::impl_template_struct;
+use crate::registry_types::{RegistryType, BTC_SIGN_REQUEST, UUID};
+use crate::traits::{MapSize, RegistryItem};
+use crate::types::Bytes;
 use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use minicbor::data::{Int, Tag};
-
-use crate::cbor::{cbor_array, cbor_map};
-use crate::crypto_key_path::CryptoKeyPath;
-use crate::error::{URError, URResult};
-use crate::registry_types::{RegistryType, BTC_SIGN_REQUEST, UUID};
-use crate::traits::{From, RegistryItem, To};
-use crate::types::Bytes;
 
 const REQUEST_ID: u8 = 1;
 const SIGN_DATA: u8 = 2;
@@ -17,8 +16,7 @@ const DERIVATION_PATHS: u8 = 4;
 const ADDRESSES: u8 = 5;
 const ORIGIN: u8 = 6;
 
-#[derive(Clone, Debug)]
-#[derive(Default)]
+#[derive(Clone, Debug, Default)]
 pub enum DataType {
     #[default]
     Message = 1,
@@ -36,85 +34,31 @@ impl DataType {
     }
 }
 
-#[derive(Clone, Debug, Default)]
-pub struct BtcSignRequest {
+impl_template_struct!(BtcSignRequest {
     request_id: Bytes,
     sign_data: Bytes,
     data_type: DataType,
     derivation_paths: Vec<CryptoKeyPath>,
     addresses: Option<Vec<String>>,
-    origin: Option<String>,
-}
-
-impl BtcSignRequest {
-    pub fn default() -> Self {
-        Default::default()
-    }
-
-    pub fn set_request_id(&mut self, id: Bytes) {
-        self.request_id = id;
-    }
-
-    pub fn set_sign_data(&mut self, data: Bytes) {
-        self.sign_data = data;
-    }
-
-    pub fn set_data_type(&mut self, data_type: DataType) {
-        self.data_type = data_type
-    }
-
-    pub fn set_derivation_paths(&mut self, derivation_paths: Vec<CryptoKeyPath>) {
-        self.derivation_paths = derivation_paths;
-    }
-
-    pub fn set_addresses(&mut self, addresses: Vec<String>) {
-        self.addresses = Some(addresses)
-    }
-
-    pub fn set_origin(&mut self, origin: String) {
-        self.origin = Some(origin)
-    }
-
-    pub fn new(
-        request_id: Bytes,
-        sign_data: Bytes,
-        data_type: DataType,
-        derivation_paths: Vec<CryptoKeyPath>,
-        addresses: Option<Vec<String>>,
-        origin: Option<String>,
-    ) -> BtcSignRequest {
-        BtcSignRequest {
-            request_id,
-            sign_data,
-            data_type,
-            derivation_paths,
-            addresses,
-            origin,
-        }
-    }
-    pub fn get_request_id(&self) -> Bytes {
-        self.request_id.clone()
-    }
-    pub fn get_sign_data(&self) -> Bytes {
-        self.sign_data.clone()
-    }
-    pub fn get_data_type(&self) -> DataType {
-        self.data_type.clone()
-    }
-    pub fn get_derivation_paths(&self) -> Vec<CryptoKeyPath> {
-        self.derivation_paths.clone()
-    }
-    pub fn get_addresses(&self) -> Option<Vec<String>> {
-        self.addresses.clone()
-    }
-    pub fn get_origin(&self) -> Option<String> {
-        self.origin.clone()
-    }
-}
+    origin: Option<String>
+});
 
 impl RegistryItem for BtcSignRequest {
     fn get_registry_type() -> RegistryType<'static> {
         BTC_SIGN_REQUEST
+    }
+}
+
+impl MapSize for BtcSignRequest {
+    fn map_size(&self) -> u64 {
+        let mut size = 2;
+        if self.addresses.is_some() {
+            size += 1;
+        }
+        if self.origin.is_some() {
+            size += 1;
+        }
+        size
     }
 }
 
@@ -124,14 +68,7 @@ impl<C> minicbor::Encode<C> for BtcSignRequest {
         e: &mut minicbor::Encoder<W>,
         ctx: &mut C,
     ) -> Result<(), minicbor::encode::Error<W::Error>> {
-        let mut size = 4;
-        if self.addresses.is_some() {
-            size += 1;
-        }
-        if self.origin.is_some() {
-            size += 1;
-        }
-        e.map(size)?;
+        e.map(self.map_size())?;
         e.int(
             Int::try_from(REQUEST_ID)
                 .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
@@ -202,7 +139,9 @@ impl<'b, C> minicbor::Decode<'b, C> for BtcSignRequest {
                 REQUEST_ID => {
                     let tag = d.tag()?;
                     if !tag.eq(&Tag::Unassigned(UUID.get_tag())) {
-                        return Result::Err(minicbor::decode::Error::message("UUID tag is invalid"));
+                        return Result::Err(minicbor::decode::Error::message(
+                            "UUID tag is invalid",
+                        ));
                     }
                     obj.request_id = d.bytes()?.to_vec();
                 }
@@ -210,8 +149,8 @@ impl<'b, C> minicbor::Decode<'b, C> for BtcSignRequest {
                     obj.sign_data = d.bytes()?.to_vec();
                 }
                 DATA_TYPE => {
-                    obj.data_type = DataType::from_u32(d.u32()?)
-                        .map_err(minicbor::decode::Error::message)?;
+                    obj.data_type =
+                        DataType::from_u32(d.u32()?).map_err(minicbor::decode::Error::message)?;
                 }
                 DERIVATION_PATHS => {
                     cbor_array(d, &mut obj.derivation_paths, |_key, obj, d| {
@@ -247,17 +186,5 @@ impl<'b, C> minicbor::Decode<'b, C> for BtcSignRequest {
             Ok(())
         })?;
         Ok(result)
-    }
-}
-
-impl To for BtcSignRequest {
-    fn to_bytes(&self) -> URResult<Vec<u8>> {
-        minicbor::to_vec(self.clone()).map_err(|e| URError::CborDecodeError(e.to_string()))
-    }
-}
-
-impl From<BtcSignRequest> for BtcSignRequest {
-    fn from_cbor(bytes: Vec<u8>) -> URResult<BtcSignRequest> {
-        minicbor::decode(&bytes).map_err(|e| URError::CborDecodeError(e.to_string()))
     }
 }
