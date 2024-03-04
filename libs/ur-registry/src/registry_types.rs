@@ -17,6 +17,7 @@ pub enum URType {
     SuiSignRequest(String),
     QRHardwareCall(String),
     Bytes(String),
+    BtcSignRequest(String),
     KeystoneSignRequest(String),
 }
 
@@ -27,6 +28,7 @@ impl URType {
             "crypto-multi-accounts" => Ok(URType::CryptoMultiAccounts(type_str.to_string())),
             "crypto-account" => Ok(URType::CryptoAccount(type_str.to_string())),
             "bytes" => Ok(URType::Bytes(type_str.to_string())),
+            "btc-sign-request" => Ok(URType::BtcSignRequest(type_str.to_string())),
             "keystone-sign-request" => Ok(URType::KeystoneSignRequest(type_str.to_string())),
             "eth-sign-request" => Ok(URType::EthSignRequest(type_str.to_string())),
             "sol-sign-request" => Ok(URType::SolSignRequest(type_str.to_string())),
@@ -48,6 +50,7 @@ impl URType {
             URType::CryptoMultiAccounts(type_str) => type_str.to_string(),
             URType::CryptoAccount(type_str) => type_str.to_string(),
             URType::Bytes(type_str) => type_str.to_string(),
+            URType::BtcSignRequest(type_str) => type_str.to_string(),
             URType::KeystoneSignRequest(type_str) => type_str.to_string(),
             URType::EthSignRequest(type_str) => type_str.to_string(),
             URType::SolSignRequest(type_str) => type_str.to_string(),
