@@ -129,3 +129,6 @@ pub const CARDANO_CERT_KEY: RegistryType = RegistryType("cardano-cert-key", Some
 // Sui
 pub const SUI_SIGN_REQUEST: RegistryType = RegistryType("sui-sign-request", Some(7101));
 pub const SUI_SIGNATURE: RegistryType = RegistryType("sui-signature", Some(7102));
+// BTC
+pub const BTC_SIGN_REQUEST: RegistryType = RegistryType("btc-sign-request", Some(8101));
+pub const BTC_SIGNATURE: RegistryType = RegistryType("btc-signature", Some(8102));
