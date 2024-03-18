@@ -17,6 +17,7 @@ pub enum URType {
     SuiSignRequest(String),
     QRHardwareCall(String),
     Bytes(String),
+    BtcSignRequest(String),
     KeystoneSignRequest(String),
 }
 
@@ -27,6 +28,7 @@ impl URType {
             "crypto-multi-accounts" => Ok(URType::CryptoMultiAccounts(type_str.to_string())),
             "crypto-account" => Ok(URType::CryptoAccount(type_str.to_string())),
             "bytes" => Ok(URType::Bytes(type_str.to_string())),
+            "btc-sign-request" => Ok(URType::BtcSignRequest(type_str.to_string())),
             "keystone-sign-request" => Ok(URType::KeystoneSignRequest(type_str.to_string())),
             "eth-sign-request" => Ok(URType::EthSignRequest(type_str.to_string())),
             "sol-sign-request" => Ok(URType::SolSignRequest(type_str.to_string())),
@@ -48,6 +50,7 @@ impl URType {
             URType::CryptoMultiAccounts(type_str) => type_str.to_string(),
             URType::CryptoAccount(type_str) => type_str.to_string(),
             URType::Bytes(type_str) => type_str.to_string(),
+            URType::BtcSignRequest(type_str) => type_str.to_string(),
             URType::KeystoneSignRequest(type_str) => type_str.to_string(),
             URType::EthSignRequest(type_str) => type_str.to_string(),
             URType::SolSignRequest(type_str) => type_str.to_string(),
@@ -129,3 +132,6 @@ pub const CARDANO_CERT_KEY: RegistryType = RegistryType("cardano-cert-key", Some
 // Sui
 pub const SUI_SIGN_REQUEST: RegistryType = RegistryType("sui-sign-request", Some(7101));
 pub const SUI_SIGNATURE: RegistryType = RegistryType("sui-signature", Some(7102));
+// BTC
+pub const BTC_SIGN_REQUEST: RegistryType = RegistryType("btc-sign-request", Some(8101));
+pub const BTC_SIGNATURE: RegistryType = RegistryType("btc-signature", Some(8102));
