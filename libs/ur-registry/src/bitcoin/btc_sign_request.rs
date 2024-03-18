@@ -51,7 +51,7 @@ impl RegistryItem for BtcSignRequest {
 
 impl MapSize for BtcSignRequest {
     fn map_size(&self) -> u64 {
-        let mut size = 2;
+        let mut size = 4;
         if self.addresses.is_some() {
             size += 1;
         }
