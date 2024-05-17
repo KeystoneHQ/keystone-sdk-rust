@@ -14,5 +14,6 @@ pub mod cardano;
 mod util_internal;
 pub mod utils;
 pub mod sui;
+pub mod ton;
 
 ffi_support::define_string_destructor!(keystone_sdk_destroy_string);
