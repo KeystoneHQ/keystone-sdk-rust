@@ -15,6 +15,7 @@ pub enum URType {
     CosmosSignRequest(String),
     EvmSignRequest(String),
     SuiSignRequest(String),
+    TonSignRequest(String),
     QRHardwareCall(String),
     Bytes(String),
     BtcSignRequest(String),
@@ -40,6 +41,7 @@ impl URType {
             "sui-sign-request" => Ok(URType::SuiSignRequest(type_str.to_string())),
             "cardano-sign-request" => Ok(URType::CardanoSignRequest(type_str.to_string())),
             "qr-hardware-call" => Ok(URType::QRHardwareCall(type_str.to_string())),
+            "ton-sign-request" => Ok(URType::TonSignRequest(type_str.to_string())),
             _ => Err(URError::NotSupportURTypeError(type_str.to_string())),
         }
     }
@@ -62,6 +64,7 @@ impl URType {
             URType::CosmosSignRequest(type_str) => type_str.to_string(),
             URType::EvmSignRequest(type_str) => type_str.to_string(),
             URType::QRHardwareCall(type_str) => type_str.to_string(),
+            URType::TonSignRequest(type_str) => type_str.to_string(),
         }
     }
 }
