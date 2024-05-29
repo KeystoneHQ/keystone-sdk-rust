@@ -8,6 +8,7 @@ pub enum URType {
     CryptoAccount(String),
     EthSignRequest(String),
     SolSignRequest(String),
+    StellarSignRequest(String),
     NearSignRequest(String),
     ArweaveSignRequest(String),
     AptosSignRequest(String),
@@ -33,6 +34,7 @@ impl URType {
             "keystone-sign-request" => Ok(URType::KeystoneSignRequest(type_str.to_string())),
             "eth-sign-request" => Ok(URType::EthSignRequest(type_str.to_string())),
             "sol-sign-request" => Ok(URType::SolSignRequest(type_str.to_string())),
+            "stellar-sign-request" => Ok(URType::StellarSignRequest(type_str.to_string())),
             "arweave-sign-request" => Ok(URType::ArweaveSignRequest(type_str.to_string())),
             "cosmos-sign-request" => Ok(URType::CosmosSignRequest(type_str.to_string())),
             "evm-sign-request" => Ok(URType::EvmSignRequest(type_str.to_string())),
@@ -56,6 +58,7 @@ impl URType {
             URType::KeystoneSignRequest(type_str) => type_str.to_string(),
             URType::EthSignRequest(type_str) => type_str.to_string(),
             URType::SolSignRequest(type_str) => type_str.to_string(),
+            URType::StellarSignRequest(type_str) => type_str.to_string(),
             URType::NearSignRequest(type_str) => type_str.to_string(),
             URType::ArweaveSignRequest(type_str) => type_str.to_string(),
             URType::AptosSignRequest(type_str) => type_str.to_string(),
@@ -141,3 +144,6 @@ pub const TON_SIGNATURE: RegistryType = RegistryType("ton-signature", Some(7202)
 // BTC
 pub const BTC_SIGN_REQUEST: RegistryType = RegistryType("btc-sign-request", Some(8101));
 pub const BTC_SIGNATURE: RegistryType = RegistryType("btc-signature", Some(8102));
+// Stellar
+pub const STELLAR_SIGN_REQUEST: RegistryType = RegistryType("stellar-sign-request", Some(8201));
+pub const STELLAR_SIGNATURE: RegistryType = RegistryType("stellar-signature", Some(8202));
