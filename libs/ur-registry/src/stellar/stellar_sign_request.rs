@@ -26,8 +26,6 @@ pub enum SignType {
     Message,
 }
 
-
-
 impl SignType {
     pub fn from_u32(i: u32) -> Result<Self, String> {
         match i {
@@ -225,10 +223,8 @@ impl FromCbor<StellarSignRequest> for StellarSignRequest {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::crypto_key_path::{CryptoKeyPath, PathComponent};
-    use crate::stellarana::stellar_sign_request::{SignType, StellarSignRequest};
-    use crate::traits::{From as FromCbor, To};
-    use alloc::string::ToString;
     use alloc::vec;
     use alloc::vec::Vec;
     use hex::FromHex;

@@ -81,12 +81,13 @@ mod tests {
         let xfp = "12121212";
         let address = "";
         let sign_type = 1;
+        let origin = "";
 
-        let expect_result = "{\"cbor\":\"a501d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d02589601000103c8d842a2f17fd7aab608ce2ea535a6e958dffa20caf669b347b911c4171965530f957620b228bae2b94c82ddd4c093983a67365555b737ec7ddc1117e61c72e0000000000000000000000000000000000000000000000000000000000000000010295cc2f1f39f3604718496ea00676d6a72ec66ad09d926e3ece34f565f18d201020200010c0200000000e1f5050000000003d90130a20188182cf51901f5f500f500f5021a121212120568736f6c666c6172650601\",\"type\":\"stellar-sign-request\"}";
+        let expect_result = "{\"cbor\":\"a401d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d02589601000103c8d842a2f17fd7aab608ce2ea535a6e958dffa20caf669b347b911c4171965530f957620b228bae2b94c82ddd4c093983a67365555b737ec7ddc1117e61c72e0000000000000000000000000000000000000000000000000000000000000000010295cc2f1f39f3604718496ea00676d6a72ec66ad09d926e3ece34f565f18d201020200010c0200000000e1f5050000000003d90130a20188182cf51901f5f500f500f5021a121212120601\",\"type\":\"stellar-sign-request\"}";
 
         assert_eq!(
             expect_result,
-            generate_stellar_sign_request(request_id, sign_data, path, xfp, address, sign_type)
+            generate_stellar_sign_request(request_id, sign_data, path, xfp, address, origin, sign_type)
         );
     }
 
@@ -98,12 +99,13 @@ mod tests {
         let xfp = "1212120";
         let address = "";
         let sign_type = 1;
+        let origin = "keystone";
 
         let err_result_derivation_path = "{\"error\":\"xfp is invalid\"}";
 
         assert_eq!(
             err_result_derivation_path,
-            generate_stellar_sign_request(request_id, sign_data, path, xfp, address, sign_type)
+            generate_stellar_sign_request(request_id, sign_data, path, xfp, address, origin, sign_type)
         );
     }
 
@@ -115,13 +117,13 @@ mod tests {
         let xfp = "12121212";
         let address = "";
         let sign_type = 1;
+        let origin = "keystone";
 
         let err_result = "{\"error\":\"sign data is invalid\"}";
 
         assert_eq!(
             err_result,
-            generate_stellar_sign_request(request_id, sign_data, path, xfp, address, sign_type)
-            generate_stellar_sign_request(request_id, sign_data, path, xfp, address, sign_type)
+            generate_stellar_sign_request(request_id, sign_data, path, xfp, address, origin, sign_type)
         );
     }
 }
