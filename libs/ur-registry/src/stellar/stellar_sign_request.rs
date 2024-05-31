@@ -23,6 +23,7 @@ const SIGN_TYPE: u8 = 6;
 pub enum SignType {
     #[default]
     Transaction = 1,
+    TransactionHash,
     Message,
 }
 
@@ -30,7 +31,8 @@ impl SignType {
     pub fn from_u32(i: u32) -> Result<Self, String> {
         match i {
             1 => Ok(SignType::Transaction),
-            2 => Ok(SignType::Message),
+            2 => Ok(SignType::TransactionHash),
+            3 => Ok(SignType::Message),
             x => Err(format!(
                 "invalid value for sign_type in stellar-sign-request, expected 1 or 2, received {:?}",
                 x
