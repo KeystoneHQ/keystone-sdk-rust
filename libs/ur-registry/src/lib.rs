@@ -30,6 +30,7 @@ pub mod pb;
 pub mod registry_types;
 pub mod script_expression;
 pub mod solana;
+pub mod stellar;
 pub mod sui;
 pub mod ton;
 pub mod traits;

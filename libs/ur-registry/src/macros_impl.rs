@@ -30,6 +30,7 @@ use crate::keystone::{
 };
 use crate::near::{near_sign_request::NearSignRequest, near_signature::NearSignature};
 use crate::solana::{sol_sign_request::SolSignRequest, sol_signature::SolSignature};
+use crate::stellar::{stellar_sign_request::StellarSignRequest, stellar_signature::StellarSignature};
 use crate::sui::sui_sign_request::SuiSignRequest;
 use crate::sui::sui_signature::SuiSignature;
 use crate::ton::{ton_signature::TonSignature, ton_sign_request::TonSignRequest};
@@ -68,6 +69,8 @@ impl_cbor_bytes!(
     NearSignature,
     SolSignRequest,
     SolSignature,
+    StellarSignRequest,
+    StellarSignature,
     SuiSignRequest,
     SuiSignature,
     TonSignature,
