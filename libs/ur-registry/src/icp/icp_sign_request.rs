@@ -1,10 +1,13 @@
-use crate::registry_types::{RegistryType, CRYPTO_KEYPATH, UUID};
-use crate::traits::{From as FromCbor, RegistryItem, To};
+use crate::traits::{From as FromCbor, MapSize, RegistryItem, To};
 use crate::types::{Bytes, Fingerprint};
 use crate::{cbor::cbor_map, registry_types::ICP_SIGN_REQUEST};
 use crate::{
     crypto_key_path::CryptoKeyPath,
     error::{URError, URResult},
+};
+use crate::{
+    impl_template_struct,
+    registry_types::{RegistryType, CRYPTO_KEYPATH, UUID},
 };
 use alloc::format;
 use alloc::string::{String, ToString};
@@ -64,8 +67,7 @@ impl SaltLen {
     }
 }
 
-#[derive(Clone, Debug, Default)]
-pub struct IcpSignRequest {
+impl_template_struct!(IcpSignRequest {
     master_fingerprint: Fingerprint,
     request_id: Option<Bytes>,
     sign_data: Bytes,
@@ -73,97 +75,22 @@ pub struct IcpSignRequest {
     salt_len: SaltLen,
     account: Option<Bytes>,
     origin: Option<String>,
-    derivation_path: CryptoKeyPath,
+    derivation_path: Option<CryptoKeyPath>
+});
+
+impl RegistryItem for IcpSignRequest {
+    fn get_registry_type() -> RegistryType<'static> {
+        ICP_SIGN_REQUEST
+    }
 }
 
-impl IcpSignRequest {
-    pub fn default() -> Self {
-        Default::default()
-    }
-
-    pub fn set_master_fingerprint(&mut self, mfp: Fingerprint) {
-        self.master_fingerprint = mfp;
-    }
-
-    pub fn set_request_id(&mut self, id: Bytes) {
-        self.request_id = Some(id);
-    }
-
-    pub fn set_sign_data(&mut self, data: Bytes) {
-        self.sign_data = data;
-    }
-
-    pub fn set_sign_type(&mut self, sign_type: SignType) {
-        self.sign_type = sign_type;
-    }
-
-    pub fn set_salt_len(&mut self, salt_len: SaltLen) {
-        self.salt_len = salt_len;
-    }
-
-    pub fn set_account(&mut self, account: Bytes) {
-        self.account = Some(account)
-    }
-
-    pub fn set_origin(&mut self, origin: String) {
-        self.origin = Some(origin)
-    }
-    pub fn set_derivation_path(&mut self, derivation_path: CryptoKeyPath) {
-        self.derivation_path = derivation_path;
-    }
-
-    pub fn new(
-        master_fingerprint: Fingerprint,
-        request_id: Option<Bytes>,
-        sign_data: Bytes,
-        sign_type: SignType,
-        salt_len: SaltLen,
-        account: Option<Bytes>,
-        origin: Option<String>,
-        derivation_path: CryptoKeyPath,
-    ) -> IcpSignRequest {
-        IcpSignRequest {
-            master_fingerprint,
-            request_id,
-            sign_data,
-            sign_type,
-            salt_len,
-            account,
-            origin,
-            derivation_path,
-        }
-    }
-    pub fn get_master_fingerprint(&self) -> Fingerprint {
-        self.master_fingerprint
-    }
-    pub fn get_request_id(&self) -> Option<Bytes> {
-        self.request_id.clone()
-    }
-    pub fn get_sign_data(&self) -> Bytes {
-        self.sign_data.clone()
-    }
-    pub fn get_sign_type(&self) -> SignType {
-        self.sign_type.clone()
-    }
-    pub fn get_salt_len(&self) -> SaltLen {
-        self.salt_len.clone()
-    }
-    pub fn get_account(&self) -> Option<Bytes> {
-        self.account.clone()
-    }
-    pub fn get_origin(&self) -> Option<String> {
-        self.origin.clone()
-    }
-
-    pub fn get_derivation_path(&self) -> CryptoKeyPath {
-        self.derivation_path.clone()
-    }
-    fn get_map_size(&self) -> u64 {
-        let mut size = 4;
+impl MapSize for IcpSignRequest {
+    fn map_size(&self) -> u64 {
+        let mut size = 3;
         if self.request_id.is_some() {
             size += 1;
         }
-        if self.account.is_some() {
+        if self.derivation_path.is_some() {
             size += 1;
         }
         if self.origin.is_some() {
@@ -173,19 +100,13 @@ impl IcpSignRequest {
     }
 }
 
-impl RegistryItem for IcpSignRequest {
-    fn get_registry_type() -> RegistryType<'static> {
-        ICP_SIGN_REQUEST
-    }
-}
-
 impl<C> minicbor::Encode<C> for IcpSignRequest {
     fn encode<W: Write>(
         &self,
         e: &mut Encoder<W>,
         ctx: &mut C,
     ) -> Result<(), minicbor::encode::Error<W::Error>> {
-        e.map(self.get_map_size())?;
+        e.map(self.map_size())?;
 
         e.int(Int::from(MASTER_FINGERPRINT))?.int(
             Int::try_from(u32::from_be_bytes(self.master_fingerprint))
@@ -206,9 +127,11 @@ impl<C> minicbor::Encode<C> for IcpSignRequest {
         e.int(Int::from(SALT_LEN))?
             .u32(self.salt_len.clone() as u32)?;
 
-        e.int(Int::from(DERIVATION_PATH))?
-            .tag(Tag::Unassigned(CRYPTO_KEYPATH.get_tag()))?;
-        CryptoKeyPath::encode(&self.derivation_path, e, ctx)?;
+        if let Some(derivation_path) = &self.derivation_path {
+            e.int(Int::from(DERIVATION_PATH))?
+                .tag(Tag::Unassigned(CRYPTO_KEYPATH.get_tag()))?;
+            CryptoKeyPath::encode(derivation_path, e, ctx)?;
+        }
 
         if let Some(account) = &self.account {
             e.int(Int::from(ACCOUNT))?.bytes(account)?;
@@ -257,7 +180,7 @@ impl<'b, C> minicbor::Decode<'b, C> for IcpSignRequest {
                 }
                 DERIVATION_PATH => {
                     d.tag()?;
-                    obj.derivation_path = CryptoKeyPath::decode(d, ctx)?;
+                    obj.derivation_path = Some(CryptoKeyPath::decode(d, ctx)?);
                 }
                 ACCOUNT => {
                     obj.account = Some(d.bytes()?.to_vec());
@@ -330,7 +253,7 @@ mod tests {
             salt_len,
             None,
             origin,
-            crypto_key_path,
+            Some(crypto_key_path),
         );
 
         assert_eq!(
