@@ -25,15 +25,18 @@ use crate::extend::{
     key_derivation::KeyDerivationCall, key_derivation_schema::KeyDerivationSchema,
     qr_hardware_call::QRHardwareCall,
 };
+use crate::icp::{icp_sign_request::IcpSignRequest, icp_signature::IcpSignature};
 use crate::keystone::{
     keystone_sign_request::KeystoneSignRequest, keystone_sign_result::KeystoneSignResult,
 };
 use crate::near::{near_sign_request::NearSignRequest, near_signature::NearSignature};
 use crate::solana::{sol_sign_request::SolSignRequest, sol_signature::SolSignature};
-use crate::stellar::{stellar_sign_request::StellarSignRequest, stellar_signature::StellarSignature};
+use crate::stellar::{
+    stellar_sign_request::StellarSignRequest, stellar_signature::StellarSignature,
+};
 use crate::sui::sui_sign_request::SuiSignRequest;
 use crate::sui::sui_signature::SuiSignature;
-use crate::ton::{ton_signature::TonSignature, ton_sign_request::TonSignRequest};
+use crate::ton::{ton_sign_request::TonSignRequest, ton_signature::TonSignature};
 use crate::{impl_cbor_bytes, impl_ur_try_from_cbor_bytes, impl_ur_try_into_cbor_bytes};
 use alloc::string::ToString;
 use alloc::vec::Vec;
@@ -80,4 +83,6 @@ impl_cbor_bytes!(
     QRHardwareCall,
     BtcSignRequest,
     BtcSignature,
+    IcpSignRequest,
+    IcpSignature,
 );

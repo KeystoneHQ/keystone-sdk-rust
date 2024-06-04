@@ -1,8 +1,11 @@
-use crate::error::{URError, URResult};
-use crate::registry_types::{RegistryType, UUID};
+use crate::registry_types::{RegistryType, CRYPTO_KEYPATH, UUID};
 use crate::traits::{From as FromCbor, RegistryItem, To};
 use crate::types::{Bytes, Fingerprint};
 use crate::{cbor::cbor_map, registry_types::ICP_SIGN_REQUEST};
+use crate::{
+    crypto_key_path::CryptoKeyPath,
+    error::{URError, URResult},
+};
 use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
@@ -17,6 +20,7 @@ const SIGN_TYPE: u8 = 4;
 const SALT_LEN: u8 = 5;
 const ORIGIN: u8 = 6;
 const ACCOUNT: u8 = 7;
+const DERIVATION_PATH: u8 = 8;
 
 #[derive(Clone, Debug, PartialEq, Default)]
 pub enum SignType {
@@ -69,6 +73,7 @@ pub struct IcpSignRequest {
     salt_len: SaltLen,
     account: Option<Bytes>,
     origin: Option<String>,
+    derivation_path: CryptoKeyPath,
 }
 
 impl IcpSignRequest {
@@ -103,6 +108,9 @@ impl IcpSignRequest {
     pub fn set_origin(&mut self, origin: String) {
         self.origin = Some(origin)
     }
+    pub fn set_derivation_path(&mut self, derivation_path: CryptoKeyPath) {
+        self.derivation_path = derivation_path;
+    }
 
     pub fn new(
         master_fingerprint: Fingerprint,
@@ -112,6 +120,7 @@ impl IcpSignRequest {
         salt_len: SaltLen,
         account: Option<Bytes>,
         origin: Option<String>,
+        derivation_path: CryptoKeyPath,
     ) -> IcpSignRequest {
         IcpSignRequest {
             master_fingerprint,
@@ -121,6 +130,7 @@ impl IcpSignRequest {
             salt_len,
             account,
             origin,
+            derivation_path,
         }
     }
     pub fn get_master_fingerprint(&self) -> Fingerprint {
@@ -145,6 +155,9 @@ impl IcpSignRequest {
         self.origin.clone()
     }
 
+    pub fn get_derivation_path(&self) -> CryptoKeyPath {
+        self.derivation_path.clone()
+    }
     fn get_map_size(&self) -> u64 {
         let mut size = 4;
         if self.request_id.is_some() {
@@ -170,7 +183,7 @@ impl<C> minicbor::Encode<C> for IcpSignRequest {
     fn encode<W: Write>(
         &self,
         e: &mut Encoder<W>,
-        _ctx: &mut C,
+        ctx: &mut C,
     ) -> Result<(), minicbor::encode::Error<W::Error>> {
         e.map(self.get_map_size())?;
 
@@ -193,6 +206,10 @@ impl<C> minicbor::Encode<C> for IcpSignRequest {
         e.int(Int::from(SALT_LEN))?
             .u32(self.salt_len.clone() as u32)?;
 
+        e.int(Int::from(DERIVATION_PATH))?
+            .tag(Tag::Unassigned(CRYPTO_KEYPATH.get_tag()))?;
+        CryptoKeyPath::encode(&self.derivation_path, e, ctx)?;
+
         if let Some(account) = &self.account {
             e.int(Int::from(ACCOUNT))?.bytes(account)?;
         }
@@ -206,7 +223,7 @@ impl<C> minicbor::Encode<C> for IcpSignRequest {
 }
 
 impl<'b, C> minicbor::Decode<'b, C> for IcpSignRequest {
-    fn decode(d: &mut Decoder<'b>, _ctx: &mut C) -> Result<Self, minicbor::decode::Error> {
+    fn decode(d: &mut Decoder<'b>, ctx: &mut C) -> Result<Self, minicbor::decode::Error> {
         let mut result = IcpSignRequest::default();
         cbor_map(d, &mut result, |key, obj, d| {
             let key =
@@ -238,6 +255,10 @@ impl<'b, C> minicbor::Decode<'b, C> for IcpSignRequest {
                     )
                     .map_err(minicbor::decode::Error::message)?;
                 }
+                DERIVATION_PATH => {
+                    d.tag()?;
+                    obj.derivation_path = CryptoKeyPath::decode(d, ctx)?;
+                }
                 ACCOUNT => {
                     obj.account = Some(d.bytes()?.to_vec());
                 }
@@ -266,10 +287,16 @@ impl FromCbor<IcpSignRequest> for IcpSignRequest {
 
 #[cfg(test)]
 mod tests {
-    use crate::icp::icp_sign_request::{IcpSignRequest, SaltLen, SignType};
-    use crate::traits::{From, To};
-    use alloc::string::ToString;
+    use crate::{
+        crypto_key_path::CryptoKeyPath,
+        traits::{From, To},
+    };
+    use crate::{
+        crypto_key_path::PathComponent,
+        icp::icp_sign_request::{IcpSignRequest, SaltLen, SignType},
+    };
     use alloc::vec::Vec;
+    use alloc::{string::ToString, vec};
     use hex::FromHex;
 
     #[test]
@@ -286,7 +313,14 @@ mod tests {
                 .unwrap();
         let sign_type = SignType::Transaction;
         let salt_len = SaltLen::Zero;
-        let origin = Some("arconnect".to_string());
+        let origin = Some("plugwallet".to_string());
+        let path1 = PathComponent::new(Some(44), true).unwrap();
+        let path2 = PathComponent::new(Some(223), true).unwrap();
+        let path3 = PathComponent::new(Some(0), true).unwrap();
+
+        let source_fingerprint: [u8; 4] = [242, 63, 159, 210];
+        let components = vec![path1, path2, path3];
+        let crypto_key_path = CryptoKeyPath::new(components, Some(source_fingerprint), None);
 
         let sign_request = IcpSignRequest::new(
             master_fingerprint,
@@ -296,10 +330,11 @@ mod tests {
             salt_len,
             None,
             origin,
+            crypto_key_path,
         );
 
         assert_eq!(
-            "a6011ae9181cf302d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d035820af78f85b29d88a61ee49d36e84139ec8511c558f14612413f1503b8e6959adca0401050006696172636f6e6e656374",
+            "a6011ae9181cf302d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d035820af78f85b29d88a61ee49d36e84139ec8511c558f14612413f1503b8e6959adca0401050008d90130a20186182cf518dff500f5021af23f9fd2066a706c756777616c6c6574",
             hex::encode(sign_request.to_bytes().unwrap()).to_lowercase()
         );
     }
@@ -307,7 +342,7 @@ mod tests {
     #[test]
     fn test_decode() {
         let bytes = Vec::from_hex(
-            "a6011ae9181cf302d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d035820af78f85b29d88a61ee49d36e84139ec8511c558f14612413f1503b8e6959adca0401050006696172636f6e6e656374",
+            "a6011ae9181cf302d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d035820af78f85b29d88a61ee49d36e84139ec8511c558f14612413f1503b8e6959adca0401050008d90130a20186182cf518dff500f5021af23f9fd2066a706c756777616c6c6574",
         ).unwrap();
 
         let sign_request = IcpSignRequest::from_cbor(bytes).unwrap();
