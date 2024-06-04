@@ -17,6 +17,7 @@ pub enum URType {
     EvmSignRequest(String),
     SuiSignRequest(String),
     TonSignRequest(String),
+    IcpSignRequest(String),
     QRHardwareCall(String),
     Bytes(String),
     BtcSignRequest(String),
@@ -44,6 +45,7 @@ impl URType {
             "cardano-sign-request" => Ok(URType::CardanoSignRequest(type_str.to_string())),
             "qr-hardware-call" => Ok(URType::QRHardwareCall(type_str.to_string())),
             "ton-sign-request" => Ok(URType::TonSignRequest(type_str.to_string())),
+            "icp-sign-request" => Ok(URType::IcpSignRequest(type_str.to_string())),
             _ => Err(URError::NotSupportURTypeError(type_str.to_string())),
         }
     }
@@ -68,6 +70,7 @@ impl URType {
             URType::EvmSignRequest(type_str) => type_str.to_string(),
             URType::QRHardwareCall(type_str) => type_str.to_string(),
             URType::TonSignRequest(type_str) => type_str.to_string(),
+            URType::IcpSignRequest(type_str) => type_str.to_string(),
         }
     }
 }
@@ -147,3 +150,7 @@ pub const BTC_SIGNATURE: RegistryType = RegistryType("btc-signature", Some(8102)
 // Stellar
 pub const STELLAR_SIGN_REQUEST: RegistryType = RegistryType("stellar-sign-request", Some(8201));
 pub const STELLAR_SIGNATURE: RegistryType = RegistryType("stellar-signature", Some(8202));
+
+// ICP
+pub const ICP_SIGN_REQUEST: RegistryType = RegistryType("icp-sign-request", Some(9101));
+pub const ICP_SIGNATURE: RegistryType = RegistryType("icp-signature", Some(9102));
