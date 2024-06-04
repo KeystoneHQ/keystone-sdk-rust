@@ -21,6 +21,7 @@ pub mod crypto_psbt;
 pub mod error;
 pub mod ethereum;
 pub mod extend;
+pub mod icp;
 pub mod keystone;
 mod macros;
 mod macros_impl;
