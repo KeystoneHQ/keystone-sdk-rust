@@ -127,6 +127,7 @@ mod tests {
     use alloc::string::ToString;
     use ur_registry::crypto_psbt::CryptoPSBT;
     use ur_registry::ethereum::eth_sign_request::EthSignRequest;
+    use ur_registry::icp::icp_sign_request::{IcpSignRequest, SignType};
 
     #[test]
     fn test_decode_psbt() {
@@ -164,5 +165,27 @@ mod tests {
             assert_eq!("02ed04808459682f008459682f1b82520894e0cfe8a9f55942c6a70b845cd07a3a7d61a04325865af3107a400080c0",
                        hex::encode(crypto.get_sign_data()).to_lowercase());
         }
+    }
+
+    #[test]
+    fn test_decode_icp_sign_request() {
+        let ur = "ur:icp-sign-request/onadcywlcscewfaohdcxpeksyahpdttplehswygatejtlrbwnnspgycegomybbhsdkbwwngdfrmninhkpmsgaxadahtaaddyoeadlncsdwykcsurykaeykaocywzfhnetdaaimjojzkpiokthsjzjzihjychfmiave";
+        let result: URParseResult<IcpSignRequest> = probe_decode(ur.to_string()).unwrap();
+        assert_eq!(false,result.is_multi_part);
+        let icp_sign_request = result.data.unwrap();
+        let sign_data =
+            hex::decode("af78f85b29d88a61ee49d36e84139ec8511c558f14612413f1503b8e6959adca")
+                .unwrap();
+
+        assert_eq!(
+            [233, 24, 28, 243],
+            icp_sign_request.get_master_fingerprint()
+        );
+        assert_eq!(sign_data, icp_sign_request.get_sign_data());
+        assert_eq!(SignType::Transaction, icp_sign_request.get_sign_type());
+        assert_eq!(
+            "44'/223'/0'",
+            icp_sign_request.get_derivation_path().get_path().unwrap()
+        );
     }
 }

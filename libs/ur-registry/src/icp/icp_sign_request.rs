@@ -158,6 +158,7 @@ mod tests {
     use alloc::vec::Vec;
     use alloc::{string::ToString, vec};
     use hex::FromHex;
+    use crate::traits::RegistryItem;
 
     #[test]
     fn test_encode() {
@@ -186,6 +187,10 @@ mod tests {
             "a5011ae9181cf3025820af78f85b29d88a61ee49d36e84139ec8511c558f14612413f1503b8e6959adca030105d90130a20186182cf518dff500f5021af23f9fd2046a706c756777616c6c6574",
             hex::encode(sign_request.to_bytes().unwrap()).to_lowercase()
         );
+
+        // convert ur
+        let ur_string = ur::encode(&sign_request.to_bytes().unwrap(), IcpSignRequest::get_registry_type().get_type());
+        assert_eq!("ur:icp-sign-request/onadcywlcscewfaohdcxpeksyahpdttplehswygatejtlrbwnnspgycegomybbhsdkbwwngdfrmninhkpmsgaxadahtaaddyoeadlncsdwykcsurykaeykaocywzfhnetdaaimjojzkpiokthsjzjzihjychfmiave", ur_string);
     }
 
     #[test]

@@ -73,7 +73,8 @@ mod tests {
     use hex::FromHex;
     use ur_registry::crypto_psbt::CryptoPSBT;
     use ur_registry::traits::RegistryItem;
-
+    use ur_registry::icp::icp_sign_request::IcpSignRequest;
+    use crate::alloc::string::ToString;
     #[test]
     fn test_encode() {
         let crypto = CryptoPSBT::new(
@@ -97,5 +98,17 @@ mod tests {
             assert_eq!("ur:crypto-psbt/4-3/lpaaaxcfaxiacyvwhdfhndhkadclaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypklkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbayneieyksn",
                        next);
         }
+    }
+
+    #[test]
+    fn test_encode_icp_sign_request() {
+        let icp_sign_request_encoded_data = "a5011ae9181cf3025820af78f85b29d88a61ee49d36e84139ec8511c558f14612413f1503b8e6959adca030105d90130a20186182cf518dff500f5021af23f9fd2046a706c756777616c6c6574".to_string();
+        let result = probe_encode(
+            &Vec::from_hex(icp_sign_request_encoded_data).unwrap(),
+            200,
+            IcpSignRequest::get_registry_type().get_type(),
+        );
+
+        assert_eq!("ur:icp-sign-request/onadcywlcscewfaohdcxpeksyahpdttplehswygatejtlrbwnnspgycegomybbhsdkbwwngdfrmninhkpmsgaxadahtaaddyoeadlncsdwykcsurykaeykaocywzfhnetdaaimjojzkpiokthsjzjzihjychfmiave",result.unwrap().data);
     }
 }
