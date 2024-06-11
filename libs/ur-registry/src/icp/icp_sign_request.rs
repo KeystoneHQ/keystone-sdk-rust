@@ -182,7 +182,6 @@ mod tests {
             origin,
             crypto_key_path,
         );
-
         assert_eq!(
             "a5011ae9181cf3025820af78f85b29d88a61ee49d36e84139ec8511c558f14612413f1503b8e6959adca030105d90130a20186182cf518dff500f5021af23f9fd2046a706c756777616c6c6574",
             hex::encode(sign_request.to_bytes().unwrap()).to_lowercase()
@@ -194,13 +193,20 @@ mod tests {
         let bytes = Vec::from_hex(
             "a5011ae9181cf3025820af78f85b29d88a61ee49d36e84139ec8511c558f14612413f1503b8e6959adca030105d90130a20186182cf518dff500f5021af23f9fd2046a706c756777616c6c6574",
         ).unwrap();
-        let sign_request = IcpSignRequest::from_cbor(bytes).unwrap();
+        let icp_sign_request = IcpSignRequest::from_cbor(bytes).unwrap();
         let sign_data =
             hex::decode("af78f85b29d88a61ee49d36e84139ec8511c558f14612413f1503b8e6959adca")
                 .unwrap();
 
-        assert_eq!([233, 24, 28, 243], sign_request.get_master_fingerprint());
-        assert_eq!(sign_data, sign_request.get_sign_data());
-        assert_eq!(SignType::Transaction, sign_request.get_sign_type());
+        assert_eq!(
+            [233, 24, 28, 243],
+            icp_sign_request.get_master_fingerprint()
+        );
+        assert_eq!(sign_data, icp_sign_request.get_sign_data());
+        assert_eq!(SignType::Transaction, icp_sign_request.get_sign_type());
+        assert_eq!(
+            "44'/223'/0'",
+            icp_sign_request.get_derivation_path().get_path().unwrap()
+        );
     }
 }
