@@ -66,7 +66,7 @@ impl FromCbor<CryptoPSBT> for CryptoPSBT {
 #[cfg(test)]
 mod tests {
     use crate::crypto_psbt::CryptoPSBT;
-    use crate::traits::{RegistryItem};
+    use crate::traits::RegistryItem;
     use alloc::vec::Vec;
     use hex::FromHex;
 

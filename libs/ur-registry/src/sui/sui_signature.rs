@@ -4,7 +4,7 @@ use minicbor::data::{Int, Tag};
 use crate::cbor::cbor_map;
 use crate::impl_template_struct;
 use crate::registry_types::{RegistryType, SUI_SIGNATURE, UUID};
-use crate::traits::{RegistryItem, MapSize};
+use crate::traits::{MapSize, RegistryItem};
 use crate::types::Bytes;
 
 const REQUEST_ID: u8 = 1;
@@ -44,7 +44,9 @@ impl<C> minicbor::Encode<C> for SuiSignature {
     ) -> Result<(), minicbor::encode::Error<W::Error>> {
         e.map(self.map_size())?;
         if let Some(request_id) = self.get_request_id() {
-            e.int(Int::from(REQUEST_ID))?.tag(Tag::Unassigned(UUID.get_tag()))?.bytes(&request_id)?;
+            e.int(Int::from(REQUEST_ID))?
+                .tag(Tag::Unassigned(UUID.get_tag()))?
+                .bytes(&request_id)?;
         }
         e.int(Int::from(SIGNATURE))?.bytes(&self.get_signature())?;
         if let Some(public_key) = self.get_public_key() {
@@ -68,7 +70,9 @@ impl<'b, C> minicbor::Decode<'b, C> for SuiSignature {
                 REQUEST_ID => {
                     let tag = d.tag()?;
                     if !tag.eq(&Tag::Unassigned(UUID.get_tag())) {
-                        return Result::Err(minicbor::decode::Error::message("UUID tag is invalid"));
+                        return Result::Err(minicbor::decode::Error::message(
+                            "UUID tag is invalid",
+                        ));
                     }
                     obj.request_id = Some(d.bytes()?.to_vec());
                 }
@@ -87,7 +91,6 @@ impl<'b, C> minicbor::Decode<'b, C> for SuiSignature {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use alloc::vec::Vec;
@@ -104,10 +107,7 @@ mod tests {
         let result: Vec<u8> = sig.try_into().unwrap();
         let expect_result = hex::decode("A301D825509B1DEB4D3B7D4BAD9BDD2B0D7B3DCB6D025840F4B79835417490958C72492723409289B444F3AF18274BA484A9EEACA9E760520E453776E5975DF058B537476932A45239685F694FC6362FE5AF6BA714DA6505035820AEB28ECACE5C664C080E71B9EFD3D071B3DAC119A26F4E830DD6BD06712ED93F").unwrap();
 
-        assert_eq!(
-            expect_result,
-            result
-        );
+        assert_eq!(expect_result, result);
     }
 
     #[test]

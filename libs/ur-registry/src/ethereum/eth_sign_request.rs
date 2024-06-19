@@ -19,8 +19,7 @@ const DERIVATION_PATH: u8 = 5;
 const ADDRESS: u8 = 6;
 const ORIGIN: u8 = 7;
 
-#[derive(Clone, Debug, PartialEq)]
-#[derive(Default)]
+#[derive(Clone, Debug, PartialEq, Default)]
 pub enum DataType {
     #[default]
     Transaction = 1,
@@ -28,8 +27,6 @@ pub enum DataType {
     PersonalMessage = 3,
     TypedTransaction = 4,
 }
-
-
 
 impl DataType {
     pub fn from_u32(i: u32) -> Result<Self, String> {

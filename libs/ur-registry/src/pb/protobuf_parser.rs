@@ -7,15 +7,15 @@ use prost::bytes::Bytes;
 use prost::Message;
 
 pub fn parse_protobuf<T>(bytes: Vec<u8>) -> Result<T, URError>
-    where
-        T: Message + Default,
+where
+    T: Message + Default,
 {
     Message::decode(Bytes::from(bytes)).map_err(|e| URError::ProtobufDecodeError(e.to_string()))
 }
 
 pub fn serialize_protobuf<T>(data: T) -> Vec<u8>
-    where
-        T: Message + Default,
+where
+    T: Message + Default,
 {
     data.encode_to_vec()
 }
@@ -44,18 +44,19 @@ pub fn zip(bytes: &Vec<u8>) -> Result<Vec<u8>, URError> {
 
 #[cfg(test)]
 mod tests {
-    use alloc::string::ToString;
     use crate::pb::protobuf_parser::{parse_protobuf, serialize_protobuf, unzip, zip};
     use crate::pb::protoc::Base;
+    use alloc::string::{String, ToString};
     use alloc::vec::Vec;
     use hex::FromHex;
 
     extern crate std;
 
-    use std::println;
     use prost::Message;
+    use std::println;
 
-    use prost::bytes::Bytes;
+    use crate::crypto_key_path::CryptoKeyPath;
+    use crate::ethereum::eth_sign_request::DataType;
 
     #[test]
     fn test_protobuf() {
@@ -78,11 +79,73 @@ mod tests {
         );
         // USE BASE MESSAGE TYPE , DONT USE SYNC TYPE
         let parse_result: crate::pb::protoc::Base = parse_protobuf(unzip_bytes).unwrap();
-        println!("{:?}", parse_result);
         let playload = parse_result.data.unwrap();
         let content = playload.content.unwrap();
         assert_eq!("1250B6BC".to_string(), playload.xfp);
         // Base { version: 1, description: "keystone qrcode", data: Some(Payload { r#type: Sync, xfp: "1250B6BC", content: Some(Sync(Sync { coins: [Coin { coin_code: "BTC", active: true, accounts: [Account { hd_path: "M/49'/0'/0'", x_pub: "xpub6BqcZUPst99NuHmP1TNcCXftBBUjf87UAgZYfGYLKnafbhSo9rjoQoVhXDYwcf4Bt7wv2CszAiBXfrhgx5yoJNo8qe1FVQPNyTEtsaWJp52", address_length: 1, is_multi_sign: false }] }, Coin { coin_code: "BTC_LEGACY", active: false, accounts: [Account { hd_path: "M/44'/0'/0'", x_pub: "xpub6CzHiXpZKvPYnCwnd6qq511yn8B63yB8rCtxsY4azeuCxPYJn6B7KNEa6sDCkNAj54H5AW3zYY8QLSzG6qe7SZBvKW3ighdPGTYQgDXxfHQ", address_length: 1, is_multi_sign: false }] }, Coin { coin_code: "BTC_NATIVE_SEGWIT", active: false, accounts: [Account { hd_path: "M/84'/0'/0'", x_pub: "xpub6CpjN9cV2eSSHvzA5113pRqD5qaWRhUXS7ABs5AqGiau3BbAnW2fx1JwEEwn9ugVAgx6vbpXAKEjQbKjYHHPCjaxHEwyfLcUvwxjbaBEPRe", address_length: 1, is_multi_sign: false }] }, Coin { coin_code: "ETH", active: true, accounts: [Account { hd_path: "M/44'/60'/0'", x_pub: "xpub6CPJYBVf9pKYuMRpT7PhAPoCnCwh8KyYXndnFGpQPUM7uzB4n4gRcdbest2t3yFkyquPYqRrVY69dZ68kJWjGspZewyNW8rXG6YYQppUUi9", address_length: 1, is_multi_sign: false }] }, Coin { coin_code: "BCH", active: true, accounts: [Account { hd_path: "M/44'/145'/0'", x_pub: "xpub6Ce7XFJkp8aearw9nhdoiuaeuocR9ZuEzSMnR5WKtU99fbXmMgnobXMn35kQJGaF32JZDNS9UtEJ3sonSZ6JVDSuKFU2vRD1qbaE2zyG4V4", address_length: 1, is_multi_sign: false }] }, Coin { coin_code: "DASH", active: true, accounts: [Account { hd_path: "M/44'/5'/0'", x_pub: "xpub6CdBLESkJwrjUMoMV6Z3doPTLZSJ9knVp22mGmkJjH74hJ4riU8z9JCJf9APwSgWFpBkC17Are9Z8Sk6qi2XaXNnHUi9A5BbvJLaBh5WwkF", address_length: 1, is_multi_sign: false }] }, Coin { coin_code: "LTC", active: true, accounts: [Account { hd_path: "M/49'/2'/0'", x_pub: "xpub6CASR9TUvDwDP4u3RiH6x6bNMgprtwz9KaXzGT6w9HnoAeYDgG2Re88mZePxncSmNSrcLXeCGW3U8cGmiTpPih7PoYDpmonFygdyxDFqZZZ", address_length: 1, is_multi_sign: false }] }, Coin { coin_code: "TRON", active: true, accounts: [Account { hd_path: "M/44'/195'/0'", x_pub: "xpub6C5UAFMYy6o6CucPhqniZxZEtBKYS9xY433C9DunttXBwM9sNmnsuCdZFADLgUXsSjjThUYQLKWwHnPraacNJAHRvCe7Q3wrWE1wmw6dvyp", address_length: 1, is_multi_sign: false }] }, Coin { coin_code: "XRP", active: true, accounts: [Account { hd_path: "M/44'/144'/0'", x_pub: "xpub6BmXbwNG7wfcEs5VUsBKK5CwJk3Vf8QFKF3wTeutW1zWwStQ7qGZJr9W6KxdBF5pyzju17Hrsus4kjdjvYfu3PB46BsUQY61WQ2d9rP5v7i", address_length: 1, is_multi_sign: false }] }, Coin { coin_code: "DOT", active: true, accounts: [Account { hd_path: "//polkadot", x_pub: "xpub68wKPdEKjbZ4o1mSG7eN6b7b6vHXpShMTxJE4emZ98Fbs93cPxrkKxRmLkq7pi937qPyjxvXk4Zn2nUCvuQg6zbRvqQpVzXQyaM8miwcs7E", address_length: 1, is_multi_sign: false }] }] })) }), device_type: "keystone Pro", content: Some(ColdVersion(31206)) }
+    }
+    #[test]
+    fn test_parse_eth_sign_protobuffer_data_wallet3() {
+        let hex = "1f8b0800000000000003558e314ac4401486cd2e6248e33265aa10849540c89bf766de4c96adb2eba282b282bd4c66269510582cacbd82780dcfe0312cbc8195373096fe7cc5d77d7f3a13a77787cd1862b13f8c4fa31f1ff3ef249d8954a2868ebb4df99564f38bfb4b71a6bdb15e81acb51f865a3199bab5926ac7d2f8185b05d0e78b9b46a965c3b06cfe68a0787bfffc79c173b17a4db20a9e87881e095dd8ee9835b5dd2ee820bba03af4be955bd216101d8a8584ffcb3363812d13b7b23cd6d6485b1d41b55aa742ccaf6eaff393e9e6c324e59489687bea097bf6a4b423350cacd8280696a842d0ce47ef088a8ffd2f48148a9904010000";
+        let bytes = Vec::from_hex(hex).unwrap();
+        let unzip_bytes = unzip(bytes).unwrap();
+        let hex_unzip = hex::encode(unzip_bytes.clone()).to_lowercase();
+        let parse_result: crate::pb::protoc::Base = parse_protobuf(unzip_bytes).unwrap();
+        let payload = parse_result.data.unwrap();
+        let content = payload.content.unwrap();
+        assert_eq!("1250B6BC", payload.xfp);
+    }
+
+    #[test]
+    fn test_parse_eth_sign_protobuffer_data_from_cold_wallet3() {
+        let hex = "1f8b08000000000000003dd03daad4510c0570e655a308c294afb2b0b019c8c74d6e62396ec02de4de24cd03079f16ba427760e102dc801bf00f82ed297ee770cea7cbeba7fafee5ebfd53bdf9fcbcef598f3f1fce2f2e6724819bde3ebcfff1f0f2ede8ad1c48d79082eba0aaab97fa95362508ab96d0e506df9a66f2b6610e233256b50c84b0996db50d67c2008911730179b1e940459cdab612211f7f9d0ec434484d006d0b90ea365abcc047d751c81499ad2aecab5312578e457b3b268b015190a94433c28c010047a601d2de7b05b74f39a66d63e7d9089a30553c0e7f697475ad204636249845ce348d8663004ef4f1cfe98c604e921a216486c374614c8a25037ac7a60a37dfbcb07dc48a9cfceef79f13bdfafff6c7e7fb5f371772a97e010000";
+        let bytes = Vec::from_hex(hex).unwrap();
+        let unzip_bytes = unzip(bytes).unwrap();
+
+        assert_eq!(
+            "0801120f6b657973746f6e65207172636f64651ad6020809120831323530423642433ac7020a2434666336336131322d613565302d343265652d396536392d32633264303533363665353212423078663237643363383438393034616461626566353431306138376466386563383137643034303561346137623032396533383634313631313736663862643130641ada01307866383661323638353031386335303236366338326233623039346665326332333261646466363635333962666435643162643462326363393164333538303232613238363561663331303761343030303830323661303566396663626133663937356164616338333933376631303664303736353961623039623661666566656261323331333831323037653239333237383234393161303137313934303566396663666461613333643235653461353238383134383662316137326162353430666361633265613938396333623166393461626164373328e6f301320c6b657973746f6e652050726f".to_string(),
+            hex::encode(&unzip_bytes)
+        );
+        let parse_result: crate::pb::protoc::Base = parse_protobuf(unzip_bytes).unwrap();
+        println!("{:?}", parse_result);
+        let payload = parse_result.data.unwrap();
+        let content = payload.content.unwrap();
+        assert_eq!("1250B6BC", payload.xfp);
+    }
+
+    #[test]
+    fn test_decode_hex() {
+        let proto_buffer_data_version2 = "1f8b08000000000000003d90314e43410c4415aa80909052a6a2a0a0f992d75e7bbd94e1025cc15e7b1b24220245382137a0e0005c800bf02bbad17bd24833dbcdeee6393fdede8f2f79fb7a1ac7c8fdd7c5f672b72dc87090c3e3c3e7c5d55d4e2f23a32edcc7586a515a2ca52f435057d522a0ec0e7086c1139371ce663007b2995874c81613045dc8a546234f290acd552699a96aa23060df7f6fe03c550c45198a8e158a0c4527875e67e240428b98224cdd6770148fea38462f41ac8068a8c236a940b30a002b630384c41803306b69605db2924fb11e8d7b387569a94ca563801097da9cb9ac4283d5fa34584b335aace3a8312a449f7516e90ea652416a65a86ab4a624600f73e156a8672b4ed2ee7f7e3778fdfff6d3e9f8078971e1577e010000";
+        let bytes = Vec::from_hex(proto_buffer_data_version2).unwrap();
+        println!("{:?}", bytes);
+    }
+
+    #[test]
+    fn test_parse_eth_tx_protobuffer_data() {
+        let hex = "1f8b0800000000000003e36012e20f2c72ce4f49550828ca2fc94fcecf915ac3c8c124c46168646ae064e6e4ac3497918bd935c44348253125c9c430d93c59d7d8c2c258d724cdc8503729d1385937c9d4c2c028d1222529d920554ac057dfc4445ddfcc405d1f84f40d1456cdea6f6d34d210b20ae5d232a8484b354a3632364a4c717133333335b674724b314d31744a3171324a4eb6347431061966946824c46f648002a4b80d4dcc4c2ccc4c4ccccdcd95584dcc80625a0c068a0a07020064c17efbc5000000";
+        let bytes = Vec::from_hex(hex).unwrap();
+        let unzip_bytes = unzip(bytes).unwrap();
+        let hex_unzip = hex::encode(unzip_bytes.clone()).to_lowercase();
+        assert_eq!(
+            "0802120f5172436f64652050726f746f636f6c1aac01080212083132353042364243229d010a03455448122461646234316337632d333838332d346632312d626133632d6235383032613864626330651a104d2f3434272f3630272f30272f302f3020aa9a8f85813228123a550a2a307866653263323332616444463636353339424664356431426434423263633931443335383032326132120f3230303030303030303030303030301a0b3134363438363434373737220534363030302a00302120c050",
+            hex_unzip
+        );
+        let parse_result: crate::pb::protoc::Base = parse_protobuf(unzip_bytes).unwrap();
+        assert_eq!(2, parse_result.version);
+        assert_eq!("QrCode Protocol", parse_result.description);
+        let pay_load_data = parse_result.data.unwrap();
+        assert_eq!("1250B6BC", pay_load_data.xfp);
+        #[derive(Clone, Debug, Default)]
+        pub struct EthSignRequest {
+            request_id: Option<crate::types::Bytes>,
+            sign_data: crate::types::Bytes,
+            data_type: DataType,
+            chain_id: Option<i128>,
+            derivation_path: CryptoKeyPath,
+            address: Option<crate::types::Bytes>,
+            origin: Option<String>,
+        }
+        // Base { version: 2, description: "QrCode Protocol", data: Some(Payload { r#type: SignTx, xfp: "1250B6BC", content: Some(SignTx(SignTransaction { coin_code: "ETH", sign_id: "adb41c7c-3883-4f21-ba3c-b5802a8dbc0e", hd_path: "M/44'/60'/0'/0/0", timestamp: 1718266088746, decimal: 18, transaction: Some(EthTx(EthTx { to: "0xfe2c232adDF66539BFd5d1Bd4B2cc91D358022a2", value: "200000000000000", gas_price: "14648644777", gas_limit: "46000", memo: "", nonce: 33, r#override: None })) })) }), device_type: "", content: Some(HotVersion(10304)) }
     }
 
     #[test]

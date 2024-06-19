@@ -1,15 +1,13 @@
 pub fn remove_prefix<'a>(s: &'a str, prefix: &str) -> &'a str {
     match s.strip_prefix(prefix) {
         Some(s) => s,
-        None => s
+        None => s,
     }
 }
-
 
 pub fn remove_prefix_0x(s: &str) -> &str {
     remove_prefix(s, "0x")
 }
-
 
 #[cfg(test)]
 mod tests {

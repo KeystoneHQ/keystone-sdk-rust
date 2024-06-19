@@ -4,13 +4,16 @@ use minicbor::data::{Int, Tag};
 use crate::cbor::cbor_map;
 use crate::impl_template_struct;
 use crate::registry_types::{RegistryType, EVM_SIGNATURE, UUID};
-use crate::types::Bytes;
 use crate::traits::{From as FromCbor, MapSize, RegistryItem, To};
+use crate::types::Bytes;
 
 const REQUEST_ID: u8 = 1;
 const SIGNATURE: u8 = 2;
 
-impl_template_struct!(EvmSignature {request_id: Bytes, signature: Bytes});
+impl_template_struct!(EvmSignature {
+    request_id: Bytes,
+    signature: Bytes
+});
 
 impl RegistryItem for EvmSignature {
     fn get_registry_type() -> RegistryType<'static> {
@@ -78,8 +81,8 @@ impl<'b, C> minicbor::Decode<'b, C> for EvmSignature {
 
 #[cfg(test)]
 mod tests {
-    use alloc::vec::Vec;
     use super::*;
+    use alloc::vec::Vec;
 
     #[test]
     fn test_encode_evm_signature() {

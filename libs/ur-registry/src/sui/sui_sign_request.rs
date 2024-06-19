@@ -4,10 +4,10 @@ use minicbor::data::{Int, Tag};
 
 use crate::cbor::{cbor_array, cbor_map};
 use crate::crypto_key_path::CryptoKeyPath;
-use crate::registry_types::{RegistryType, UUID, SUI_SIGN_REQUEST};
-use crate::traits::{RegistryItem, MapSize};
-use crate::types::Bytes;
 use crate::impl_template_struct;
+use crate::registry_types::{RegistryType, SUI_SIGN_REQUEST, UUID};
+use crate::traits::{MapSize, RegistryItem};
+use crate::types::Bytes;
 
 const REQUEST_ID: u8 = 1;
 const INTENT_MESSAGE: u8 = 2;
@@ -53,9 +53,12 @@ impl<C> minicbor::Encode<C> for SuiSignRequest {
     ) -> Result<(), minicbor::encode::Error<W::Error>> {
         e.map(self.map_size())?;
         if let Some(request_id) = self.get_request_id() {
-            e.int(Int::from(REQUEST_ID))?.tag(Tag::Unassigned(UUID.get_tag()))?.bytes(&request_id)?;
+            e.int(Int::from(REQUEST_ID))?
+                .tag(Tag::Unassigned(UUID.get_tag()))?
+                .bytes(&request_id)?;
         }
-        e.int(Int::from(INTENT_MESSAGE))?.bytes(&self.get_intent_message())?;
+        e.int(Int::from(INTENT_MESSAGE))?
+            .bytes(&self.get_intent_message())?;
 
         let derivation_paths = self.get_derivation_paths();
         if derivation_paths.is_empty() {
@@ -63,7 +66,8 @@ impl<C> minicbor::Encode<C> for SuiSignRequest {
                 "derivation paths is invalid",
             ));
         }
-        e.int(Int::from(DERIVATION_PATHS))?.array(derivation_paths.len() as u64)?;
+        e.int(Int::from(DERIVATION_PATHS))?
+            .array(derivation_paths.len() as u64)?;
         for path in derivation_paths {
             e.tag(Tag::Unassigned(
                 CryptoKeyPath::get_registry_type().get_tag(),
@@ -81,7 +85,7 @@ impl<C> minicbor::Encode<C> for SuiSignRequest {
         if let Some(origin) = self.get_origin() {
             e.int(Int::from(ORIGIN))?.str(&origin)?;
         }
-        
+
         Ok(())
     }
 }
@@ -105,22 +109,18 @@ impl<'b, C> minicbor::Decode<'b, C> for SuiSignRequest {
                     obj.intent_message = d.bytes()?.to_vec();
                 }
                 DERIVATION_PATHS => {
-                    cbor_array(
-                        d,
-                        &mut obj.derivation_paths,
-                        |_key, obj, d| {
-                            let tag = d.tag()?;
-                            if !tag.eq(&Tag::Unassigned(
-                                CryptoKeyPath::get_registry_type().get_tag(),
-                            )) {
-                                return Err(minicbor::decode::Error::message(
-                                    "CryptoKeyPath tag is invalid",
-                                ));
-                            }
-                            obj.push(CryptoKeyPath::decode(d, ctx)?);
-                            Ok(())
-                        },
-                    )?;
+                    cbor_array(d, &mut obj.derivation_paths, |_key, obj, d| {
+                        let tag = d.tag()?;
+                        if !tag.eq(&Tag::Unassigned(
+                            CryptoKeyPath::get_registry_type().get_tag(),
+                        )) {
+                            return Err(minicbor::decode::Error::message(
+                                "CryptoKeyPath tag is invalid",
+                            ));
+                        }
+                        obj.push(CryptoKeyPath::decode(d, ctx)?);
+                        Ok(())
+                    })?;
                 }
                 ADDRESSES => {
                     if obj.addresses.is_none() {
@@ -144,7 +144,6 @@ impl<'b, C> minicbor::Decode<'b, C> for SuiSignRequest {
         Ok(result)
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -201,7 +200,10 @@ mod tests {
 
         assert_eq!(expect_result.request_id, result.request_id);
         assert_eq!(expect_result.intent_message, result.intent_message);
-        assert_eq!(expect_result.derivation_paths[0].get_path(), result.derivation_paths[0].get_path());
+        assert_eq!(
+            expect_result.derivation_paths[0].get_path(),
+            result.derivation_paths[0].get_path()
+        );
         assert_eq!(expect_result.addresses, result.addresses);
         assert_eq!(expect_result.origin, result.origin);
     }

@@ -1,11 +1,11 @@
 use hex;
-use serde_json::json;
-use ur_registry::crypto_key_path::CryptoKeyPath;
-use ur_registry::cardano::cardano_utxo::{CardanoUTXO};
-use ur_registry::cardano::cardano_cert_key::{CardanoCertKey};
-use uuid::Uuid;
-use ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
 use serde::Deserialize;
+use serde_json::json;
+use ur_registry::cardano::cardano_cert_key::CardanoCertKey;
+use ur_registry::cardano::cardano_sign_request::CardanoSignRequest;
+use ur_registry::cardano::cardano_utxo::CardanoUTXO;
+use ur_registry::crypto_key_path::CryptoKeyPath;
+use uuid::Uuid;
 
 use crate::export;
 use crate::util_internal::string_helper::remove_prefix_0x;
@@ -154,7 +154,6 @@ export! {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -193,9 +192,7 @@ mod tests {
 
         assert_eq!(
             expect_result,
-            generate_cardano_sign_request(
-                request_id, sign_data, utxos, cert_keys, origin
-            )
+            generate_cardano_sign_request(request_id, sign_data, utxos, cert_keys, origin)
         );
     }
 
@@ -226,9 +223,7 @@ mod tests {
 
         assert_eq!(
             expect_result,
-            generate_cardano_sign_request(
-                request_id, sign_data, utxos, cert_keys, origin
-            )
+            generate_cardano_sign_request(request_id, sign_data, utxos, cert_keys, origin)
         );
     }
 }
