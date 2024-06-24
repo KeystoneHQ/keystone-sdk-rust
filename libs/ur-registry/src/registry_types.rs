@@ -135,6 +135,8 @@ pub const CARDANO_UTXO: RegistryType = RegistryType("cardano-utxo", Some(2201));
 pub const CARDANO_SIGN_REQUEST: RegistryType = RegistryType("cardano-sign-request", Some(2202));
 pub const CARDANO_SIGNATURE: RegistryType = RegistryType("cardano-signature", Some(2203));
 pub const CARDANO_CERT_KEY: RegistryType = RegistryType("cardano-cert-key", Some(2204));
+pub const CARDANO_SIGN_DATA_REQUEST: RegistryType = RegistryType("cardano-sign-data-request", Some(2205));
+pub const CARDANO_SIGN_DATA_SIGNATURE: RegistryType = RegistryType("cardano-sign-data-signature", Some(2206));
 // Sui
 pub const SUI_SIGN_REQUEST: RegistryType = RegistryType("sui-sign-request", Some(7101));
 pub const SUI_SIGNATURE: RegistryType = RegistryType("sui-signature", Some(7102));
