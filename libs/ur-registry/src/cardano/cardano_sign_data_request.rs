@@ -1,12 +1,14 @@
 use crate::cbor::cbor_map;
 
 use crate::impl_template_struct;
+use crate::error::{URError, URResult};
 use crate::registry_types::{
     RegistryType, CARDANO_SIGN_DATA_REQUEST, UUID,
 };
-use crate::traits::{MapSize, RegistryItem};
+use crate::traits::{From as FromCbor, MapSize, RegistryItem, To};
 use crate::types::Bytes;
 use alloc::string::{String, ToString};
+use alloc::vec::Vec;
 use minicbor::data::{Int, Tag};
 use minicbor::encode::{Error, Write};
 use minicbor::{Decoder, Encoder};
@@ -80,5 +82,17 @@ impl<'b, C> minicbor::Decode<'b, C> for CardanoSignDataRequest {
             Ok(())
         })?;
         Ok(cardano_sign_data_request)
+    }
+}
+
+impl To for CardanoSignDataRequest {
+    fn to_bytes(&self) -> URResult<Vec<u8>> {
+        minicbor::to_vec(self.clone()).map_err(|e| URError::CborEncodeError(e.to_string()))
+    }
+}
+
+impl FromCbor<CardanoSignDataRequest> for CardanoSignDataRequest {
+    fn from_cbor(bytes: Vec<u8>) -> URResult<CardanoSignDataRequest> {
+        minicbor::decode(&bytes).map_err(|e| URError::CborDecodeError(e.to_string()))
     }
 }
