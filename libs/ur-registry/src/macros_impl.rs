@@ -8,6 +8,7 @@ use crate::bytes::Bytes;
 use crate::cardano::{
     cardano_cert_key::CardanoCertKey, cardano_sign_request::CardanoSignRequest,
     cardano_signature::CardanoSignature, cardano_utxo::CardanoUTXO,
+    cardano_sign_data_request::CardanoSignDataRequest,
 };
 use crate::cosmos::{cosmos_sign_request::CosmosSignRequest, cosmos_signature::CosmosSignature};
 use crate::cosmos::{evm_sign_request::EvmSignRequest, evm_signature::EvmSignature};
@@ -50,6 +51,7 @@ impl_cbor_bytes!(
     CardanoSignature,
     CardanoUTXO,
     CardanoSignRequest,
+    CardanoSignDataRequest,
     CardanoCertKey,
     AptosSignRequest,
     AptosSignature,
