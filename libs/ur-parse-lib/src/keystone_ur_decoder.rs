@@ -126,7 +126,20 @@ mod tests {
     use crate::keystone_ur_decoder::{probe_decode, MultiURParseResult, URParseResult};
     use alloc::string::ToString;
     use ur_registry::crypto_psbt::CryptoPSBT;
+    use ur_registry::cardano::cardano_sign_data_request::CardanoSignDataRequest;
+
     use ur_registry::ethereum::eth_sign_request::EthSignRequest;
+
+    #[test]
+    fn test_probe_decode() {
+        let ur = "ur:cardano-sign-data-request/oxadtpdagdndcawmgtfrkigrpmndutdnbtkgfssbjnaohdcxvlrswtsbaefnyaiopszcbylbrebburpeknlgtluturjtissfjsykguuegdfgpldnaxtaaddyoeadlncsdwykcsmwykaeykaocybggdrprfaajtiahsjpiehsjtjldpkthsjzjzihjyqzmtpegy";
+        let result = probe_decode::<CardanoSignDataRequest>(ur.to_string());
+        // print error
+        extern crate std;
+        if result.is_err() {
+            std::println!("{:?}", result);
+        }
+    }
 
     #[test]
     fn test_decode_psbt() {
