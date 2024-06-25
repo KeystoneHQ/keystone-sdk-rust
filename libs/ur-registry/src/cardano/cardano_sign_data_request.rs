@@ -18,7 +18,7 @@ const PAYLOAD: u8 = 2;
 const PATH: u8 = 3;
 const ORIGIN: u8 = 4;
 
-impl_template_struct!(CardanoSignDataRequest {request_id: Option<Bytes>, payload: Bytes, path: String, origin: Option<String>});
+impl_template_struct!(CardanoSignDataRequest {request_id: Option<Bytes>, payload: Bytes, path: Bytes, origin: Option<String>});
 
 impl MapSize for CardanoSignDataRequest {
     fn map_size(&self) -> u64 {
@@ -51,7 +51,7 @@ impl<C> minicbor::Encode<C> for CardanoSignDataRequest {
 
         e.int(Int::from(PAYLOAD))?.bytes(&self.payload)?;
 
-        e.int(Int::from(PATH))?.str(&self.path)?;
+        e.int(Int::from(PATH))?.bytes(&self.payload)?;
 
         if let Some(origin) = &self.origin {
             e.int(Int::from(ORIGIN))?.str(origin)?;
@@ -75,7 +75,7 @@ impl<'b, C> minicbor::Decode<'b, C> for CardanoSignDataRequest {
                 PAYLOAD => {
                     obj.set_payload(d.bytes()?.to_vec());
                 }
-                PATH => obj.set_path(d.str()?.to_string()),
+                PATH => obj.set_path(d.bytes()?.to_vec()),
                 ORIGIN => obj.set_origin(Some(d.str()?.to_string())),
                 _ => {}
             }
