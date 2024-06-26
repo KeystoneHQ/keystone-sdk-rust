@@ -131,17 +131,6 @@ mod tests {
     use ur_registry::ethereum::eth_sign_request::EthSignRequest;
 
     #[test]
-    fn test_probe_decode() {
-        let ur = "ur:cardano-sign-data-request/oxadtpdagdndcawmgtfrkigrpmndutdnbtkgfssbjnaohdcxvlrswtsbaefnyaiopszcbylbrebburpeknlgtluturjtissfjsykguuegdfgpldnaxtaaddyoeadlncsdwykcsmwykaeykaocybggdrprfaajtiahsjpiehsjtjldpkthsjzjzihjyqzmtpegy";
-        let result = probe_decode::<CardanoSignDataRequest>(ur.to_string());
-        // print error
-        extern crate std;
-        if result.is_err() {
-            std::println!("{:?}", result);
-        }
-    }
-
-    #[test]
     fn test_decode_psbt() {
         let ur = "ur:crypto-psbt/hdcxlkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypkvoonhknt";
         let result: URParseResult<CryptoPSBT> = probe_decode(ur.to_string()).unwrap();

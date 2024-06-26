@@ -26,7 +26,7 @@ impl RegistryItem for CardanoSignDataSignature {
 
 impl MapSize for CardanoSignDataSignature {
     fn map_size(&self) -> u64 {
-        let mut size = 1;
+        let mut size = 2;
         if self.request_id.is_some() {
             size += 1;
         }
