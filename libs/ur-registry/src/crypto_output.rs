@@ -196,9 +196,7 @@ mod tests {
             hex::encode(crypto.to_bytes().unwrap()).to_lowercase()
         );
 
-        let script_expressions = vec![
-            ScriptExpression::Taproot,
-        ];
+        let script_expressions = vec![ScriptExpression::Taproot];
         let bytes =
             Vec::from_hex("03fff97bd5755eeea420453a14355235d382f6472f8568a18b2f057a1460297556")
                 .unwrap();

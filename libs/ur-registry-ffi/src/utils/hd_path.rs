@@ -1,15 +1,14 @@
-use std::path::Path;
 use crate::export;
-use bip32::{DerivationPath, XPub};
-use secp256k1::{Parity, XOnlyPublicKey};
-use hex;
 use anyhow::{format_err, Error};
+use bip32::{DerivationPath, XPub};
+use hex;
+use secp256k1::{Parity, XOnlyPublicKey};
+use serde::{Deserialize, Serialize};
 use serde_json::json;
+use std::path::Path;
 use std::str::FromStr;
 use ur_registry::crypto_key_path;
 use ur_registry::crypto_key_path::{CryptoKeyPath, PathComponent};
-use serde::{Deserialize, Serialize};
-
 
 #[derive(Copy, Clone, Debug, Serialize, Deserialize)]
 pub struct PathItem {
@@ -19,10 +18,7 @@ pub struct PathItem {
 
 impl PathItem {
     fn new(index: u32, hardened: bool) -> Self {
-        PathItem {
-            index,
-            hardened
-        }
+        PathItem { index, hardened }
     }
 }
 
@@ -52,9 +48,15 @@ impl TryFrom<&str> for HDPath {
 
     fn try_from(hd_path: &str) -> Result<Self, Self::Error> {
         let key_path = CryptoKeyPath::from_path(hd_path.to_owned(), None)?;
-        let path_items = key_path.get_components()
+        let path_items = key_path
+            .get_components()
             .iter()
-            .map(|component| PathItem::new(component.get_index().unwrap_or_default(), component.is_hardened()))
+            .map(|component| {
+                PathItem::new(
+                    component.get_index().unwrap_or_default(),
+                    component.is_hardened(),
+                )
+            })
             .collect::<Vec<PathItem>>();
         let hd_path = HDPath {
             purpose: path_items.get(0).cloned(),
@@ -80,7 +82,6 @@ export! {
         json!(result).to_string()
     }
 }
-
 
 #[cfg(test)]
 mod tests {

@@ -1,7 +1,7 @@
 use anyhow::Error;
 use hex;
 use serde_json::json;
-use ur_registry::{registry_types::EVM_SIGNATURE, cosmos::evm_signature::EvmSignature};
+use ur_registry::{cosmos::evm_signature::EvmSignature, registry_types::EVM_SIGNATURE};
 use uuid::Uuid;
 
 use crate::export;

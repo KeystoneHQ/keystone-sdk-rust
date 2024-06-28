@@ -1,8 +1,8 @@
 use crate::export;
-use bip32::{DerivationPath, XPub};
-use secp256k1::{Parity, XOnlyPublicKey};
-use hex;
 use anyhow::{format_err, Error};
+use bip32::{DerivationPath, XPub};
+use hex;
+use secp256k1::{Parity, XOnlyPublicKey};
 use serde_json::json;
 use std::str::FromStr;
 
@@ -51,7 +51,6 @@ export! {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -75,7 +74,8 @@ mod tests {
     #[test]
     fn test_derive_public_key() {
         let xpub = "xpub6DXryz8Kd7XchtXvDnkjara83shGJH8ubu7KZhHhPfp4L1shvDEYiFZm32EKHnyo4bva4gxXjabFGqY7fNs8Ggd4khYz2oNs2KYLf56a9GX";
-        let expect_result = r#"{"result":"02bac0f67b40d388965912461c2e508b67ed57b88835ee519e5ce8daac0d468573"}"#;
+        let expect_result =
+            r#"{"result":"02bac0f67b40d388965912461c2e508b67ed57b88835ee519e5ce8daac0d468573"}"#;
 
         assert_eq!(expect_result, derive_public_key(xpub, "m/0/0"))
     }

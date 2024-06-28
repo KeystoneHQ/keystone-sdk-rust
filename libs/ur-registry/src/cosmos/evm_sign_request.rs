@@ -6,9 +6,9 @@ use minicbor::data::{Int, Tag};
 use crate::cbor::cbor_map;
 use crate::crypto_key_path::CryptoKeyPath;
 use crate::impl_template_struct;
-use crate::registry_types::{RegistryType, UUID, EVM_SIGN_REQUEST, CRYPTO_KEYPATH};
-use crate::types::Bytes;
+use crate::registry_types::{RegistryType, CRYPTO_KEYPATH, EVM_SIGN_REQUEST, UUID};
 use crate::traits::{MapSize, RegistryItem};
+use crate::types::Bytes;
 
 const REQUEST_ID: u8 = 1;
 const SIGN_DATA: u8 = 2;
@@ -19,7 +19,6 @@ const ADDRESS: u8 = 6;
 const ORIGIN: u8 = 7;
 
 impl_template_struct!(EvmSignRequest {request_id: Bytes, sign_data: Bytes, data_type: SignDataType, custom_chain_identifier: u32, derivation_path: CryptoKeyPath, address: Option<Bytes>, origin: Option<String>});
-
 
 #[derive(Clone, Debug, Default)]
 pub enum SignDataType {
@@ -75,9 +74,10 @@ impl<C> minicbor::Encode<C> for EvmSignRequest {
 
         e.int(Int::from(SIGN_DATA))?.bytes(&self.sign_data)?;
         e.int(Int::from(DATA_TYPE))?
-        .int(Int::from( self.data_type.clone() as u8))?;
+            .int(Int::from(self.data_type.clone() as u8))?;
 
-        e.int(Int::from(CUSTOM_CHAIN_IDENTIFIER))?.u32(self.custom_chain_identifier)?;
+        e.int(Int::from(CUSTOM_CHAIN_IDENTIFIER))?
+            .u32(self.custom_chain_identifier)?;
 
         e.int(Int::from(DERIVATION_PATH))?
             .tag(Tag::Unassigned(CRYPTO_KEYPATH.get_tag()))?;
@@ -115,11 +115,9 @@ impl<'b, C> minicbor::Decode<'b, C> for EvmSignRequest {
                         d.u8()
                             .map_err(|e| minicbor::decode::Error::message(e.to_string()))?,
                     )
-                        .map_err(minicbor::decode::Error::message)?;
+                    .map_err(minicbor::decode::Error::message)?;
                 }
-                CUSTOM_CHAIN_IDENTIFIER => {
-                    obj.custom_chain_identifier = d.u32()?
-                }
+                CUSTOM_CHAIN_IDENTIFIER => obj.custom_chain_identifier = d.u32()?,
                 DERIVATION_PATH => {
                     d.tag()?;
                     obj.derivation_path = CryptoKeyPath::decode(d, ctx)?;
@@ -140,11 +138,11 @@ impl<'b, C> minicbor::Decode<'b, C> for EvmSignRequest {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+    use crate::crypto_key_path::PathComponent;
     use alloc::vec;
     use alloc::vec::Vec;
     use hex::FromHex;
-    use crate::crypto_key_path::PathComponent;
-    use super::*;
 
     #[test]
     fn test_encode_evm_sign_request() {
@@ -159,7 +157,9 @@ mod tests {
         let crypto_key_path = CryptoKeyPath::new(components, Some(source_fingerprint), None);
 
         let request_id = hex::decode("9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d").unwrap();
-        let sign_data = hex::decode("8e53e7b10656816de70824e3016fc1a277e77825e12825dc4f239f418ab2e04e").unwrap();
+        let sign_data =
+            hex::decode("8e53e7b10656816de70824e3016fc1a277e77825e12825dc4f239f418ab2e04e")
+                .unwrap();
         let address = "evmos13nmjt4hru5ag0c6q3msk0srs55qd3dtme8wgep".as_bytes();
         let sign_request = EvmSignRequest::new(
             request_id,
@@ -186,7 +186,9 @@ mod tests {
         let sign_request = EvmSignRequest::try_from(bytes).unwrap();
         let request_id = hex::decode("9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d").unwrap();
 
-        let sign_data = hex::decode("8e53e7b10656816de70824e3016fc1a277e77825e12825dc4f239f418ab2e04e").unwrap();
+        let sign_data =
+            hex::decode("8e53e7b10656816de70824e3016fc1a277e77825e12825dc4f239f418ab2e04e")
+                .unwrap();
         let address = "evmos13nmjt4hru5ag0c6q3msk0srs55qd3dtme8wgep".as_bytes();
         assert_eq!(
             "44'/9000'/0'/0/0",

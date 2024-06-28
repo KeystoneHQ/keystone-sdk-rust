@@ -144,7 +144,8 @@ impl CryptoHDKey {
 
     pub fn get_account_index(&self, level: u32) -> Option<u32> {
         self.origin
-            .clone().and_then(|o| match o.get_components().len() {
+            .clone()
+            .and_then(|o| match o.get_components().len() {
                 0 => None,
                 _ => o
                     .get_components()

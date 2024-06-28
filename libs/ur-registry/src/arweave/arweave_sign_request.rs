@@ -18,16 +18,13 @@ const SALT_LEN: u8 = 5;
 const ORIGIN: u8 = 6;
 const ACCOUNT: u8 = 7;
 
-#[derive(Clone, Debug, PartialEq)]
-#[derive(Default)]
+#[derive(Clone, Debug, PartialEq, Default)]
 pub enum SignType {
     #[default]
     Transaction = 1,
     DataItem = 2,
     Message = 3,
 }
-
-
 
 impl SignType {
     pub fn from_u32(i: u32) -> Result<Self, String> {
@@ -43,15 +40,12 @@ impl SignType {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
-#[derive(Default)]
+#[derive(Clone, Debug, PartialEq, Default)]
 pub enum SaltLen {
     #[default]
     Zero = 0,
     Digest = 32,
 }
-
-
 
 impl SaltLen {
     pub fn from_u32(i: u32) -> Result<Self, String> {

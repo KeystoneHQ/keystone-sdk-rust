@@ -51,7 +51,9 @@ impl CryptoMultiAccounts {
         self.device_id = Some(device_id);
     }
 
-    pub fn set_device_version(&mut self, device_version: String) { self.device_version = Some(device_version); }
+    pub fn set_device_version(&mut self, device_version: String) {
+        self.device_version = Some(device_version);
+    }
 
     pub fn new(
         master_fingerprint: Fingerprint,
@@ -81,7 +83,9 @@ impl CryptoMultiAccounts {
     pub fn get_device_id(&self) -> Option<String> {
         self.device_id.clone()
     }
-    pub fn get_device_version(&self) -> Option<String> { self.device_version.clone() }
+    pub fn get_device_version(&self) -> Option<String> {
+        self.device_version.clone()
+    }
 }
 
 impl RegistryItem for CryptoMultiAccounts {
@@ -240,7 +244,10 @@ mod tests {
         );
         assert_eq!(crypto_multi_accounts.device, Some("keystone".to_string()));
         assert_eq!(crypto_multi_accounts.keys.len(), 1);
-        assert_eq!(crypto_multi_accounts.device_version, Some("1.0.0".to_string()));
+        assert_eq!(
+            crypto_multi_accounts.device_version,
+            Some("1.0.0".to_string())
+        );
     }
 
     #[test]

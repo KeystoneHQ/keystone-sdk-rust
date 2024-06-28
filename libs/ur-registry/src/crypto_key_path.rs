@@ -250,17 +250,15 @@ impl<'b, C> minicbor::Decode<'b, C> for CryptoKeyPath {
                                 hardened = d.bool()?;
                                 match previous_type {
                                     Type::Array => {
-                                        path_component.push(
-                                            PathComponent::new(None, hardened).map_err(|e| {
-                                                minicbor::decode::Error::message(e)
-                                            })?,
-                                        );
+                                        path_component
+                                            .push(PathComponent::new(None, hardened).map_err(
+                                                |e| minicbor::decode::Error::message(e),
+                                            )?);
                                     }
                                     Type::Int => {
                                         path_component.push(
-                                            PathComponent::new(path_index, hardened).map_err(
-                                                minicbor::decode::Error::message,
-                                            )?,
+                                            PathComponent::new(path_index, hardened)
+                                                .map_err(minicbor::decode::Error::message)?,
                                         );
                                     }
                                     _ => {}

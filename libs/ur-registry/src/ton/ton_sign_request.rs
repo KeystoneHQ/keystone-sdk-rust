@@ -167,7 +167,7 @@ mod tests {
             data_type: DataType::Transaction,
             derivation_path: None,
             address: "UQC1IywyQwixSOU8pezOZDC9rv2xCV4CGJzOWH6RX8BTsGJx".to_string(),
-            origin: Some("TonKeeper".to_string())
+            origin: Some("TonKeeper".to_string()),
         };
         let result: Vec<u8> = sig.try_into().unwrap();
         let expect_result = hex::decode("a501d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d025856b5ee9c7241010201004700011c29a9a317663b3ea500000008000301006842002b16732f1c05fdb4e8d3a78fd10dddef3f6067f311be539313b8a44a504d4da2a1dcd65000000000000000000000000000007072e06f0301057830555143314979777951776978534f553870657a4f5a4443397276327843563443474a7a4f574836525838425473474a780669546f6e4b6565706572").unwrap();
@@ -186,7 +186,7 @@ mod tests {
             data_type: DataType::Transaction,
             derivation_path: None,
             address: "UQC1IywyQwixSOU8pezOZDC9rv2xCV4CGJzOWH6RX8BTsGJx".to_string(),
-            origin: Some("TonKeeper".to_string())
+            origin: Some("TonKeeper".to_string()),
         };
         let result = TonSignRequest::try_from(hex::decode("a501d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d025856b5ee9c7241010201004700011c29a9a317663b3ea500000008000301006842002b16732f1c05fdb4e8d3a78fd10dddef3f6067f311be539313b8a44a504d4da2a1dcd65000000000000000000000000000007072e06f0301057830555143314979777951776978534f553870657a4f5a4443397276327843563443474a7a4f574836525838425473474a780669546f6e4b6565706572").unwrap()).unwrap();
 

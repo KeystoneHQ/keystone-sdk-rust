@@ -87,7 +87,9 @@ mod tests {
 
         assert_eq!(
             expect_result,
-            generate_stellar_sign_request(request_id, sign_data, path, xfp, address, origin, sign_type)
+            generate_stellar_sign_request(
+                request_id, sign_data, path, xfp, address, origin, sign_type
+            )
         );
     }
 
@@ -105,7 +107,9 @@ mod tests {
 
         assert_eq!(
             err_result_derivation_path,
-            generate_stellar_sign_request(request_id, sign_data, path, xfp, address, origin, sign_type)
+            generate_stellar_sign_request(
+                request_id, sign_data, path, xfp, address, origin, sign_type
+            )
         );
     }
 
@@ -123,7 +127,9 @@ mod tests {
 
         assert_eq!(
             err_result,
-            generate_stellar_sign_request(request_id, sign_data, path, xfp, address, origin, sign_type)
+            generate_stellar_sign_request(
+                request_id, sign_data, path, xfp, address, origin, sign_type
+            )
         );
     }
 }

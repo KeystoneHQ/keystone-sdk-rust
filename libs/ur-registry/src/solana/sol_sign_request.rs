@@ -18,15 +18,12 @@ const ADDRESS: u8 = 4;
 const ORIGIN: u8 = 5;
 const SIGN_TYPE: u8 = 6;
 
-#[derive(Clone, Debug, PartialEq)]
-#[derive(Default)]
+#[derive(Clone, Debug, PartialEq, Default)]
 pub enum SignType {
     #[default]
     Transaction = 1,
     Message,
 }
-
-
 
 impl SignType {
     pub fn from_u32(i: u32) -> Result<Self, String> {

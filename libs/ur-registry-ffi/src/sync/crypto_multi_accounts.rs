@@ -1,4 +1,5 @@
 use crate::export;
+use crate::sync::crypto_hd_key::Account;
 use anyhow::format_err;
 use anyhow::Error;
 use hex;
@@ -7,7 +8,6 @@ use serde_json::json;
 use ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
 use ur_registry::registry_types::CRYPTO_MULTI_ACCOUNTS;
 use ur_registry::traits::From;
-use crate::sync::crypto_hd_key::Account;
 
 pub type Bytes = Vec<u8>;
 pub type Fingerprint = [u8; 4];
