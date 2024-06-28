@@ -13,6 +13,7 @@ pub enum URType {
     ArweaveSignRequest(String),
     AptosSignRequest(String),
     CardanoSignRequest(String),
+    CardanoSignDataRequest(String),
     CosmosSignRequest(String),
     EvmSignRequest(String),
     SuiSignRequest(String),
@@ -42,6 +43,7 @@ impl URType {
             "aptos-sign-request" => Ok(URType::AptosSignRequest(type_str.to_string())),
             "sui-sign-request" => Ok(URType::SuiSignRequest(type_str.to_string())),
             "cardano-sign-request" => Ok(URType::CardanoSignRequest(type_str.to_string())),
+            "cardano-sign-data-request" => Ok(URType::CardanoSignDataRequest(type_str.to_string())),
             "qr-hardware-call" => Ok(URType::QRHardwareCall(type_str.to_string())),
             "ton-sign-request" => Ok(URType::TonSignRequest(type_str.to_string())),
             _ => Err(URError::NotSupportURTypeError(type_str.to_string())),
@@ -63,6 +65,7 @@ impl URType {
             URType::ArweaveSignRequest(type_str) => type_str.to_string(),
             URType::AptosSignRequest(type_str) => type_str.to_string(),
             URType::CardanoSignRequest(type_str) => type_str.to_string(),
+            URType::CardanoSignDataRequest(type_str) => type_str.to_string(),
             URType::SuiSignRequest(type_str) => type_str.to_string(),
             URType::CosmosSignRequest(type_str) => type_str.to_string(),
             URType::EvmSignRequest(type_str) => type_str.to_string(),
@@ -135,6 +138,8 @@ pub const CARDANO_UTXO: RegistryType = RegistryType("cardano-utxo", Some(2201));
 pub const CARDANO_SIGN_REQUEST: RegistryType = RegistryType("cardano-sign-request", Some(2202));
 pub const CARDANO_SIGNATURE: RegistryType = RegistryType("cardano-signature", Some(2203));
 pub const CARDANO_CERT_KEY: RegistryType = RegistryType("cardano-cert-key", Some(2204));
+pub const CARDANO_SIGN_DATA_REQUEST: RegistryType = RegistryType("cardano-sign-data-request", Some(2205));
+pub const CARDANO_SIGN_DATA_SIGNATURE: RegistryType = RegistryType("cardano-sign-data-signature", Some(2206));
 // Sui
 pub const SUI_SIGN_REQUEST: RegistryType = RegistryType("sui-sign-request", Some(7101));
 pub const SUI_SIGNATURE: RegistryType = RegistryType("sui-signature", Some(7102));
