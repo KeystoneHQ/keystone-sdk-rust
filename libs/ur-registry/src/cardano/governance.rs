@@ -13,7 +13,7 @@ use minicbor::encode::Write;
 use minicbor::Encoder;
 
 impl_template_struct!(CardanoVotingRegistration {
-    delegations: Vec<(String, u64)>,
+    delegations: Vec<(String, u8)>,
     stake_pub: String,
     payment_address: String,
     nonce: u64,
@@ -34,7 +34,7 @@ impl CardanoVotingRegistration {
         for (addr, weight) in &self.delegations {
             e.array(2)?
                 .bytes(&hex::decode(addr).unwrap())?
-                .u64(*weight)?;
+                .u8(*weight)?;
         }
 
         e.u8(2)?
