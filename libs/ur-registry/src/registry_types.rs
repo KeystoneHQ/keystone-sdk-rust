@@ -140,6 +140,9 @@ pub const CARDANO_SIGNATURE: RegistryType = RegistryType("cardano-signature", So
 pub const CARDANO_CERT_KEY: RegistryType = RegistryType("cardano-cert-key", Some(2204));
 pub const CARDANO_SIGN_DATA_REQUEST: RegistryType = RegistryType("cardano-sign-data-request", Some(2205));
 pub const CARDANO_SIGN_DATA_SIGNATURE: RegistryType = RegistryType("cardano-sign-data-signature", Some(2206));
+pub const CARDANO_CATALYST_VOTING_REGISTRATION: RegistryType = RegistryType("cardano-catalyst-voting-registration", Some(2207));
+pub const CARDANO_CATALYST_VOTING_REGISTRATION_SIGNATURE: RegistryType = RegistryType("cardano-catalyst-voting-registration-signature", Some(2208));
+pub const CARDANO_DELEGSTION: RegistryType = RegistryType("cardano-delegation", Some(2209));
 // Sui
 pub const SUI_SIGN_REQUEST: RegistryType = RegistryType("sui-sign-request", Some(7101));
 pub const SUI_SIGNATURE: RegistryType = RegistryType("sui-signature", Some(7102));
