@@ -10,6 +10,8 @@ use crate::cardano::{
     cardano_signature::CardanoSignature, cardano_utxo::CardanoUTXO,
     cardano_sign_data_request::CardanoSignDataRequest,
     cardano_sign_data_signature::CardanoSignDataSignature,
+    cardano_catalyst_voting_registration::CardanoCatalystVotingRegistrationRequest,
+    cardano_catalyst_signature::CardanoCatalystSignature,
 };
 use crate::cosmos::{cosmos_sign_request::CosmosSignRequest, cosmos_signature::CosmosSignature};
 use crate::cosmos::{evm_sign_request::EvmSignRequest, evm_signature::EvmSignature};
@@ -54,6 +56,8 @@ impl_cbor_bytes!(
     CardanoSignRequest,
     CardanoSignDataRequest,
     CardanoSignDataSignature,
+    CardanoCatalystVotingRegistrationRequest,
+    CardanoCatalystSignature,
     CardanoCertKey,
     AptosSignRequest,
     AptosSignature,

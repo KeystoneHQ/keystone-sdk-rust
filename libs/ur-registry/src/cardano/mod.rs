@@ -5,3 +5,7 @@ pub mod cardano_signature;
 pub mod cardano_sign_data_signature;
 pub mod cardano_utxo;
 pub mod cardano_sign_structure;
+pub mod governance;
+pub mod cardano_catalyst_signature;
+pub mod cardano_catalyst_voting_registration;
+pub mod cardano_delegation;
