@@ -54,6 +54,42 @@ impl RegistryItem for CardanoCatalystVotingRegistrationRequest {
     }
 }
 
+impl<C> minicbor::Encode<C> for CardanoCatalystVotingRegistrationRequest {
+    fn encode<W: Write>(
+        &self,
+        e: &mut Encoder<W>,
+        _ctx: &mut C,
+    ) -> Result<(), minicbor::encode::Error<W::Error>> {
+        e.map(self.map_size())?;
+        if let Some(request_id) = &self.request_id {
+            e.int(Int::from(REQUEST_ID))?
+                .tag(Tag::Unassigned(UUID.get_tag()))?
+                .bytes(request_id)?;
+        }
+
+        e.int(Int::from(DELEGATIONS))?
+            .array(self.delegations.len() as u64)?;
+        for delegation in &self.delegations {
+            delegation.encode(e, _ctx)?;
+        }
+
+        e.int(Int::from(STAKE_PUB))?.bytes(&self.stake_pub)?
+            .int(Int::from(PAYMENT_ADDRESS))?.bytes(&self.payment_address)?
+            .int(Int::from(NONCE))?.u64(self.nonce)?
+            .int(Int::from(VOTING_PURPOSE))?.u8(self.voting_purpose)?
+            .int(Int::from(DERIVATION_PATH))?;
+        e.tag(Tag::Unassigned(CRYPTO_KEYPATH.get_tag()))?;
+        CryptoKeyPath::encode(&self.derivation_path, e, _ctx)?;
+
+        if let Some(origin) = &self.origin {
+            e.int(Int::from(ORIGIN))?.str(origin)?;
+        }
+
+        e.int(Int::from(SIGN_TYPE))?.u8(self.sign_type)?;
+        Ok(())
+    }
+}
+
 impl<'b, C> minicbor::Decode<'b, C> for CardanoCatalystVotingRegistrationRequest {
     fn decode(d: &mut Decoder<'b>, _ctx: &mut C) -> Result<Self, minicbor::decode::Error> {
         let mut result: CardanoCatalystVotingRegistrationRequest = CardanoCatalystVotingRegistrationRequest::default();
@@ -97,6 +133,12 @@ impl<'b, C> minicbor::Decode<'b, C> for CardanoCatalystVotingRegistrationRequest
             Ok(())
         })?;
         Ok(result)
+    }
+}
+
+impl To for CardanoCatalystVotingRegistrationRequest {
+    fn to_bytes(&self) -> URResult<Vec<u8>> {
+        minicbor::to_vec(self.clone()).map_err(|e| URError::CborEncodeError(e.to_string()))
     }
 }
 
