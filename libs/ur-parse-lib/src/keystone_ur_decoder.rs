@@ -126,7 +126,6 @@ mod tests {
     use crate::keystone_ur_decoder::{probe_decode, MultiURParseResult, URParseResult};
     use alloc::string::ToString;
     use ur_registry::crypto_psbt::CryptoPSBT;
-    use ur_registry::cardano::cardano_sign_data_request::CardanoSignDataRequest;
 
     use ur_registry::ethereum::eth_sign_request::EthSignRequest;
 
