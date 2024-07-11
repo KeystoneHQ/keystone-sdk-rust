@@ -190,7 +190,7 @@ impl<'b, C> minicbor::Decode<'b, C> for QRHardwareCall {
 mod tests {
     use crate::crypto_key_path::{CryptoKeyPath, PathComponent};
     use crate::extend::chain_type::ChainType;
-    use crate::extend::chain_type::ChainType::{COSMOS, ETH, SOL};
+    use crate::extend::chain_type::ChainType::{ATOM, ETH, SOL};
     use crate::extend::key_derivation::KeyDerivationCall;
     use crate::extend::key_derivation_schema::{Curve, DerivationAlgo, KeyDerivationSchema};
     use crate::extend::qr_hardware_call::{
@@ -251,7 +251,7 @@ mod tests {
         let schema2_1 =
             KeyDerivationSchema::new(key_path2_1, Some(Curve::Ed25519), None, Some(SOL));
         let schema3 =
-            KeyDerivationSchema::new(key_path3, Some(Curve::Secp256k1), None, Some(COSMOS));
+            KeyDerivationSchema::new(key_path3, Some(Curve::Secp256k1), None, Some(ATOM));
         let schemas = vec![schema, schema2, schema3, schema2_1];
         let call = QRHardwareCall::new(
             CallType::KeyDerivation,
@@ -261,7 +261,7 @@ mod tests {
         );
         let bytes: Vec<u8> = call.try_into().unwrap();
         assert_eq!(
-            "a4010002d90515a10184d90516a301d90130a10186182cf5183cf500f502000463455448d90516a301d90130a10186182cf51901f5f500f502010463534f4cd90516a301d90130a10186182cf51876f500f502000466434f534d4f53d90516a301d90130a1018a182cf51901f5f500f500f400f402010463534f4c036b4c6561702057616c6c65740401",
+            "a4010002d90515a10184d90516a301d90130a10186182cf5183cf500f502000463455448d90516a301d90130a10186182cf51901f5f500f502010463534f4cd90516a301d90130a10186182cf51876f500f50200046441544f4dd90516a301d90130a1018a182cf51901f5f500f500f400f402010463534f4c036b4c6561702057616c6c65740401",
             hex::encode(bytes.clone())
         );
     }
@@ -280,7 +280,7 @@ mod tests {
             None,
         );
 
-        let schema = KeyDerivationSchema::new(key_path, Some(Curve::Secp256k1), None, Some(COSMOS));
+        let schema = KeyDerivationSchema::new(key_path, Some(Curve::Secp256k1), None, Some(ATOM));
         let schemas = vec![schema];
         let call = QRHardwareCall::new(
             CallType::KeyDerivation,
@@ -291,7 +291,7 @@ mod tests {
 
         let bytes: Vec<u8> = call.try_into().unwrap();
         assert_eq!(
-            "a4010002d90515a10181d90516a301d90130a1018a182cf51876f500f500f500f502000466434f534d4f53036b6c6561702077616c6c65740401",
+            "a4010002d90515a10181d90516a301d90130a1018a182cf51876f500f500f500f50200046441544f4d036b6c6561702077616c6c65740401",
             hex::encode(bytes.clone())
         );
 
@@ -319,7 +319,7 @@ mod tests {
                     schema.get_algo_or_default() as u32
                 );
                 assert_eq!(
-                    ChainType::COSMOS as u32,
+                    ChainType::ATOM as u32,
                     schema.get_chain_type().unwrap() as u32
                 );
             }
