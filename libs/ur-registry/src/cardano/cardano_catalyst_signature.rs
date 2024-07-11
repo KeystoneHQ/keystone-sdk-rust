@@ -55,31 +55,3 @@ impl<C> minicbor::Encode<C> for CardanoCatalystSignature {
         Ok(())
     }
 }
-
-impl<'b, C> minicbor::Decode<'b, C> for CardanoCatalystSignature {
-    fn decode(d: &mut Decoder<'b>, _ctx: &mut C) -> Result<Self, minicbor::decode::Error> {
-        let mut cardano_catalyst_signature = CardanoCatalystSignature::default();
-        cbor_map(d, &mut cardano_catalyst_signature, |key, obj, d| {
-            let key =
-                u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
-            match key {
-                REQUEST_ID => {
-                    d.tag()?;
-                    obj.set_request_id(Some(d.bytes()?.to_vec()));
-                }
-                SIGNATURE => {
-                    obj.set_signature(d.bytes()?.to_vec());
-                }
-                VOTE_KEYS => {
-                    let len = d.array()?;
-                    for _ in 0..len {
-                        obj.vote_keys.push(d.bytes()?.to_vec());
-                    }
-                }
-                _ => {}
-            }
-            Ok(())
-        })?;
-        Ok(cardano_catalyst_signature)
-    }
-}
