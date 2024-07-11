@@ -72,7 +72,32 @@ mod tests {
     use alloc::vec::Vec;
     use hex::FromHex;
     use ur_registry::crypto_psbt::CryptoPSBT;
+    use ur_registry::extend::qr_hardware_call::QRHardwareCall;
     use ur_registry::traits::RegistryItem;
+
+    #[test]
+    fn test_encode_ada_hardware_call() {
+        let data = "a3010002d90515a10182d90516a101d90130a10186182cf500f500f5d90516a201d90130a1018a182cf51901f5f500f500f500f502010400";
+        let data = Vec::from_hex(data).unwrap();
+        // hardware call
+        let res = probe_encode(&data, 400, QRHardwareCall::get_registry_type().get_type()).unwrap();
+        assert_eq!(
+            "ur:qr-hardware-call/otadaeaotaahbzoyadlftaahcmoyadtaaddyoyadlncsdwykaeykaeyktaahcmoeadtaaddyoyadlecsdwykcfadykykaeykaeykaeykaoadaaaeyteyldre",
+            res.data
+        )
+    }
+
+    #[test]
+    fn test_encode_cosmos_hardware_call() {
+        let data = "a3010002d90515a10182d90516a101d90130a10186182cf500f500f5d90516a201d90130a1018a182cf51901f5f500f500f500f502010400";
+        let data = Vec::from_hex(data).unwrap();
+        // hardware call
+        let res = probe_encode(&data, 400, QRHardwareCall::get_registry_type().get_type()).unwrap();
+        assert_eq!(
+            "ur:qr-hardware-call/otadaeaotaahbzoyadlftaahcmoyadtaaddyoyadlncsdwykaeykaeyktaahcmoeadtaaddyoyadlecsdwykcfadykykaeykaeykaeykaoadaaaeyteyldre",
+            res.data
+        )
+    }
 
     #[test]
     fn test_encode() {
