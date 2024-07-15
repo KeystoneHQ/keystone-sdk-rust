@@ -10,8 +10,10 @@ fn okx_chain_id_map(coin_type: u32) -> u32 {
 pub fn gen_extra_data(coin_type: u32) -> AccountExtra {
     let okx_chain_id = okx_chain_id_map(coin_type);
     return AccountExtra {
-        okx: OkxExtra { chain_id: okx_chain_id },
-    }
+        okx: OkxExtra {
+            chain_id: okx_chain_id,
+        },
+    };
 }
 
 #[cfg(test)]
@@ -25,7 +27,6 @@ mod tests {
 
         assert_eq!(expect_chain_id, gen_extra_data(coin_type).okx.chain_id);
     }
-
 
     #[test]
     fn test_map_eth_chain_id_to_1() {

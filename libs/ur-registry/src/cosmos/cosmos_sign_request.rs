@@ -17,8 +17,7 @@ const DERIVATION_PATHS: u8 = 4;
 const ADDRESSES: u8 = 5;
 const ORIGIN: u8 = 6;
 
-#[derive(Clone, Debug)]
-#[derive(Default)]
+#[derive(Clone, Debug, Default)]
 pub enum DataType {
     #[default]
     Amino = 1,
@@ -26,8 +25,6 @@ pub enum DataType {
     Textual = 3,
     Message = 4,
 }
-
-
 
 impl DataType {
     pub fn from_u32(i: u32) -> Result<Self, String> {
@@ -210,7 +207,9 @@ impl<'b, C> minicbor::Decode<'b, C> for CosmosSignRequest {
                 REQUEST_ID => {
                     let tag = d.tag()?;
                     if !tag.eq(&Tag::Unassigned(UUID.get_tag())) {
-                        return Result::Err(minicbor::decode::Error::message("UUID tag is invalid"));
+                        return Result::Err(minicbor::decode::Error::message(
+                            "UUID tag is invalid",
+                        ));
                     }
                     obj.request_id = d.bytes()?.to_vec();
                 }
@@ -218,8 +217,8 @@ impl<'b, C> minicbor::Decode<'b, C> for CosmosSignRequest {
                     obj.sign_data = d.bytes()?.to_vec();
                 }
                 DATA_TYPE => {
-                    obj.data_type = DataType::from_u32(d.u32()?)
-                        .map_err(minicbor::decode::Error::message)?;
+                    obj.data_type =
+                        DataType::from_u32(d.u32()?).map_err(minicbor::decode::Error::message)?;
                 }
                 DERIVATION_PATHS => {
                     cbor_array(d, &mut obj.derivation_paths, |_key, obj, d| {

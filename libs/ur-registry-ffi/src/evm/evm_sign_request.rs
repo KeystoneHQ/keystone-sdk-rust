@@ -1,10 +1,10 @@
 use hex;
 use serde::Deserialize;
 use serde_json::json;
-use ur_registry::crypto_key_path::CryptoKeyPath;
-use uuid::Uuid;
 use ur_registry::cosmos::evm_sign_request::{EvmSignRequest, SignDataType};
+use ur_registry::crypto_key_path::CryptoKeyPath;
 use ur_registry::registry_types::EVM_SIGN_REQUEST;
+use uuid::Uuid;
 
 use crate::export;
 use crate::util_internal::string_helper::remove_prefix_0x;
@@ -115,7 +115,14 @@ mod tests {
 
         assert_eq!(
             expect_result,
-            generate_evm_sign_request(request_id, sign_data, data_type, custom_chain_identifier, account, origin)
+            generate_evm_sign_request(
+                request_id,
+                sign_data,
+                data_type,
+                custom_chain_identifier,
+                account,
+                origin
+            )
         );
     }
 
@@ -132,7 +139,14 @@ mod tests {
 
         assert_eq!(
             expect_result,
-            generate_evm_sign_request(request_id, sign_data, data_type, custom_chain_identifier, account, origin)
+            generate_evm_sign_request(
+                request_id,
+                sign_data,
+                data_type,
+                custom_chain_identifier,
+                account,
+                origin
+            )
         );
     }
 
@@ -155,7 +169,14 @@ mod tests {
 
         assert_eq!(
             expect_result,
-            generate_evm_sign_request(request_id, sign_data, data_type, custom_chain_identifier, account, origin)
+            generate_evm_sign_request(
+                request_id,
+                sign_data,
+                data_type,
+                custom_chain_identifier,
+                account,
+                origin
+            )
         );
     }
 }
