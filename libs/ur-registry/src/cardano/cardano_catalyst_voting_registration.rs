@@ -155,17 +155,16 @@ mod tests {
 
     #[test]
     fn test_cardano_catalyst_voting_registration_request() {
-        let cbor = hex::decode("a801d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d0282d908a1a201d90130a2018a19069ef5190717f500f500f500f5021a527447030201d908a1a201d90130a2018a19069ef5190717f501f500f500f5021a527447030203035820ad4b948699193634a39dd56f779a2951a24779ad52aa7916f6912b8ec4702cee04583900588e8e1d18cba576a4d35758069fe94e53f638b6faf7c07b8abd2bc5c5cdee47b60edc7772855324c85033c638364214cbfc6627889f81c4051a00539c2b060007d90130a2018a19073cf5190717f500f502f400f4021a52744703086e63617264616e6f2d77616c6c6574");
+        let cbor = hex::decode("a801d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d0281d908a1a2015820a6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d16630201035820ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c0458390069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad051864060007d90130a2018a19073cf5190717f500f502f400f4021a52744703086e63617264616e6f2d77616c6c6574");
         let cbor = cbor.unwrap();
         let request = CardanoCatalystVotingRegistrationRequest::from_cbor(cbor).unwrap();
         assert_eq!(request.request_id, Some(hex::decode("9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d").unwrap()));
-        assert_eq!(request.delegations.len(), 2);
-        assert_eq!(request.delegations[0].get_path().get_path().unwrap(), "1694'/1815'/0'/0'/0'");
+        assert_eq!(request.delegations.len(), 1);
+        assert_eq!(request.delegations[0].get_pub_key(), hex::decode("a6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663").unwrap());
         assert_eq!(request.delegations[0].get_weidth(), 1);
-        assert_eq!(request.delegations[1].get_path().get_path().unwrap(), "1694'/1815'/1'/0'/0'");
-        assert_eq!(request.stake_pub, hex::decode("ad4b948699193634a39dd56f779a2951a24779ad52aa7916f6912b8ec4702cee").unwrap());
-        assert_eq!(request.payment_address, hex::decode("00588e8e1d18cba576a4d35758069fe94e53f638b6faf7c07b8abd2bc5c5cdee47b60edc7772855324c85033c638364214cbfc6627889f81c4").unwrap());
-        assert_eq!(request.nonce, 5479467);
+        assert_eq!(request.stake_pub, hex::decode("ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c").unwrap());
+        assert_eq!(request.payment_address, hex::decode("0069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad").unwrap());
+        assert_eq!(request.nonce, 100);
         assert_eq!(request.voting_purpose, 0);
     }
 }

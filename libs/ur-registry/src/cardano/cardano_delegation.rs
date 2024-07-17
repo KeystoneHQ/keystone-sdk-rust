@@ -11,11 +11,11 @@ use minicbor::data::{Int, Tag};
 use minicbor::encode::{Error, Write};
 use minicbor::{Decoder, Encoder};
 
-const HDPATH: u8 = 1;
+const PUBKEY: u8 = 1;
 const WEIDTH: u8 = 2;
 
 impl_template_struct!(CardanoDelegation {
-    path: CryptoKeyPath,
+    pub_key: Bytes,
     weidth: u8
 });
 
@@ -35,9 +35,7 @@ impl<C> minicbor::Encode<C> for CardanoDelegation {
     fn encode<W: Write>(&self, e: &mut Encoder<W>, _ctx: &mut C) -> Result<(), Error<W::Error>> {
         e.map(self.map_size())?;
 
-        e.int(Int::from(HDPATH))?
-            .tag(Tag::Unassigned(CRYPTO_KEYPATH.get_tag()))?;
-        CryptoKeyPath::encode(&self.path, e, _ctx)?;
+        e.int(Int::from(PUBKEY))?.bytes(&self.pub_key)?;
 
         e.int(Int::from(WEIDTH))?.u8(self.weidth)?;
         Ok(())
@@ -51,9 +49,8 @@ impl<'b, C> minicbor::Decode<'b, C> for CardanoDelegation {
             let key =
                 u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
             match key {
-                HDPATH => {
-                    d.tag()?;
-                    obj.path = CryptoKeyPath::decode(d, _ctx)?;
+                PUBKEY => {
+                    obj.set_pub_key(d.bytes()?.to_vec());
                 }
                 WEIDTH => {
                     obj.weidth = d.u8()?;

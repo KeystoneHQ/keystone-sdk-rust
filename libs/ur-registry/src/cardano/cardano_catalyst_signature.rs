@@ -11,12 +11,10 @@ use minicbor::{Decoder, Encoder};
 
 const REQUEST_ID: u8 = 1;
 const SIGNATURE: u8 = 2;
-const VOTE_KEYS: u8 = 3;
 
 impl_template_struct!(CardanoCatalystSignature {
     request_id: Option<Bytes>,
-    signature: Bytes,
-    vote_keys: Vec<Bytes>
+    signature: Bytes
 });
 
 impl RegistryItem for CardanoCatalystSignature {
@@ -27,7 +25,7 @@ impl RegistryItem for CardanoCatalystSignature {
 
 impl MapSize for CardanoCatalystSignature {
     fn map_size(&self) -> u64 {
-        let mut size = 2;
+        let mut size = 1;
         if self.request_id.is_some() {
             size += 1;
         }
@@ -47,11 +45,6 @@ impl<C> minicbor::Encode<C> for CardanoCatalystSignature {
 
         e.int(Int::from(SIGNATURE))?.bytes(&self.signature)?;
 
-        e.int(Int::from(VOTE_KEYS))?.array(self.vote_keys.len() as u64)?;
-        for key in &self.vote_keys {
-            e.bytes(key)?;
-        }
-
         Ok(())
     }
 }
@@ -69,12 +62,6 @@ impl<'b, C> minicbor::Decode<'b, C> for CardanoCatalystSignature {
                 }
                 SIGNATURE => {
                     obj.set_signature(d.bytes()?.to_vec());
-                }
-                VOTE_KEYS => {
-                    let len = d.array()?;
-                    for _ in 0..len.unwrap() {
-                        obj.vote_keys.push(d.bytes()?.to_vec());
-                    }
                 }
                 _ => {}
             }
