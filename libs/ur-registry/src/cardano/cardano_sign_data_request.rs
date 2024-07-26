@@ -16,14 +16,14 @@ const REQUEST_ID: u8 = 1;
 const SIGN_DATA: u8 = 2;
 const DERIVATION_PATH: u8 = 3;
 const ORIGIN: u8 = 4;
-const STAKE_PUB: u8 = 6;
+const XPUB: u8 = 6;
 
 impl_template_struct!(CardanoSignDataRequest {
     request_id: Option<Bytes>,
     sign_data: Bytes,
     derivation_path: CryptoKeyPath,
     origin: Option<String>,
-    stake_pub: Bytes
+    xpub: Bytes
 });
 
 impl MapSize for CardanoSignDataRequest {
@@ -62,7 +62,7 @@ impl<C> minicbor::Encode<C> for CardanoSignDataRequest {
 
         e.int(Int::from(DERIVATION_PATH))?;
         e.tag(Tag::Unassigned(CRYPTO_KEYPATH.get_tag()))?;
-        e.int(Int::from(STAKE_PUB))?.bytes(&self.stake_pub)?;
+        e.int(Int::from(XPUB))?.bytes(&self.xpub)?;
         CryptoKeyPath::encode(&self.derivation_path, e, _ctx)?;
 
         if let Some(origin) = &self.origin {
@@ -91,8 +91,8 @@ impl<'b, C> minicbor::Decode<'b, C> for CardanoSignDataRequest {
                     d.tag()?;
                     obj.derivation_path = CryptoKeyPath::decode(d, _ctx)?;
                 }
-                STAKE_PUB => {
-                    obj.set_stake_pub(d.bytes()?.to_vec());
+                XPUB => {
+                    obj.set_xpub(d.bytes()?.to_vec());
                 }
                 ORIGIN => {
                     obj.origin = Some(d.str()?.to_string());
