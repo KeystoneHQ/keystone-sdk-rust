@@ -51,7 +51,9 @@ impl CryptoMultiAccounts {
         self.device_id = Some(device_id);
     }
 
-    pub fn set_device_version(&mut self, device_version: String) { self.device_version = Some(device_version); }
+    pub fn set_device_version(&mut self, device_version: String) {
+        self.device_version = Some(device_version);
+    }
 
     pub fn new(
         master_fingerprint: Fingerprint,
@@ -81,7 +83,9 @@ impl CryptoMultiAccounts {
     pub fn get_device_id(&self) -> Option<String> {
         self.device_id.clone()
     }
-    pub fn get_device_version(&self) -> Option<String> { self.device_version.clone() }
+    pub fn get_device_version(&self) -> Option<String> {
+        self.device_version.clone()
+    }
 }
 
 impl RegistryItem for CryptoMultiAccounts {
@@ -240,7 +244,36 @@ mod tests {
         );
         assert_eq!(crypto_multi_accounts.device, Some("keystone".to_string()));
         assert_eq!(crypto_multi_accounts.keys.len(), 1);
-        assert_eq!(crypto_multi_accounts.device_version, Some("1.0.0".to_string()));
+        assert_eq!(
+            crypto_multi_accounts.device_version,
+            Some("1.0.0".to_string())
+        );
+    }
+
+    #[test]
+    fn test_decode_multi_accounts() {
+        let part ="UR:CRYPTO-MULTI-ACCOUNTS/OXADCYWMCMJKCTAOLFTAADDLOTAXHDCLAXRSJEQZPETEIMAXTOBSTIJNJKVSIMPRCWFHYTSTWDLYTDNBTDHHYNDMCYJPOEUECSAAHDCXEOTEWFLFMYPLAXWPDTHPFHWNATYAFHMUDPLUAHGSNLVONLBESRGLCHFYJOPDFMHGAMTAADDYOYADLNCSDWYKCSFNYKAEYKTAADDLOEAXHDCXTIDIFEHYSFWTETHESRMYCLKEHPZORHHEJSCYCMZOVDLFPEKGEOPTKICTCHWMSNKKAMTAADDYOYADLNCSDWYKCFADYKYKAEYKAXJTGRIHKKJKJYJLJTIHCXEOCXGDJPJLAHIHEHDMEHDMDYDLEYYLLD";
+        // let result = ur::decode(&ur.to_lowercase());
+        let decode_data = ur::decode(&part.to_lowercase());
+        let crypto_multi_accounts = CryptoMultiAccounts::from_cbor(decode_data.unwrap().1).unwrap();
+        //xpub
+        let hd_key = crypto_multi_accounts.keys.get(0).unwrap();
+        assert_eq!(
+            "44'/60'/0'",
+            hd_key.get_origin().unwrap().get_path().unwrap()
+        );
+
+        // public key
+        assert_eq!(
+            "03bf6bb4afd36a03ce0fd06d73e86ab21b3ff9c7ea81d2a0d25cf62e1a72a2de18",
+            hex::encode(hd_key.get_key())
+        );
+        // chain code
+        assert_eq!(
+            "33d3f3828fae03ec295b3ff107f83f932d8b054c99e29910c34e174470a83e57",
+            hex::encode(hd_key.get_chain_code().unwrap())
+        );
+
     }
 
     #[test]
