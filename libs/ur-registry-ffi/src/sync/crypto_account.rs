@@ -1,13 +1,13 @@
 use crate::export;
+use crate::sync::crypto_multi_accounts::MultiAccounts;
 use anyhow::format_err;
 use anyhow::Error;
 use hex;
 use serde_json::json;
 use ur_registry::crypto_account::CryptoAccount;
 use ur_registry::crypto_output::CryptoOutput;
-use ur_registry::registry_types::{CRYPTO_ACCOUNT};
+use ur_registry::registry_types::CRYPTO_ACCOUNT;
 use ur_registry::traits::From;
-use crate::sync::crypto_multi_accounts::MultiAccounts;
 
 impl Into<MultiAccounts> for CryptoAccount {
     fn into(self) -> MultiAccounts {
@@ -22,7 +22,7 @@ impl Into<MultiAccounts> for CryptoAccount {
             keys: hd_keys,
             device: None,
             device_id: None,
-            device_version: None
+            device_version: None,
         }
     }
 }

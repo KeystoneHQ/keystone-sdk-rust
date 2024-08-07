@@ -1,12 +1,14 @@
 use crate::cardano::cardano_delegation::CardanoDelegation;
-use crate::cbor::{cbor_map, cbor_array};
+use crate::cbor::{cbor_array, cbor_map};
 use crate::crypto_key_path::CryptoKeyPath;
 use crate::error::{URError, URResult};
-use crate::registry_types::{RegistryType, CRYPTO_KEYPATH, CARDANO_CATALYST_VOTING_REGISTRATION, UUID};
-use crate::traits::{From as FromCbor, RegistryItem, To, MapSize};
+use crate::impl_template_struct;
+use crate::registry_types::{
+    RegistryType, CARDANO_CATALYST_VOTING_REGISTRATION, CRYPTO_KEYPATH, UUID,
+};
+use crate::traits::{From as FromCbor, MapSize, RegistryItem, To};
 use crate::types::Bytes;
 use alloc::format;
-use crate::impl_template_struct;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use minicbor::data::{Int, Tag};
@@ -73,10 +75,14 @@ impl<C> minicbor::Encode<C> for CardanoCatalystVotingRegistrationRequest {
             delegation.encode(e, _ctx)?;
         }
 
-        e.int(Int::from(STAKE_PUB))?.bytes(&self.stake_pub)?
-            .int(Int::from(PAYMENT_ADDRESS))?.bytes(&self.payment_address)?
-            .int(Int::from(NONCE))?.u64(self.nonce)?
-            .int(Int::from(VOTING_PURPOSE))?.u8(self.voting_purpose)?
+        e.int(Int::from(STAKE_PUB))?
+            .bytes(&self.stake_pub)?
+            .int(Int::from(PAYMENT_ADDRESS))?
+            .bytes(&self.payment_address)?
+            .int(Int::from(NONCE))?
+            .u64(self.nonce)?
+            .int(Int::from(VOTING_PURPOSE))?
+            .u8(self.voting_purpose)?
             .int(Int::from(DERIVATION_PATH))?;
         e.tag(Tag::Unassigned(CRYPTO_KEYPATH.get_tag()))?;
         CryptoKeyPath::encode(&self.derivation_path, e, _ctx)?;
@@ -92,7 +98,8 @@ impl<C> minicbor::Encode<C> for CardanoCatalystVotingRegistrationRequest {
 
 impl<'b, C> minicbor::Decode<'b, C> for CardanoCatalystVotingRegistrationRequest {
     fn decode(d: &mut Decoder<'b>, _ctx: &mut C) -> Result<Self, minicbor::decode::Error> {
-        let mut result: CardanoCatalystVotingRegistrationRequest = CardanoCatalystVotingRegistrationRequest::default();
+        let mut result: CardanoCatalystVotingRegistrationRequest =
+            CardanoCatalystVotingRegistrationRequest::default();
         cbor_map(d, &mut result, |key, obj, d: &mut Decoder| {
             let key =
                 u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
@@ -142,7 +149,9 @@ impl To for CardanoCatalystVotingRegistrationRequest {
     }
 }
 
-impl FromCbor<CardanoCatalystVotingRegistrationRequest> for CardanoCatalystVotingRegistrationRequest {
+impl FromCbor<CardanoCatalystVotingRegistrationRequest>
+    for CardanoCatalystVotingRegistrationRequest
+{
     fn from_cbor(bytes: Vec<u8>) -> URResult<CardanoCatalystVotingRegistrationRequest> {
         minicbor::decode(&bytes).map_err(|e| URError::CborDecodeError(e.to_string()))
     }
@@ -158,11 +167,22 @@ mod tests {
         let cbor = hex::decode("a801d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d0281d908a1a2015820a6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d16630201035820ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c0458390069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad051864060007d90130a2018a19073cf5190717f500f502f400f4021a52744703086e63617264616e6f2d77616c6c6574");
         let cbor = cbor.unwrap();
         let request = CardanoCatalystVotingRegistrationRequest::from_cbor(cbor).unwrap();
-        assert_eq!(request.request_id, Some(hex::decode("9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d").unwrap()));
+        assert_eq!(
+            request.request_id,
+            Some(hex::decode("9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d").unwrap())
+        );
         assert_eq!(request.delegations.len(), 1);
-        assert_eq!(request.delegations[0].get_pub_key(), hex::decode("a6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663").unwrap());
+        assert_eq!(
+            request.delegations[0].get_pub_key(),
+            hex::decode("a6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663")
+                .unwrap()
+        );
         assert_eq!(request.delegations[0].get_weidth(), 1);
-        assert_eq!(request.stake_pub, hex::decode("ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c").unwrap());
+        assert_eq!(
+            request.stake_pub,
+            hex::decode("ca0e65d9bb8d0dca5e88adc5e1c644cc7d62e5a139350330281ed7e3a6938d2c")
+                .unwrap()
+        );
         assert_eq!(request.payment_address, hex::decode("0069fa1bd9338574702283d8fb71f8cce1831c3ea4854563f5e4043aea33a4f1f468454744b2ff3644b2ab79d48e76a3187f902fe8a1bcfaad").unwrap());
         assert_eq!(request.nonce, 100);
         assert_eq!(request.voting_purpose, 0);

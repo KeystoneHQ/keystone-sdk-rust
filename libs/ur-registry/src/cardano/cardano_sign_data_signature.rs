@@ -1,6 +1,6 @@
 use crate::cbor::cbor_map;
 use crate::impl_template_struct;
-use crate::registry_types::{CARDANO_SIGN_DATA_SIGNATURE, RegistryType, UUID};
+use crate::registry_types::{RegistryType, CARDANO_SIGN_DATA_SIGNATURE, UUID};
 use crate::traits::{MapSize, RegistryItem};
 use crate::types::Bytes;
 use alloc::string::ToString;

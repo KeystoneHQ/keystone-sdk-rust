@@ -1,11 +1,11 @@
 use crate::cbor::cbor_map;
 use crate::crypto_key_path::CryptoKeyPath;
 use crate::error::{URError, URResult};
-use crate::registry_types::{RegistryType, CRYPTO_KEYPATH, CARDANO_SIGN_DATA_REQUEST, UUID};
-use crate::traits::{From as FromCbor, RegistryItem, To, MapSize};
+use crate::impl_template_struct;
+use crate::registry_types::{RegistryType, CARDANO_SIGN_DATA_REQUEST, CRYPTO_KEYPATH, UUID};
+use crate::traits::{From as FromCbor, MapSize, RegistryItem, To};
 use crate::types::Bytes;
 use alloc::format;
-use crate::impl_template_struct;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use minicbor::data::{Int, Tag};

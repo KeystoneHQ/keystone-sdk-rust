@@ -1,8 +1,8 @@
 use anyhow::Error;
 use hex;
 use serde_json::json;
-use ur_registry::sui::sui_signature::SuiSignature;
 use ur_registry::registry_types::SUI_SIGNATURE;
+use ur_registry::sui::sui_signature::SuiSignature;
 use uuid::Uuid;
 
 use crate::export;

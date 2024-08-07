@@ -189,8 +189,6 @@ impl<'b, C> minicbor::Decode<'b, C> for QRHardwareCall {
 #[cfg(test)]
 mod tests {
     use crate::crypto_key_path::{CryptoKeyPath, PathComponent};
-    use crate::extend::chain_type::ChainType;
-    use crate::extend::chain_type::ChainType::{ATOM, ETH, SOL};
     use crate::extend::key_derivation::KeyDerivationCall;
     use crate::extend::key_derivation_schema::{Curve, DerivationAlgo, KeyDerivationSchema};
     use crate::extend::qr_hardware_call::{
@@ -246,12 +244,30 @@ mod tests {
             None,
             None,
         );
-        let schema = KeyDerivationSchema::new(key_path, Some(Curve::Secp256k1), None, Some(ETH));
-        let schema2 = KeyDerivationSchema::new(key_path2, Some(Curve::Ed25519), None, Some(SOL));
-        let schema2_1 =
-            KeyDerivationSchema::new(key_path2_1, Some(Curve::Ed25519), None, Some(SOL));
-        let schema3 =
-            KeyDerivationSchema::new(key_path3, Some(Curve::Secp256k1), None, Some(ATOM));
+        let schema = KeyDerivationSchema::new(
+            key_path,
+            Some(Curve::Secp256k1),
+            None,
+            Some("ETH".to_string()),
+        );
+        let schema2 = KeyDerivationSchema::new(
+            key_path2,
+            Some(Curve::Ed25519),
+            None,
+            Some("SOL".to_string()),
+        );
+        let schema2_1 = KeyDerivationSchema::new(
+            key_path2_1,
+            Some(Curve::Ed25519),
+            None,
+            Some("SOL".to_string()),
+        );
+        let schema3 = KeyDerivationSchema::new(
+            key_path3,
+            Some(Curve::Secp256k1),
+            None,
+            Some("ATOM".to_string()),
+        );
         let schemas = vec![schema, schema2, schema3, schema2_1];
         let call = QRHardwareCall::new(
             CallType::KeyDerivation,
@@ -262,6 +278,88 @@ mod tests {
         let bytes: Vec<u8> = call.try_into().unwrap();
         assert_eq!(
             "a4010002d90515a10184d90516a301d90130a10186182cf5183cf500f502000463455448d90516a301d90130a10186182cf51901f5f500f502010463534f4cd90516a301d90130a10186182cf51876f500f50200046441544f4dd90516a301d90130a1018a182cf51901f5f500f500f400f402010463534f4c036b4c6561702057616c6c65740401",
+            hex::encode(bytes.clone())
+        );
+    }
+
+    #[test]
+    fn test_qr_hardware_call() {
+        let key_path = CryptoKeyPath::new(
+            vec![
+                PathComponent::new(Some(44), true).unwrap(),
+                PathComponent::new(Some(60), true).unwrap(),
+                PathComponent::new(Some(0), true).unwrap(),
+            ],
+            None,
+            None,
+        );
+
+        let key_path2 = CryptoKeyPath::new(
+            vec![
+                PathComponent::new(Some(44), true).unwrap(),
+                PathComponent::new(Some(501), true).unwrap(),
+                PathComponent::new(Some(0), true).unwrap(),
+            ],
+            None,
+            None,
+        );
+
+        let key_path2_1 = CryptoKeyPath::new(
+            vec![
+                PathComponent::new(Some(44), true).unwrap(),
+                PathComponent::new(Some(501), true).unwrap(),
+                PathComponent::new(Some(0), true).unwrap(),
+                PathComponent::new(Some(0), false).unwrap(),
+                PathComponent::new(Some(0), false).unwrap(),
+            ],
+            None,
+            None,
+        );
+
+        // atom keypath
+        let key_path3 = CryptoKeyPath::new(
+            vec![
+                PathComponent::new(Some(44), true).unwrap(),
+                PathComponent::new(Some(501), true).unwrap(),
+                PathComponent::new(Some(1), true).unwrap(),
+            ],
+            None,
+            None,
+        );
+        let schema = KeyDerivationSchema::new(
+            key_path,
+            Some(Curve::Secp256k1),
+            None,
+            Some("ETH".to_string()),
+        );
+        let schema2 = KeyDerivationSchema::new(
+            key_path2,
+            Some(Curve::Ed25519),
+            None,
+            Some("SOL".to_string()),
+        );
+        let schema2_1 = KeyDerivationSchema::new(
+            key_path2_1,
+            Some(Curve::Ed25519),
+            None,
+            Some("SOL".to_string()),
+        );
+        let schema3 = KeyDerivationSchema::new(
+            key_path3,
+            Some(Curve::Secp256k1),
+            None,
+            Some("SOL".to_string()),
+        );
+        let schemas = vec![schema, schema2, schema3, schema2_1];
+        let call = QRHardwareCall::new(
+            CallType::KeyDerivation,
+            CallParams::KeyDerivation(KeyDerivationCall::new(schemas)),
+            Some("Leap Wallet".to_string()),
+            HardWareCallVersion::V1,
+        );
+        let bytes: Vec<u8> = call.try_into().unwrap();
+        assert_eq!(
+            "a4010002d90515a10184d90516a301d90130a10186182cf5183cf500f502000463455448d90516a301d90130a10186182cf51901f5f500f502010463534f4cd90516a301d90130a10186182cf51901f5f501f502000463534f4cd90516a301d90130a1018a182cf51901f5f500f500f400f402010463534f4c036b4c6561702057616c6c65740401",
             hex::encode(bytes.clone())
         );
     }
@@ -280,7 +378,12 @@ mod tests {
             None,
         );
 
-        let schema = KeyDerivationSchema::new(key_path, Some(Curve::Secp256k1), None, Some(ATOM));
+        let schema = KeyDerivationSchema::new(
+            key_path,
+            Some(Curve::Secp256k1),
+            None,
+            Some("ATOM".to_string()),
+        );
         let schemas = vec![schema];
         let call = QRHardwareCall::new(
             CallType::KeyDerivation,
@@ -295,7 +398,7 @@ mod tests {
             hex::encode(bytes.clone())
         );
 
-        // // test decode
+        //test decode
         let call = QRHardwareCall::try_from(bytes).unwrap();
         assert_eq!(CallType::KeyDerivation as u32, call.get_call_type() as u32);
         assert_eq!(Some("leap wallet".to_string()), call.get_origin());
@@ -318,10 +421,7 @@ mod tests {
                     DerivationAlgo::Slip10 as u32,
                     schema.get_algo_or_default() as u32
                 );
-                assert_eq!(
-                    ChainType::ATOM as u32,
-                    schema.get_chain_type().unwrap() as u32
-                );
+                assert_eq!("ATOM", schema.get_chain_type().unwrap());
             }
         }
     }
