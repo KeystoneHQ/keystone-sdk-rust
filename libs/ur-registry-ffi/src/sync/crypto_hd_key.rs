@@ -1,24 +1,23 @@
 use crate::export;
+use crate::util_internal::account_helper::gen_extra_data;
+use crate::util_internal::chain::map_coin_type;
 use anyhow::format_err;
 use anyhow::Error;
 use hex;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use ur_registry::crypto_hd_key::CryptoHDKey;
-use ur_registry::registry_types::{CRYPTO_HDKEY};
+use ur_registry::registry_types::CRYPTO_HDKEY;
 use ur_registry::traits::From;
-use crate::util_internal::account_helper::gen_extra_data;
-use crate::util_internal::chain::map_coin_type;
-
 
 #[derive(Default, Clone, Debug, Serialize, Deserialize)]
 pub struct OkxExtra {
-    pub chain_id: u32
+    pub chain_id: u32,
 }
 
 #[derive(Default, Clone, Debug, Serialize, Deserialize)]
 pub struct AccountExtra {
-    pub okx: OkxExtra
+    pub okx: OkxExtra,
 }
 
 #[derive(Default, Clone, Debug, Serialize, Deserialize)]
@@ -33,7 +32,7 @@ pub struct Account {
     note: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     xfp: Option<String>,
-    extra: AccountExtra
+    extra: AccountExtra,
 }
 
 impl core::convert::From<&CryptoHDKey> for Account {
@@ -59,8 +58,15 @@ impl core::convert::From<&CryptoHDKey> for Account {
             xpub = value.get_bip32_key();
         }
 
-        let source_fingerprint = value.get_origin().unwrap_or_default().get_source_fingerprint();
-        let xfp = if source_fingerprint.is_some() { Some(hex::encode(source_fingerprint.unwrap())) } else { None };
+        let source_fingerprint = value
+            .get_origin()
+            .unwrap_or_default()
+            .get_source_fingerprint();
+        let xfp = if source_fingerprint.is_some() {
+            Some(hex::encode(source_fingerprint.unwrap()))
+        } else {
+            None
+        };
 
         Account {
             chain: map_coin_type(coin_type),
@@ -71,11 +77,10 @@ impl core::convert::From<&CryptoHDKey> for Account {
             extended_public_key: xpub,
             note: value.get_note(),
             xfp,
-            extra: gen_extra_data(coin_type)
+            extra: gen_extra_data(coin_type),
         }
     }
 }
-
 
 export! {
     @Java_com_keystone_sdk_KeystoneNativeSDK_parseCryptoHDKey

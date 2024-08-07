@@ -4,7 +4,7 @@ use minicbor::data::{Int, Tag};
 
 use crate::cbor::cbor_map;
 use crate::error::{URError, URResult};
-use crate::registry_types::{RegistryType, UUID, APTOS_SIGNATURE};
+use crate::registry_types::{RegistryType, APTOS_SIGNATURE, UUID};
 use crate::traits::{From, RegistryItem, To};
 use crate::types::Bytes;
 
@@ -102,7 +102,9 @@ impl<'b, C> minicbor::Decode<'b, C> for AptosSignature {
                 REQUEST_ID => {
                     let tag = d.tag()?;
                     if !tag.eq(&Tag::Unassigned(UUID.get_tag())) {
-                        return Result::Err(minicbor::decode::Error::message("UUID tag is invalid"));
+                        return Result::Err(minicbor::decode::Error::message(
+                            "UUID tag is invalid",
+                        ));
                     }
                     obj.request_id = d.bytes()?.to_vec();
                 }

@@ -17,16 +17,13 @@ const ACCOUNTS: u8 = 4;
 const ORIGIN: u8 = 5;
 const SIGN_TYPE: u8 = 6;
 
-#[derive(Clone, Debug)]
-#[derive(Default)]
+#[derive(Clone, Debug, Default)]
 pub enum SignType {
     #[default]
     Single = 1,
     Multi = 2,
     Message = 3,
 }
-
-
 
 impl SignType {
     pub fn from_u32(i: u32) -> Result<Self, String> {
@@ -252,8 +249,8 @@ impl<'b, C> minicbor::Decode<'b, C> for AptosSignRequest {
                     obj.origin = Some(d.str()?.to_string());
                 }
                 SIGN_TYPE => {
-                    obj.sign_type = SignType::from_u32(d.u32()?)
-                        .map_err(minicbor::decode::Error::message)?;
+                    obj.sign_type =
+                        SignType::from_u32(d.u32()?).map_err(minicbor::decode::Error::message)?;
                 }
                 _ => {}
             }

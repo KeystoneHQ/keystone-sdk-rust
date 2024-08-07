@@ -273,7 +273,6 @@ mod tests {
             "33d3f3828fae03ec295b3ff107f83f932d8b054c99e29910c34e174470a83e57",
             hex::encode(hd_key.get_chain_code().unwrap())
         );
-
     }
 
     #[test]
