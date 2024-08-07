@@ -1,7 +1,6 @@
 use crate::cbor::cbor_map;
 use crate::crypto_key_path::CryptoKeyPath;
 use crate::error::URError;
-use crate::extend::chain_type::ChainType;
 use crate::impl_template_struct;
 use crate::registry_types::{RegistryType, CRYPTO_KEYPATH, KEY_DERIVATION_SCHEMA};
 use crate::traits::{MapSize, RegistryItem};
@@ -62,7 +61,7 @@ impl_template_struct!(KeyDerivationSchema {
     key_path: CryptoKeyPath,
     curve: Option<Curve>,
     algo: Option<DerivationAlgo>,
-    chain_type: Option<ChainType>
+    chain_type: Option<String>
 });
 
 impl KeyDerivationSchema {
@@ -77,11 +76,6 @@ impl KeyDerivationSchema {
             Some(a) => a,
             None => DerivationAlgo::Slip10,
         }
-    }
-
-    pub fn get_chain_type_or_default(&self) -> ChainType {
-        self.get_chain_type()
-            .unwrap_or_else(|| ChainType::default())
     }
 }
 
@@ -126,7 +120,6 @@ impl<C> minicbor::Encode<C> for KeyDerivationSchema {
                 .int(Int::from(algo.clone() as u32))?;
         }
         if let Some(chain_type) = &self.chain_type {
-            let mut chain_type = chain_type.to_string();
             e.int(Int::from(CHAIN_TYPE))?.str(&chain_type)?;
         }
         Ok(())
@@ -161,11 +154,8 @@ impl<'b, C> minicbor::Decode<'b, C> for KeyDerivationSchema {
                     obj.set_algo(Some(algo))
                 }
                 CHAIN_TYPE => {
-                    let chain_type = ChainType::try_from(
-                        String::try_from(d.str()?)
-                            .map_err(|e| minicbor::decode::Error::message(e.to_string()))?,
-                    )
-                    .map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
+                    let chain_type = String::try_from(d.str()?)
+                        .map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
                     obj.set_chain_type(Some(chain_type))
                 }
                 _ => {}

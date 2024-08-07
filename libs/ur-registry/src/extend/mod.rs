@@ -1,4 +1,3 @@
-pub mod chain_type;
 pub mod crypto_multi_accounts;
 pub mod key_derivation;
 pub mod key_derivation_schema;
