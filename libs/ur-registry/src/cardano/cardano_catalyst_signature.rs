@@ -1,10 +1,10 @@
 use crate::cbor::cbor_map;
 use crate::impl_template_struct;
-use crate::registry_types::{CARDANO_CATALYST_VOTING_REGISTRATION_SIGNATURE, RegistryType, UUID};
+use crate::registry_types::{RegistryType, CARDANO_CATALYST_VOTING_REGISTRATION_SIGNATURE, UUID};
 use crate::traits::{MapSize, RegistryItem};
 use crate::types::Bytes;
-use alloc::vec::Vec;
 use alloc::string::ToString;
+use alloc::vec::Vec;
 use minicbor::data::{Int, Tag};
 use minicbor::encode::{Error, Write};
 use minicbor::{Decoder, Encoder};
