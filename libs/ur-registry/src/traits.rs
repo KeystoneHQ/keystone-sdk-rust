@@ -20,6 +20,21 @@ pub trait RegistryItem {
     fn get_registry_type() -> RegistryType<'static>;
 }
 
+impl<N> UR for N
+where
+    N: To + RegistryItem,
+{
+    fn to_ur_encoder(&self, max_fragment_length: usize) -> Encoder {
+        let message = self.to_bytes();
+        ur::Encoder::new(
+            message.as_slice(),
+            max_fragment_length,
+            N::get_registry_type().get_type(),
+        )
+        .unwrap()
+    }
+}
+
 pub trait MapSize {
     fn map_size(&self) -> u64;
 }
