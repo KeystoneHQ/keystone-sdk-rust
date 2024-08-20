@@ -25,7 +25,7 @@ where
     N: To + RegistryItem,
 {
     fn to_ur_encoder(&self, max_fragment_length: usize) -> ur::Encoder {
-        let message = self.to_bytes();
+        let message = self.to_bytes().unwrap();
         ur::Encoder::new(
             message.as_slice(),
             max_fragment_length,
