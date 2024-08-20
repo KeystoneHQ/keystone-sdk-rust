@@ -24,7 +24,7 @@ impl<N> UR for N
 where
     N: To + RegistryItem,
 {
-    fn to_ur_encoder(&self, max_fragment_length: usize) -> Encoder {
+    fn to_ur_encoder(&self, max_fragment_length: usize) -> ur::Encoder {
         let message = self.to_bytes();
         ur::Encoder::new(
             message.as_slice(),
