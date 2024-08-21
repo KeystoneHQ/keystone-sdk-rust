@@ -90,10 +90,10 @@ impl<'b, C> minicbor::Decode<'b, C> for CardanoSignRequest {
             match key {
                 REQUEST_ID => {
                     d.tag()?;
-                    obj.request_id = Some(d.bytes()?.to_vec());
+                    obj.set_request_id(Some(d.bytes()?.to_vec()));
                 }
                 SIGN_DATA => {
-                    obj.sign_data = d.bytes()?.to_vec();
+                    obj.set_sign_data(d.bytes()?.to_vec());
                 }
                 UTXOS => {
                     cbor_array(d, &mut obj.utxos, |_index, array, d| {
@@ -109,10 +109,8 @@ impl<'b, C> minicbor::Decode<'b, C> for CardanoSignRequest {
                         Ok(())
                     })?;
                 }
-                ORIGIN => obj.origin = match d.str() {
-                    Ok(s) => Some(s.to_string()),
-                    _ => {}
-                }
+                ORIGIN => obj.set_origin(Some(d.str()?.to_string())),
+                _ => {}
             }
             Ok(())
         })?;
