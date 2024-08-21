@@ -20,13 +20,12 @@ const KEY_PAYLOAD: u8 = 3;
 
 use crate::impl_template_struct;
 
-#[derive(Clone, Debug, Default)]
-pub struct CardanoSignStructure {
+impl_template_struct!(CardanoSignStructure {
     context: Bytes,
     protected_header: Bytes,
     external_aad: Bytes,
     payload: String
-}
+});
 
 impl MapSize for CardanoSignStructure {
     fn map_size(&self) -> u64 {

@@ -20,14 +20,7 @@ const UTXOS: u8 = 3;
 const CERT_KEYS: u8 = 4;
 const ORIGIN: u8 = 5;
 
-#[derive(Clone, Debug, Default)]
-pub struct CardanoSignRequest {
-    request_id: Option<Bytes>,
-    sign_data: Bytes,
-    utxos: Vec<CardanoUTXO>,
-    cert_keys: Vec<CardanoCertKey>,
-    origin: Option<String>,
-}
+impl_template_struct!(CardanoSignRequest {request_id: Option<Bytes>, sign_data: Bytes, utxos: Vec<CardanoUTXO>, cert_keys: Vec<CardanoCertKey>, origin: Option<String>});
 
 impl MapSize for CardanoSignRequest {
     fn map_size(&self) -> u64 {
