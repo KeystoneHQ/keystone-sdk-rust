@@ -7,7 +7,7 @@ use crate::impl_template_struct;
 use crate::registry_types::{
     RegistryType, CARDANO_CERT_KEY, CARDANO_SIGN_REQUEST, CARDANO_UTXO, UUID,
 };
-use crate::traits::{MapSize, RegistryItem};
+use crate::traits::{MapSize, RegistryItem, To};
 use crate::types::Bytes;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
