@@ -1,12 +1,13 @@
 use crate::cardano::cardano_cert_key::CardanoCertKey;
 use crate::cardano::cardano_utxo::CardanoUTXO;
 use crate::cbor::{cbor_array, cbor_map};
+use crate::error::{URError, URResult};
 
 use crate::impl_template_struct;
 use crate::registry_types::{
     RegistryType, CARDANO_CERT_KEY, CARDANO_SIGN_REQUEST, CARDANO_UTXO, UUID,
 };
-use crate::traits::{MapSize, RegistryItem};
+use crate::traits::{MapSize, RegistryItem, To};
 use crate::types::Bytes;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
@@ -38,6 +39,12 @@ impl MapSize for CardanoSignRequest {
 impl RegistryItem for CardanoSignRequest {
     fn get_registry_type() -> RegistryType<'static> {
         CARDANO_SIGN_REQUEST
+    }
+}
+
+impl To for CardanoSignRequest {
+    fn to_bytes(&self) -> URResult<Vec<u8>> {
+        minicbor::to_vec(self.clone()).map_err(|e| URError::CborEncodeError(e.to_string()))
     }
 }
 
