@@ -59,7 +59,7 @@ impl<C> minicbor::Encode<C> for ZcashUnifiedFullViewingKey {
         if let Some(transparent) = &self.transparent {
             e.int(Int::from(TRANSPARENT))?
                 .tag(Tag::Unassigned(CRYPTO_HDKEY.get_tag()))?;
-            CryptoHDKey::encode(transparent, e, _ctx)
+            CryptoHDKey::encode(transparent, e, _ctx);
         }
 
         e.int(Int::from(ORCHARD))?
@@ -67,7 +67,7 @@ impl<C> minicbor::Encode<C> for ZcashUnifiedFullViewingKey {
         ZcashFullViewingKey::encode(&self.orchard, e, _ctx);
 
         if let Some(name) = &self.name {
-            e.int(Int::from(NAME))?.str(name)
+            e.int(Int::from(NAME))?.str(name);
         }
 
         Ok(())
@@ -87,7 +87,7 @@ impl<'b, C> minicbor::Decode<'b, C> for ZcashUnifiedFullViewingKey {
                 }
                 ORCHARD => {
                     d.tag()?;
-                    obj.orchard = ZcashFullViewingKey::decode(d, ctx)
+                    obj.orchard = ZcashFullViewingKey::decode(d, ctx)?;
                 }
                 NAME => {
                     obj.name = Some(d.str()?.to_string());

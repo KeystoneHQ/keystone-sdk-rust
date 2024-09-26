@@ -1,11 +1,11 @@
 use alloc::{
     format,
-    string::{String, ToString},
+    string::{String, ToString}, vec::Vec,
 };
 use minicbor::data::{Int, Tag};
 
 use crate::{
-    cbor::cbor_map,
+    cbor::{cbor_array, cbor_map},
     crypto_key_path::CryptoKeyPath,
     impl_template_struct,
     registry_types::{
@@ -59,7 +59,7 @@ impl<C> minicbor::Encode<C> for ZcashAccounts {
             .array(self.accounts.len() as u64)?;
         for account in &self.accounts {
             e.tag(Tag::Unassigned(ZCASH_UNIFIED_FULL_VIEWING_KEY.get_tag()))?;
-            ZcashUnifiedFullViewingKey::encode(account, e, ctx)?;
+            ZcashUnifiedFullViewingKey::encode(account, e, _ctx)?;
         }
 
         Ok(())
@@ -80,7 +80,7 @@ impl<'b, C> minicbor::Decode<'b, C> for ZcashAccounts {
                     );
                 }
                 ACCOUNTS => {
-                    let mut keys: Vec<ZcashUnifiedFullViewingKey> = vec![];
+                    let mut keys: Vec<ZcashUnifiedFullViewingKey> = alloc::vec![];
                     cbor_array(d, obj, |_index, _obj, d| {
                         d.tag()?;
                         keys.push(ZcashUnifiedFullViewingKey::decode(d, ctx)?);

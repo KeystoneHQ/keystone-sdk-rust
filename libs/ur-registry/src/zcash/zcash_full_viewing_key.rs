@@ -61,7 +61,7 @@ impl<'b, C> minicbor::Decode<'b, C> for ZcashFullViewingKey {
             match key {
                 KEY_PATH => {
                     d.tag()?;
-                    obj.key_path = Some(CryptoKeyPath::decode(d, ctx)?);
+                    obj.key_path = CryptoKeyPath::decode(d, ctx)?;
                 }
                 KEY_DATA => {
                     obj.key_data = d.bytes()?.to_vec();
