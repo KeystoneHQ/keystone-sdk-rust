@@ -1,6 +1,7 @@
 use alloc::{
     format,
-    string::{String, ToString}, vec::Vec,
+    string::{String, ToString},
+    vec::Vec,
 };
 use minicbor::data::{Int, Tag};
 
@@ -18,11 +19,11 @@ use crate::{
 
 use super::zcash_unified_full_viewing_key::ZcashUnifiedFullViewingKey;
 
-const MASTER_FINGERPRINT: u8 = 1;
+const SEED_FINGERPRINT: u8 = 1;
 const ACCOUNTS: u8 = 2;
 
 impl_template_struct!(ZcashAccounts {
-    master_fingerprint: Fingerprint,
+    seed_fingerprint: Bytes,
     accounts: Vec<ZcashUnifiedFullViewingKey>
 });
 
@@ -46,14 +47,8 @@ impl<C> minicbor::Encode<C> for ZcashAccounts {
     ) -> Result<(), minicbor::encode::Error<W::Error>> {
         e.map(self.map_size())?;
 
-        e.int(
-            Int::try_from(MASTER_FINGERPRINT)
-                .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
-        )?
-        .int(
-            Int::try_from(u32::from_be_bytes(self.master_fingerprint))
-                .map_err(|e| minicbor::encode::Error::message(e.to_string()))?,
-        )?;
+        e.int(Int::from(SEED_FINGERPRINT))?
+            .bytes(&self.seed_fingerprint)?;
 
         e.int(Int::from(ACCOUNTS))?
             .array(self.accounts.len() as u64)?;
@@ -73,11 +68,8 @@ impl<'b, C> minicbor::Decode<'b, C> for ZcashAccounts {
             let key =
                 u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
             match key {
-                MASTER_FINGERPRINT => {
-                    obj.master_fingerprint = u32::to_be_bytes(
-                        u32::try_from(d.int()?)
-                            .map_err(|e| minicbor::decode::Error::message(e.to_string()))?,
-                    );
+                SEED_FINGERPRINT => {
+                    obj.seed_fingerprint = d.bytes()?.to_vec();
                 }
                 ACCOUNTS => {
                     let mut keys: Vec<ZcashUnifiedFullViewingKey> = alloc::vec![];
