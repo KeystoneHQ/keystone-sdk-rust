@@ -14,6 +14,7 @@ pub enum URType {
     AptosSignRequest(String),
     CardanoSignRequest(String),
     CardanoSignDataRequest(String),
+    CardanoSignCip8DataRequest(String),
     CardanoCatalystVotingRegistrationRequest(String),
     CosmosSignRequest(String),
     EvmSignRequest(String),
@@ -45,6 +46,9 @@ impl URType {
             "sui-sign-request" => Ok(URType::SuiSignRequest(type_str.to_string())),
             "cardano-sign-request" => Ok(URType::CardanoSignRequest(type_str.to_string())),
             "cardano-sign-data-request" => Ok(URType::CardanoSignDataRequest(type_str.to_string())),
+            "cardano-sign-cip8-data-request" => {
+                Ok(URType::CardanoSignCip8DataRequest(type_str.to_string()))
+            }
             "cardano-catalyst-voting-registration" => Ok(
                 URType::CardanoCatalystVotingRegistrationRequest(type_str.to_string()),
             ),
@@ -70,6 +74,7 @@ impl URType {
             URType::AptosSignRequest(type_str) => type_str.to_string(),
             URType::CardanoSignRequest(type_str) => type_str.to_string(),
             URType::CardanoSignDataRequest(type_str) => type_str.to_string(),
+            URType::CardanoSignCip8DataRequest(type_str) => type_str.to_string(),
             URType::CardanoCatalystVotingRegistrationRequest(type_str) => type_str.to_string(),
             URType::SuiSignRequest(type_str) => type_str.to_string(),
             URType::CosmosSignRequest(type_str) => type_str.to_string(),
@@ -152,6 +157,10 @@ pub const CARDANO_CATALYST_VOTING_REGISTRATION: RegistryType =
 pub const CARDANO_CATALYST_VOTING_REGISTRATION_SIGNATURE: RegistryType =
     RegistryType("cardano-catalyst-voting-registration-signature", Some(2208));
 pub const CARDANO_DELEGSTION: RegistryType = RegistryType("cardano-delegation", Some(2209));
+pub const CARDANO_SIGN_CIP8_DATA_REQUEST: RegistryType =
+    RegistryType("cardano-sign-cip8-data-request", Some(2210));
+pub const CARDANO_SIGN_CIP8_DATA_SIGNATURE: RegistryType =
+    RegistryType("cardano-sign-cip8-data-signature", Some(2211));
 // Sui
 pub const SUI_SIGN_REQUEST: RegistryType = RegistryType("sui-sign-request", Some(7101));
 pub const SUI_SIGNATURE: RegistryType = RegistryType("sui-signature", Some(7102));
