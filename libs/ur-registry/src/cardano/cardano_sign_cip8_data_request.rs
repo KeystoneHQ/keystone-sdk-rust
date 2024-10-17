@@ -17,22 +17,32 @@ const SIGN_DATA: u8 = 2;
 const DERIVATION_PATH: u8 = 3;
 const ORIGIN: u8 = 4;
 const XPUB: u8 = 6;
+const HASH_PAYLOAD: u8 = 7;
+
+const ADDRESS_BENCH32: u8 = 8;
+const ADDRESS_TYPE: u8 = 9;
 
 impl_template_struct!(CardanoSignCip8DataRequest {
     request_id: Option<Bytes>,
     sign_data: Bytes,
     derivation_path: CryptoKeyPath,
     origin: Option<String>,
-    xpub: Bytes
+    xpub: Bytes,
+    hash_payload: bool,
+    address_bench32: Option<String>,
+    address_type:String
 });
 
 impl MapSize for CardanoSignCip8DataRequest {
     fn map_size(&self) -> u64 {
-        let mut size = 2;
+        let mut size = 4;
         if self.request_id.is_some() {
             size += 1;
         }
         if self.origin.is_some() {
+            size += 1;
+        }
+        if self.address_bench32.is_some() {
             size += 1;
         }
         size
@@ -63,6 +73,14 @@ impl<C> minicbor::Encode<C> for CardanoSignCip8DataRequest {
         e.int(Int::from(DERIVATION_PATH))?;
         e.tag(Tag::Unassigned(CRYPTO_KEYPATH.get_tag()))?;
         e.int(Int::from(XPUB))?.bytes(&self.xpub)?;
+        e.int(Int::from(HASH_PAYLOAD))?.bool(self.hash_payload)?;
+
+        if let Some(address_bench32) = &self.address_bench32 {
+            e.int(Int::from(ADDRESS_BENCH32))?.str(address_bench32)?;
+        }
+
+        e.int(Int::from(ADDRESS_TYPE))?.str(&self.address_type)?;
+
         CryptoKeyPath::encode(&self.derivation_path, e, _ctx)?;
 
         if let Some(origin) = &self.origin {
@@ -96,6 +114,15 @@ impl<'b, C> minicbor::Decode<'b, C> for CardanoSignCip8DataRequest {
                 }
                 ORIGIN => {
                     obj.origin = Some(d.str()?.to_string());
+                }
+                HASH_PAYLOAD => {
+                    obj.hash_payload = d.bool()?;
+                }
+                ADDRESS_BENCH32 => {
+                    obj.address_bench32 = Some(d.str()?.to_string());
+                }
+                ADDRESS_TYPE => {
+                    obj.address_type = d.str()?.to_string();
                 }
                 _ => {}
             }
