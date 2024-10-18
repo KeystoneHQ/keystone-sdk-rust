@@ -11,11 +11,12 @@ use minicbor::{Decoder, Encoder};
 const REQUEST_ID: u8 = 1;
 const SIGNATURE: u8 = 2;
 const PUBLIC_KEY: u8 = 3;
-
+const ADDRESS_FIELD: u8 = 4;
 impl_template_struct!(CardanoSignCip8DataSignature {
     request_id: Option<Bytes>,
     signature: Bytes,
-    public_key: Bytes
+    public_key: Bytes,
+    address_field:Bytes
 });
 
 impl RegistryItem for CardanoSignCip8DataSignature {
@@ -26,7 +27,7 @@ impl RegistryItem for CardanoSignCip8DataSignature {
 
 impl MapSize for CardanoSignCip8DataSignature {
     fn map_size(&self) -> u64 {
-        let mut size = 2;
+        let mut size = 3;
         if self.request_id.is_some() {
             size += 1;
         }
@@ -48,6 +49,9 @@ impl<C> minicbor::Encode<C> for CardanoSignCip8DataSignature {
 
         e.int(Int::from(PUBLIC_KEY))?.bytes(&self.public_key)?;
 
+        e.int(Int::from(ADDRESS_FIELD))?
+            .bytes(&self.address_field)?;
+
         Ok(())
     }
 }
@@ -68,6 +72,9 @@ impl<'b, C> minicbor::Decode<'b, C> for CardanoSignCip8DataSignature {
                 }
                 PUBLIC_KEY => {
                     obj.set_public_key(d.bytes()?.to_vec());
+                }
+                ADDRESS_FIELD => {
+                    obj.set_address_field(d.bytes()?.to_vec());
                 }
                 _ => {}
             }
