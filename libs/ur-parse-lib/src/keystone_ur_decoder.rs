@@ -125,10 +125,13 @@ impl<T: fmt::Debug> fmt::Debug for URParseResult<T> {
 mod tests {
     use crate::keystone_ur_decoder::{probe_decode, MultiURParseResult, URParseResult};
     use alloc::string::ToString;
+    use alloc::vec;
+    use alloc::{string::String, vec::Vec};
+    use ur_registry::crypto_key_path::CryptoKeyPath;
+    use ur_registry::crypto_key_path::PathComponent;
     use ur_registry::crypto_psbt::CryptoPSBT;
-
     use ur_registry::ethereum::eth_sign_request::EthSignRequest;
-
+    use ur_registry::sui::sui_sign_request::SuiSignRequest;
     #[test]
     fn test_decode_psbt() {
         let ur = "ur:crypto-psbt/hdcxlkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypkvoonhknt";
@@ -164,6 +167,55 @@ mod tests {
             let crypto = result.data.unwrap();
             assert_eq!("02ed04808459682f008459682f1b82520894e0cfe8a9f55942c6a70b845cd07a3a7d61a04325865af3107a400080c0",
                        hex::encode(crypto.get_sign_data()).to_lowercase());
+        }
+    }
+
+    #[test]
+    fn test_decode_sui_sign_request() {
+        let ur3 = "UR:SUI-SIGN-REQUEST/1268-2/LPCFAAWKAOCFADTTCYBENTKOSPHDWLATROUTDAGDSAIOSPYKDYRTDLBDSAGWCAENTPNNVWMOAYCEWETPIDYTTADWGHBZWFKBHFGROTHLOEAHRSDLFRADKNGHAAVLGOAHHDEMMWYLBZBKWLLKDKGESBHFAHNBLSWLOXAALUBWFLSRCTWELFVOKKLEURENZTCSTIPRNTRSOTGEZTHNGLDIWTMYDSQDFDMDWYPDIYTEMKMSFMFHETSALFCAKIGUCFCTGDFDLNSOSFZEGLSSCTJSGEPSZCSTEYNSYTFESGJPGTDETSFDWETOCESNUEWSYAQZYANELGZCOEAOAOADAEDPDYAEADAEADADAOAXLYTPAXDYWZGABNTTRTRPOLWKCYAMLBNBLNONMWESETIATOSEAXKNYNTELUDWLSESYTUOAENERYZEWTQDWKQZDMLUAETOGYGTIHGMHTFZBNWTSOPYMWZEPRHTQDKTSBCFGMURIDLTWTWPLPUEWFKN";
+        let ur1 = "UR:SUI-SIGN-REQUEST/418-2/LPCFADOEAOCFADTTCYBENTKOSPHDWLONADTPDAGDSAIOVSSSWFIAFGGLNEDKSKFTPYYAGWVTAOHKADJPAEAEAEAEAEAXADAEMNHHCEBKDIBDRLFRCPKNTDTTJOCWDISFRYWEYKADGMGSLEIDLTHKJSBTKSKOLTJNWDOERHAHAEAEAEAECXHPKELEURENZTETDPRKRKLYEEBZPYFTNDPRCFCAJYSEWNEEGMTNKGLONYGASODRIHAEAYUOAEAEAEAEAEAEAEAECXRYWNEOBZLFECYTKGMSOLGDSRFNHFSTASGYDACYFMSATKRFOYZSBBISCMNTLGZCOEAOAOADAEAEADADADAEADADAOAEAEADAOAEGDFDLNSOWPFXRSYLBKWFLBGOLNGDMWSFFTKKNSREFYKKWZGMTEBNTEJSLBBZWPUOAOASZSFZLUVYPDUYMWAOJEEEYTVDCKESZEOECYOSFLMYSNGWHEPYTOKEADPKBDVOLRWPGMBDRKJS";
+        let ur2 = "UR:SUI-SIGN-REQUEST/1072-2/LPCFAADYAOCFADTTCYBENTKOSPHDWLOERHAHAEAEAEAECXEHSROTINFEHLJETPBNJKIYPKJPBKFEWPPKIDYTTADWGHCMWZKBTPCHRSHGLPBAAYBBCFKGPDLPJYYAJPSOVWTNHSYNFLFGIAWYOTBWRDHPKITBAALRGLOLEYCMFLSRCTWEOERHAHAEAEAEAECXZCASDSFMMSHEHGHTTLMDWLMOGMJPRHOYRFJPCAHPAOUEYLBZHLSALESEKIGUCFCTGDFDLNSOWPFXRSYLBKWFLBGOLNGDMWSFFTKKNSREFYKKWZGMTEBNTEJSLBBZWPUOWYAOAEAEAEAEAEAEAEDPEHADAEAEAEAEAEAXLYTAADDYOEADLECSDWYKCFAXBEYKAEYKAEYKAEYKAOCYGMJYFLAXAALYHDCXGDFDLNSOWPFXRSYLBKWFLBGOLNGDMWSFFTKKNSREFYKKWZGMTEBNTEJSLBBZWPUOAHIHGUKPINIHJYAESTZSVEGA";
+        let result: URParseResult<SuiSignRequest> =
+            probe_decode(ur1.to_string().to_lowercase()).unwrap();
+        if result.is_multi_part {
+            let mut decoder = result.decoder.unwrap();
+            let _result: MultiURParseResult<SuiSignRequest> =
+                decoder.parse_ur(ur2.to_string().to_lowercase()).unwrap();
+            let result: MultiURParseResult<SuiSignRequest> =
+                decoder.parse_ur(ur3.to_string().to_lowercase()).unwrap();
+            let sui_sign_request = result.data.unwrap();
+            assert_eq!("00000000000301008e5c1c0a270bb73b227ad2d1701b27ccbdedf501524c8a628759710d7876876deaa2b90500000000205b7c8adf36fc382dbbbb813415ab3a9bb2191d74c1f13452da7b889a49c92a650008dc000000000000000020bdf133158235f97b97a650c33c56c70951251a3ec2cfbca1fa1468169d8dfda20202010000010101000101020000010200504886c9ec43bff70af37f55865094cc3a799cb54479f252d30cd3717f15ecdc0209fa408be1a8db94026b34f9e71e39fea21aa7478fcd4f5fabce7c01aa0be284eca2b905000000002031c3a369455d6bd80c7366aa720a45ecaa62f9d92c5416f27ed817bf57850e0814197ba88574f872c9e5da61f6474663eea313ba5b7dd604844ea6321647c31feda2b9050000000020fd09263e975f575ad595e9925272b9a1bc721d5b02def7155dc28ac17d53191f504886c9ec43bff70af37f55865094cc3a799cb54479f252d30cd3717f15ecdcee02000000000000002d31010000000000",
+                       hex::encode(sui_sign_request.get_intent_message()).to_lowercase());
+            let components = vec![
+                PathComponent::new(Some(44), true).unwrap(),
+                PathComponent::new(Some(784), true).unwrap(),
+                PathComponent::new(Some(0), true).unwrap(),
+                PathComponent::new(Some(0), true).unwrap(),
+                PathComponent::new(Some(0), true).unwrap(),
+            ];
+            let source_fingerprint = hex::decode("52744703").unwrap().try_into().unwrap();
+            let crypto_key_path = vec![CryptoKeyPath::new(
+                components,
+                Some(source_fingerprint),
+                None,
+            )];
+            assert_eq!(crypto_key_path, sui_sign_request.get_derivation_paths());
+            // request id
+            assert_eq!(
+                "c267e8c4f363464e9f24c53aabf84fe0",
+                hex::encode(sui_sign_request.get_request_id().unwrap())
+            );
+            // addresses
+            let addresses = sui_sign_request.get_addresses().unwrap();
+            assert_eq!(
+                vec!["504886c9ec43bff70af37f55865094cc3a799cb54479f252d30cd3717f15ecdc"],
+                addresses
+                    .iter()
+                    .map(|a| hex::encode(a))
+                    .collect::<Vec<String>>()
+            );
+            // origin origin
+            assert_eq!("Suiet", sui_sign_request.get_origin().unwrap());
         }
     }
 }
