@@ -132,6 +132,7 @@ mod tests {
     use ur_registry::crypto_psbt::CryptoPSBT;
     use ur_registry::ethereum::eth_sign_request::EthSignRequest;
     use ur_registry::sui::sui_sign_request::SuiSignRequest;
+    use ur_registry::sui::sui_signature::SuiSignature;
     #[test]
     fn test_decode_psbt() {
         let ur = "ur:crypto-psbt/hdcxlkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypkvoonhknt";
