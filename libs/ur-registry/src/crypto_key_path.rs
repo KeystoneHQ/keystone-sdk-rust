@@ -14,7 +14,7 @@ const COMPONENTS: u8 = 1;
 const SOURCE_FINGERPRINT: u8 = 2;
 const DEPTH: u8 = 3;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct PathComponent {
     index: Option<u32>,
     wildcard: bool,
@@ -66,7 +66,7 @@ impl PathComponent {
     }
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct CryptoKeyPath {
     components: Vec<PathComponent>,
     source_fingerprint: Option<Fingerprint>,

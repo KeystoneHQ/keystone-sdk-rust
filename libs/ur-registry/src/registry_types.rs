@@ -19,6 +19,7 @@ pub enum URType {
     CosmosSignRequest(String),
     EvmSignRequest(String),
     SuiSignRequest(String),
+    SuiSignHashRequest(String),
     TonSignRequest(String),
     QRHardwareCall(String),
     Bytes(String),
@@ -44,6 +45,7 @@ impl URType {
             "near-sign-request" => Ok(URType::NearSignRequest(type_str.to_string())),
             "aptos-sign-request" => Ok(URType::AptosSignRequest(type_str.to_string())),
             "sui-sign-request" => Ok(URType::SuiSignRequest(type_str.to_string())),
+            "sui-sign-hash-request" => Ok(URType::SuiSignHashRequest(type_str.to_string())),
             "cardano-sign-request" => Ok(URType::CardanoSignRequest(type_str.to_string())),
             "cardano-sign-data-request" => Ok(URType::CardanoSignDataRequest(type_str.to_string())),
             "cardano-sign-cip8-data-request" => {
@@ -77,6 +79,7 @@ impl URType {
             URType::CardanoSignCip8DataRequest(type_str) => type_str.to_string(),
             URType::CardanoCatalystVotingRegistrationRequest(type_str) => type_str.to_string(),
             URType::SuiSignRequest(type_str) => type_str.to_string(),
+            URType::SuiSignHashRequest(type_str) => type_str.to_string(),
             URType::CosmosSignRequest(type_str) => type_str.to_string(),
             URType::EvmSignRequest(type_str) => type_str.to_string(),
             URType::QRHardwareCall(type_str) => type_str.to_string(),
@@ -164,6 +167,7 @@ pub const CARDANO_SIGN_CIP8_DATA_SIGNATURE: RegistryType =
 // Sui
 pub const SUI_SIGN_REQUEST: RegistryType = RegistryType("sui-sign-request", Some(7101));
 pub const SUI_SIGNATURE: RegistryType = RegistryType("sui-signature", Some(7102));
+pub const SUI_SIGN_HASH_REQUEST: RegistryType = RegistryType("sui-sign-hash-request", Some(7103));
 // Ton
 pub const TON_SIGN_REQUEST: RegistryType = RegistryType("ton-sign-request", Some(7201));
 pub const TON_SIGNATURE: RegistryType = RegistryType("ton-signature", Some(7202));
