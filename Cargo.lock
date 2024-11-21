@@ -943,9 +943,9 @@ dependencies = [
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.56"
+version = "1.0.87"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2b63bdb0cd06f1f4dedf69b254734f9b45af66e4a031e42a7480257d9898b435"
+checksum = "b3e4daa0dcf6feba26f985457cdf104d4b4256fc5a09547140f3631bb076b19a"
 dependencies = [
  "unicode-ident",
 ]
@@ -1447,6 +1447,17 @@ dependencies = [
 [[package]]
 name = "ur"
 version = "0.3.0"
+dependencies = [
+ "bitcoin_hashes",
+ "crc",
+ "minicbor",
+ "phf",
+ "rand_xoshiro",
+]
+
+[[package]]
+name = "ur"
+version = "0.3.0"
 source = "git+https://github.com/KeystoneHQ/ur-rs?tag=0.3.1#abf91c2417f2bda3ae7e93d3ba6ce9bc3bc2fd6f"
 dependencies = [
  "bitcoin_hashes",
@@ -1461,7 +1472,7 @@ name = "ur-parse-lib"
 version = "0.2.0"
 dependencies = [
  "hex",
- "ur",
+ "ur 0.3.0",
  "ur-registry",
 ]
 
@@ -1481,7 +1492,7 @@ dependencies = [
  "prost-types",
  "serde",
  "thiserror-core",
- "ur",
+ "ur 0.3.0 (git+https://github.com/KeystoneHQ/ur-rs?tag=0.3.1)",
 ]
 
 [[package]]
