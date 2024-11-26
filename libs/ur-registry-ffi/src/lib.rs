@@ -14,6 +14,7 @@ pub mod sui;
 pub mod sync;
 pub mod ton;
 pub mod tron;
+pub mod zcash;
 mod util_internal;
 pub mod utils;
 
