@@ -44,6 +44,7 @@ use crate::sui::sui_signature::SuiSignature;
 use crate::ton::{ton_sign_request::TonSignRequest, ton_signature::TonSignature};
 use crate::zcash::zcash_accounts::ZcashAccounts;
 use crate::zcash::zcash_full_viewing_key::ZcashFullViewingKey;
+use crate::zcash::zcash_pczt::ZcashPczt;
 use crate::zcash::zcash_unified_full_viewing_key::ZcashUnifiedFullViewingKey;
 use crate::{impl_cbor_bytes, impl_ur_try_from_cbor_bytes, impl_ur_try_into_cbor_bytes};
 use alloc::string::ToString;
@@ -101,4 +102,5 @@ impl_cbor_bytes!(
     ZcashAccounts,
     ZcashFullViewingKey,
     ZcashUnifiedFullViewingKey,
+    ZcashPczt,
 );
