@@ -67,3 +67,8 @@ const char* parse_arweave_signature(struct ExternError*, const char* ur_type, co
 // Cardano
 const char* generate_cardano_sign_request(struct ExternError*, const char* request_id, const char* sign_data, const char* utxos, const char* cert_keys, const char* origin);
 const char* parse_cardano_signature(struct ExternError*, const char* ur_type, const char* cbor_hex);
+
+// Zcash
+const char* parse_zcash_accounts(struct ExternError*, const char* ur_type, const char* cbor_hex);
+const char* parse_zcash_pczt(struct ExternError*, const char* ur_type, const char* cbor_hex);
+const char* generate_zcash_pczt(struct ExternError*, const char* pczt_hex);
