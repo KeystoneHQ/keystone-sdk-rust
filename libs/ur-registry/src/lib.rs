@@ -35,4 +35,5 @@ pub mod sui;
 pub mod ton;
 pub mod zcash;
 pub mod traits;
+pub mod monero;
 mod types;

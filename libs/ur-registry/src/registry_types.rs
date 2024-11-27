@@ -180,6 +180,11 @@ pub const BTC_SIGNATURE: RegistryType = RegistryType("btc-signature", Some(8102)
 // Stellar
 pub const STELLAR_SIGN_REQUEST: RegistryType = RegistryType("stellar-sign-request", Some(8201));
 pub const STELLAR_SIGNATURE: RegistryType = RegistryType("stellar-signature", Some(8202));
+// Monero
+pub const XMR_OUTPUT: RegistryType = RegistryType("xmr-output", Some(8301));
+pub const XMR_KEYIMAGE: RegistryType = RegistryType("xmr-keyimage", Some(8302));
+pub const XMR_TXUNSIGNED: RegistryType = RegistryType("xmr-txunsigned", Some(8303));
+pub const XMR_TXSIGNED: RegistryType = RegistryType("xmr-txsigned", Some(8304));
 
 // Zcash
 pub const ZCASH_ACCOUNTS: RegistryType = RegistryType("zcash-accounts", Some(49201));
