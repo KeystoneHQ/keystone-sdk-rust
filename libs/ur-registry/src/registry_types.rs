@@ -58,6 +58,8 @@ impl URType {
             "qr-hardware-call" => Ok(URType::QRHardwareCall(type_str.to_string())),
             "ton-sign-request" => Ok(URType::TonSignRequest(type_str.to_string())),
             "zcash-pczt" => Ok(URType::ZcashPczt(type_str.to_string())),
+            "xmr-output" => Ok(URType::Bytes(type_str.to_string())),
+            "xmr-txunsigned" => Ok(URType::Bytes(type_str.to_string())),
             _ => Err(URError::NotSupportURTypeError(type_str.to_string())),
         }
     }
