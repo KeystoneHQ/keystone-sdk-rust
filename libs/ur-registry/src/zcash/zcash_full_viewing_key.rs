@@ -42,11 +42,11 @@ impl<C> minicbor::Encode<C> for ZcashFullViewingKey {
     ) -> Result<(), minicbor::encode::Error<W::Error>> {
         e.map(self.map_size())?;
 
-        e.int(Int::from(KEY_DATA))?.bytes(&self.key_data)?;
-
         e.int(Int::from(KEY_PATH))?
             .tag(Tag::Unassigned(CRYPTO_KEYPATH.get_tag()))?;
         CryptoKeyPath::encode(&self.key_path, e, _ctx)?;
+
+        e.int(Int::from(KEY_DATA))?.bytes(&self.key_data)?;
 
         Ok(())
     }
