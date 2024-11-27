@@ -47,7 +47,7 @@ use crate::zcash::zcash_full_viewing_key::ZcashFullViewingKey;
 use crate::zcash::zcash_pczt::ZcashPczt;
 use crate::zcash::zcash_unified_full_viewing_key::ZcashUnifiedFullViewingKey;
 use crate::monero::{
-    xmr_output::XmrOutputSignRequest, xmr_keyimage::XmrKeyImage,
+    xmr_output::XmrOutput, xmr_keyimage::XmrKeyImage,
     xmr_txunsigned::XmrTxUnsigned, xmr_txsigned::XmrTxSigned,
 };
 use crate::{impl_cbor_bytes, impl_ur_try_from_cbor_bytes, impl_ur_try_into_cbor_bytes};
@@ -106,7 +106,7 @@ impl_cbor_bytes!(
     ZcashAccounts,
     ZcashFullViewingKey,
     ZcashUnifiedFullViewingKey,
-    XmrOutputSignRequest,
+    XmrOutput,
     XmrKeyImage,
     XmrTxUnsigned,
     XmrTxSigned,

@@ -26,7 +26,7 @@ pub enum URType {
     BtcSignRequest(String),
     KeystoneSignRequest(String),
     ZcashPczt(String),
-    XmrOutputSignRequest(String),
+    XmrOutput(String),
     XmrTxUnsigned(String),
 }
 
@@ -60,7 +60,7 @@ impl URType {
             "qr-hardware-call" => Ok(URType::QRHardwareCall(type_str.to_string())),
             "ton-sign-request" => Ok(URType::TonSignRequest(type_str.to_string())),
             "zcash-pczt" => Ok(URType::ZcashPczt(type_str.to_string())),
-            "xmr-output" => Ok(URType::XmrOutputSignRequest(type_str.to_string())),
+            "xmr-output" => Ok(URType::XmrOutput(type_str.to_string())),
             "xmr-txunsigned" => Ok(URType::XmrTxUnsigned(type_str.to_string())),
             _ => Err(URError::NotSupportURTypeError(type_str.to_string())),
         }
@@ -91,7 +91,7 @@ impl URType {
             URType::QRHardwareCall(type_str) => type_str.to_string(),
             URType::TonSignRequest(type_str) => type_str.to_string(),
             URType::ZcashPczt(type_str) => type_str.to_string(),
-            URType::XmrOutputSignRequest(type_str) => type_str.to_string(),
+            URType::XmrOutput(type_str) => type_str.to_string(),
             URType::XmrTxUnsigned(type_str) => type_str.to_string(),
         }
     }
