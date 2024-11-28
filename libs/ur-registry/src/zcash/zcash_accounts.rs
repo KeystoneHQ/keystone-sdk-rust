@@ -1,20 +1,12 @@
-use alloc::{
-    format,
-    string::{String, ToString},
-    vec::Vec,
-};
+use alloc::{string::ToString, vec::Vec};
 use minicbor::data::{Int, Tag};
 
 use crate::{
     cbor::{cbor_array, cbor_map},
-    crypto_key_path::CryptoKeyPath,
     impl_template_struct,
-    registry_types::{
-        RegistryType, CRYPTO_KEYPATH, TON_SIGN_REQUEST, UUID, ZCASH_ACCOUNTS,
-        ZCASH_UNIFIED_FULL_VIEWING_KEY,
-    },
+    registry_types::{RegistryType, ZCASH_ACCOUNTS, ZCASH_UNIFIED_FULL_VIEWING_KEY},
     traits::{MapSize, RegistryItem},
-    types::{Bytes, Fingerprint},
+    types::Bytes,
 };
 
 use super::zcash_unified_full_viewing_key::ZcashUnifiedFullViewingKey;
