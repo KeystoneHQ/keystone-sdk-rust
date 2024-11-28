@@ -14,8 +14,8 @@ pub mod sui;
 pub mod sync;
 pub mod ton;
 pub mod tron;
-pub mod zcash;
 mod util_internal;
 pub mod utils;
+pub mod zcash;
 
 ffi_support::define_string_destructor!(keystone_sdk_destroy_string);
