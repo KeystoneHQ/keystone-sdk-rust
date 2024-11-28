@@ -112,4 +112,43 @@ mod tests {
     use crate::crypto_key_path::PathComponent;
     use alloc::vec;
     extern crate std;
+
+    #[test]
+    fn test_cardano_sign_tx_hash_request() {
+        let origin = "eternl".to_string();
+        let request_id = hex::decode("52090a1c29394842a9adba0bc021a58b").unwrap();
+        let tx_hash = "52a1f5596f31358030f0d9d3a2db2b119b8f766386071684d26d0d37439c144e";
+        let mut paths = vec![];
+        let components = vec![
+            PathComponent::new(Some(1852), true).unwrap(),
+            PathComponent::new(Some(1815), true).unwrap(),
+            PathComponent::new(Some(0), true).unwrap(),
+            PathComponent::new(Some(0), false).unwrap(),
+            PathComponent::new(Some(0), false).unwrap(),
+        ];
+        let source_fingerprint = hex::decode("1250b6bc").unwrap().try_into().unwrap();
+        let crypto_key_path = CryptoKeyPath::new(components, Some(source_fingerprint), None);
+        paths.push(crypto_key_path);
+        let components = vec![
+            PathComponent::new(Some(1852), true).unwrap(),
+            PathComponent::new(Some(1815), true).unwrap(),
+            PathComponent::new(Some(0), true).unwrap(),
+            PathComponent::new(Some(2), false).unwrap(),
+            PathComponent::new(Some(0), false).unwrap(),
+        ];
+        let source_fingerprint = hex::decode("1250b6bc").unwrap().try_into().unwrap();
+        let crypto_key_path = CryptoKeyPath::new(components, Some(source_fingerprint), None);
+        paths.push(crypto_key_path);
+        let request = CardanoSignTxHashRequest {
+            request_id: Some(request_id),
+            tx_hash: tx_hash.to_string(),
+            paths,
+            origin: Some(origin),
+        };
+        let expect_result = CardanoSignTxHashRequest::try_from(hex::decode("a401d8255052090a1c29394842a9adba0bc021a58b027840353261316635353936663331333538303330663064396433613264623262313139623866373636333836303731363834643236643064333734333963313434650382d90130a2018a19073cf5190717f500f500f400f4021a1250b6bcd90130a2018a19073cf5190717f500f502f400f4021a1250b6bc0466657465726e6c").unwrap()).unwrap();
+        assert_eq!(expect_result.request_id, request.request_id);
+        assert_eq!(expect_result.tx_hash, request.tx_hash);
+        assert_eq!(expect_result.paths, request.paths);
+        assert_eq!(expect_result.origin, request.origin);
+    }
 }

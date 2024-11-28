@@ -127,12 +127,13 @@ mod tests {
     use alloc::string::ToString;
     use alloc::vec;
     use alloc::{string::String, vec::Vec};
-    use ur_registry::crypto_key_path::CryptoKeyPath;
     use ur_registry::crypto_key_path::PathComponent;
     use ur_registry::crypto_psbt::CryptoPSBT;
     use ur_registry::ethereum::eth_sign_request::EthSignRequest;
     use ur_registry::sui::sui_sign_request::SuiSignRequest;
-    use ur_registry::sui::sui_signature::SuiSignature;
+    use ur_registry::{
+        cardano::cardano_sign_request::CardanoSignRequest, crypto_key_path::CryptoKeyPath,
+    };
     #[test]
     fn test_decode_psbt() {
         let ur = "ur:crypto-psbt/hdcxlkahssqzwfvslofzoxwkrewngotktbmwjkwdcmnefsaaehrlolkskncnktlbaypkvoonhknt";
@@ -217,6 +218,77 @@ mod tests {
             );
             // origin origin
             assert_eq!("Suiet", sui_sign_request.get_origin().unwrap());
+        }
+    }
+
+    #[test]
+    fn test_decode_cardano_sign_request() {
+        let ur1 = "UR:CARDANO-SIGN-REQUEST/80-2/LPCSGDAOCFADVECYRKMNIDESHDWZLKVTNDSFASVDPERHHYMWOTTPTBSKGUDRWZSACLOLVTDYHSYNRYMHEHPRRKJTBZWKLBJLZMVLMWONVOFPFGKOHGCAFXAXUOVYRPWLPMREGMPAHDPESGDSDEINLNZTMKIEIHWFUTDWHHJKHLIHWLCLIYJKIYLGFHENBDVEPEEEIMPEDEAYPAGAHDZOAEFTUYNBCHTKKOPETKLPGWCEVACLSKURLDBTCLZTBWHKGAPEHNHSYTRHPFISGYJKJLNDINISENIHHNWPKKSFCKEEDRJOIYSEKGKODTJPCLJPCMEMVARDINPRIHECJEFSROLKLDGEBTRDESURLONEFPINWSFWDARNBACELEJNTKLPCSKBNSWECTHNJEWDCACHWKVTGHBTURTNGYMEEYQDCFWYAXRHLRGSFMTYIMDYENSBSRKGCXLFCFOSSOAXCYLNTOZCNLGDAXPSCXEHKKPSWPLSLACSJNFMDKFMSTKODRKSKSDNEMTB";
+        let ur2 = "UR:CARDANO-SIGN-REQUEST/66-2/LPCSFWAOCFADVECYRKMNIDESHDWZDTVYFXWLHKREOLQDFWRYNYMHMWJZZEMHYTAOAEAXJEEYESEEESENEHEOESENECEHAATAADDYOEADLECFATFNYKCFATCHYKAEYKAEWKAEWKAOCYBGGDRPRFAHKSJZHSIEIEJPHEJYIHJKJYEHJSJSECEEIYKSKNJKEYIEJPJKJOHSEYESIOECKPIAJOISEYETJPJYETJOECKOKTJEDYJKJEIHJKKPKNIMHSKSKOKSJYKTENKTJNJZHSDYKSKTJPISENIHIYEYHSKTISENDYJOIEIHKOKPEOJOETJZJYEOIOESJEDYIHJNKTJKIOKOKNJPKNJZJEJSEYIHESEYKKDYAALYTAAYNSOEADHDCEGLURZSWFETKTTBGMPLRDZSKSHPMTJPCLFHTSBBCMTKTOUTAADYFXCHWPAOTAADDYOEADLECFATFNYKCFATCHYKAEYKAOWKAEWKAOCYBGGDRPRFAHIYIHJYIHJPJTJZHPLTHTSF";
+        let ur3 = "UR:CARDANO-SIGN-REQUEST/95-2/LPCSHEAOCFADVECYRKMNIDESHDWZLKVTNDSFASVDPERHHYMWOTTPTBSKGUDRWZSACLOLVTDYHSYNRYMHEHPRRKJTBZWKLBJLZMVLMWONVOFPFGKOHGCAFXAXUOVYRPWLPMREGMPAHDPESGDSDEINLNZTMKIEIHWFUTDWHHJKHLIHWLCLIYJKIYLGFHENBDVEPEEEIMPEDEAYPAGAHDZOAEFTUYNBCHTKKOPETKLPGWCEVACLSKURLDBTCLZTBWHKGAPEHNHSYTRHPFISGYJKJLNDINISENIHHNWPKKSFCKEEDRJOIYSEKGKODTJPCLJPCMEMVARDINPRIHECJEFSROLKLDGEBTRDESURLONEFPINWSFWDARNBACELEJNTKLPCSKBNSWECTHNJEWDCACHWKVTGHBTURTNGYMEEYQDCFWYAXRHLRGSFMTYIMDYENSBSRKGCXLFCFOSSOAXCYLNTOZCNLGDAXPSCXEHKKPSWPLSLACSJNFMDKFMSTKODRKSIHSNWEMH";
+
+        let result: URParseResult<CardanoSignRequest> =
+            probe_decode(ur1.to_string().to_lowercase()).unwrap();
+        if result.is_multi_part {
+            let mut decoder = result.decoder.unwrap();
+            let _result: MultiURParseResult<CardanoSignRequest> =
+                decoder.parse_ur(ur2.to_string().to_lowercase()).unwrap();
+            let result: MultiURParseResult<CardanoSignRequest> =
+                decoder.parse_ur(ur3.to_string().to_lowercase()).unwrap();
+            let ada_sign_request = result.data.unwrap();
+            assert_eq!("84a60081825820c57bb6fed336a46858414aa204441429e143e959b5a6b342bd9a90946cfe90f90001818258390029549850534700f545453980dd471ace1a31d67c2d987052e99865bb4edffaf33877d652aebafa785b9672213fd71416cfcedd04304317ec1b00000006de18bb76021a0002a40d031a02191e62048183028200581c4edffaf33877d652aebafa785b9672213fd71416cfcedd04304317ec581c3c4fb94e1a2c5649a870aee5a70f21cd64807c7dc38632efcaf3d9210800a0f5f6",
+                       hex::encode(ada_sign_request.get_sign_data()).to_lowercase());
+            let components = vec![
+                PathComponent::new(Some(1852), true).unwrap(),
+                PathComponent::new(Some(1815), true).unwrap(),
+                PathComponent::new(Some(0), true).unwrap(),
+                PathComponent::new(Some(0), false).unwrap(),
+                PathComponent::new(Some(0), false).unwrap(),
+            ];
+            let source_fingerprint = hex::decode("1250b6bc").unwrap().try_into().unwrap();
+            let crypto_key_path = vec![CryptoKeyPath::new(
+                components,
+                Some(source_fingerprint),
+                None,
+            )];
+            assert_eq!(
+                crypto_key_path,
+                ada_sign_request
+                    .get_utxos()
+                    .iter()
+                    .map(|u| u.get_key_path())
+                    .collect::<Vec<CryptoKeyPath>>()
+            );
+
+            assert_eq!(1, ada_sign_request.get_utxos().len());
+            let components = vec![
+                PathComponent::new(Some(1852), true).unwrap(),
+                PathComponent::new(Some(1815), true).unwrap(),
+                PathComponent::new(Some(0), true).unwrap(),
+                PathComponent::new(Some(2), false).unwrap(),
+                PathComponent::new(Some(0), false).unwrap(),
+            ];
+            let source_fingerprint = hex::decode("1250b6bc").unwrap().try_into().unwrap();
+            let crypto_key_path = vec![CryptoKeyPath::new(
+                components,
+                Some(source_fingerprint),
+                None,
+            )];
+            assert_eq!(
+                crypto_key_path,
+                ada_sign_request
+                    .get_cert_keys()
+                    .iter()
+                    .map(|k| k.get_key_path())
+                    .collect::<Vec<CryptoKeyPath>>()
+            );
+            // request id
+            assert_eq!(
+                "52090a1c29394842a9adba0bc021a58b",
+                hex::encode(ada_sign_request.get_request_id().unwrap())
+            );
+            // origin origin
+            assert_eq!("eternl", ada_sign_request.get_origin().unwrap());
         }
     }
 }
