@@ -127,12 +127,15 @@ mod tests {
     use alloc::string::ToString;
     use alloc::vec;
     use alloc::{string::String, vec::Vec};
-    use ur_registry::crypto_key_path::PathComponent;
     use ur_registry::crypto_psbt::CryptoPSBT;
     use ur_registry::ethereum::eth_sign_request::EthSignRequest;
     use ur_registry::sui::sui_sign_request::SuiSignRequest;
     use ur_registry::{
         cardano::cardano_sign_request::CardanoSignRequest, crypto_key_path::CryptoKeyPath,
+    };
+    use ur_registry::{
+        cardano::cardano_sign_tx_hash_request::CardanoSignTxHashRequest,
+        crypto_key_path::PathComponent,
     };
     #[test]
     fn test_decode_psbt() {
@@ -289,6 +292,50 @@ mod tests {
             );
             // origin origin
             assert_eq!("eternl", ada_sign_request.get_origin().unwrap());
+        }
+    }
+
+    #[test]
+    fn test_decode_cardano_sign_tx_hash_request() {
+        let ur = "UR:CARDANO-SIGN-TX-HASH-REQUEST/OXADTPDAGDGMASBKCEDTESFDFWPTPMRDBDRTCLONLUAOKSFZECEYHSEHIYECECESENIYEOEHEOECETDYEODYIYDYIEESIEEOHSEYIEIDEYIDEHEHESIDETIYEMENENEOETENDYEMEHENETEEIEEYENIEDYIEEOEMEEEOESIAEHEEEEIHAXLFTAADDYOEADLECFATFNYKCFATCHYKAEYKAEWKAEWKAOCYBGGDRPRFTAADDYOEADLECFATFNYKCFATCHYKAEYKAOWKAEWKAOCYBGGDRPRFAAIYIHJYIHJPJTJZAMAXZMAM";
+        let result: URParseResult<CardanoSignTxHashRequest> =
+            probe_decode(ur.to_string().to_lowercase()).unwrap();
+        if !result.is_multi_part {
+            let crypto = result.data.unwrap();
+            // origin origin
+            assert_eq!("eternl", crypto.get_origin().unwrap());
+            // request id
+            assert_eq!(
+                "52090a1c29394842a9adba0bc021a58b",
+                hex::encode(crypto.get_request_id().unwrap())
+            );
+            let expected_tx_hash =
+                "52a1f5596f31358030f0d9d3a2db2b119b8f766386071684d26d0d37439c144e";
+            assert_eq!(expected_tx_hash, crypto.get_tx_hash());
+            // path
+            let components1 = vec![
+                PathComponent::new(Some(1852), true).unwrap(),
+                PathComponent::new(Some(1815), true).unwrap(),
+                PathComponent::new(Some(0), true).unwrap(),
+                PathComponent::new(Some(2), false).unwrap(),
+                PathComponent::new(Some(0), false).unwrap(),
+            ];
+            let source_fingerprint1 = hex::decode("1250b6bc").unwrap().try_into().unwrap();
+
+            let components2 = vec![
+                PathComponent::new(Some(1852), true).unwrap(),
+                PathComponent::new(Some(1815), true).unwrap(),
+                PathComponent::new(Some(0), true).unwrap(),
+                PathComponent::new(Some(0), false).unwrap(),
+                PathComponent::new(Some(0), false).unwrap(),
+            ];
+            let source_fingerprint2 = hex::decode("1250b6bc").unwrap().try_into().unwrap();
+
+            let crypto_key_path1 = CryptoKeyPath::new(components1, Some(source_fingerprint1), None);
+            let crypto_key_path2 = CryptoKeyPath::new(components2, Some(source_fingerprint2), None);
+
+            let expected_paths = vec![crypto_key_path2, crypto_key_path1];
+            assert_eq!(expected_paths, crypto.get_paths());
         }
     }
 }
