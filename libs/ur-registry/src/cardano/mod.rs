@@ -8,6 +8,7 @@ pub mod cardano_sign_data_request;
 pub mod cardano_sign_data_signature;
 pub mod cardano_sign_request;
 pub mod cardano_sign_structure;
+pub mod cardano_sign_tx_hash_request;
 pub mod cardano_signature;
 pub mod cardano_utxo;
 pub mod governance;
