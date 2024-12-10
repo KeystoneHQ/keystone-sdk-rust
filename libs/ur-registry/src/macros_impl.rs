@@ -1,4 +1,3 @@
-use crate::aptos::{aptos_sign_request::AptosSignRequest, aptos_signature::AptosSignature};
 use crate::arweave::{
     arweave_crypto_account::ArweaveCryptoAccount, arweave_sign_request::ArweaveSignRequest,
     arweave_signature::ArweaveSignature,
@@ -39,16 +38,19 @@ use crate::solana::{sol_sign_request::SolSignRequest, sol_signature::SolSignatur
 use crate::stellar::{
     stellar_sign_request::StellarSignRequest, stellar_signature::StellarSignature,
 };
-use crate::sui::{sui_sign_hash_request::SuiSignHashRequest, sui_sign_request::SuiSignRequest};
 use crate::sui::sui_signature::SuiSignature;
+use crate::sui::{sui_sign_hash_request::SuiSignHashRequest, sui_sign_request::SuiSignRequest};
 use crate::ton::{ton_sign_request::TonSignRequest, ton_signature::TonSignature};
 use crate::zcash::zcash_accounts::ZcashAccounts;
-use crate::zcash::zcash_full_viewing_key::ZcashFullViewingKey;
 use crate::zcash::zcash_pczt::ZcashPczt;
 use crate::zcash::zcash_unified_full_viewing_key::ZcashUnifiedFullViewingKey;
 use crate::monero::{
     xmr_output::XmrOutput, xmr_keyimage::XmrKeyImage,
     xmr_txunsigned::XmrTxUnsigned, xmr_txsigned::XmrTxSigned,
+};
+use crate::{
+    aptos::{aptos_sign_request::AptosSignRequest, aptos_signature::AptosSignature},
+    cardano::cardano_sign_tx_hash_request::CardanoSignTxHashRequest,
 };
 use crate::{impl_cbor_bytes, impl_ur_try_from_cbor_bytes, impl_ur_try_into_cbor_bytes};
 use alloc::string::ToString;
@@ -70,6 +72,7 @@ impl_cbor_bytes!(
     CardanoSignDataSignature,
     CardanoSignCip8DataRequest,
     CardanoSignCip8DataSignature,
+    CardanoSignTxHashRequest,
     CardanoCatalystVotingRegistrationRequest,
     CardanoCatalystSignature,
     CardanoCertKey,
@@ -104,7 +107,6 @@ impl_cbor_bytes!(
     BtcSignRequest,
     BtcSignature,
     ZcashAccounts,
-    ZcashFullViewingKey,
     ZcashUnifiedFullViewingKey,
     XmrOutput,
     XmrKeyImage,

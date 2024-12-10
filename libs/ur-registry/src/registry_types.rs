@@ -16,6 +16,7 @@ pub enum URType {
     CardanoSignDataRequest(String),
     CardanoSignCip8DataRequest(String),
     CardanoCatalystVotingRegistrationRequest(String),
+    CardanoSignTxHashRequest(String),
     CosmosSignRequest(String),
     EvmSignRequest(String),
     SuiSignRequest(String),
@@ -57,6 +58,9 @@ impl URType {
             "cardano-catalyst-voting-registration" => Ok(
                 URType::CardanoCatalystVotingRegistrationRequest(type_str.to_string()),
             ),
+            "cardano-sign-tx-hash-request" => {
+                Ok(URType::CardanoSignTxHashRequest(type_str.to_string()))
+            }
             "qr-hardware-call" => Ok(URType::QRHardwareCall(type_str.to_string())),
             "ton-sign-request" => Ok(URType::TonSignRequest(type_str.to_string())),
             "zcash-pczt" => Ok(URType::ZcashPczt(type_str.to_string())),
@@ -84,6 +88,7 @@ impl URType {
             URType::CardanoSignDataRequest(type_str) => type_str.to_string(),
             URType::CardanoSignCip8DataRequest(type_str) => type_str.to_string(),
             URType::CardanoCatalystVotingRegistrationRequest(type_str) => type_str.to_string(),
+            URType::CardanoSignTxHashRequest(type_str) => type_str.to_string(),
             URType::SuiSignRequest(type_str) => type_str.to_string(),
             URType::SuiSignHashRequest(type_str) => type_str.to_string(),
             URType::CosmosSignRequest(type_str) => type_str.to_string(),
@@ -173,6 +178,9 @@ pub const CARDANO_SIGN_CIP8_DATA_REQUEST: RegistryType =
     RegistryType("cardano-sign-cip8-data-request", Some(2210));
 pub const CARDANO_SIGN_CIP8_DATA_SIGNATURE: RegistryType =
     RegistryType("cardano-sign-cip8-data-signature", Some(2211));
+
+pub const CARDANO_SIGN_TX_HASH_REQUEST: RegistryType =
+    RegistryType("cardano-sign-tx-hash-request", Some(2212));
 // Sui
 pub const SUI_SIGN_REQUEST: RegistryType = RegistryType("sui-sign-request", Some(7101));
 pub const SUI_SIGNATURE: RegistryType = RegistryType("sui-signature", Some(7102));
@@ -194,6 +202,8 @@ pub const XMR_TXSIGNED: RegistryType = RegistryType("xmr-txsigned", Some(8304));
 
 // Zcash
 pub const ZCASH_ACCOUNTS: RegistryType = RegistryType("zcash-accounts", Some(49201));
-pub const ZCASH_FULL_VIEWING_KEY: RegistryType = RegistryType("zcash-full-viewing-key", Some(49202));
-pub const ZCASH_UNIFIED_FULL_VIEWING_KEY: RegistryType = RegistryType("zcash-unified-full-viewing-key", Some(49203));
+pub const ZCASH_FULL_VIEWING_KEY: RegistryType =
+    RegistryType("zcash-full-viewing-key", Some(49202));
+pub const ZCASH_UNIFIED_FULL_VIEWING_KEY: RegistryType =
+    RegistryType("zcash-unified-full-viewing-key", Some(49203));
 pub const ZCASH_PCZT: RegistryType = RegistryType("zcash-pczt", Some(49204));

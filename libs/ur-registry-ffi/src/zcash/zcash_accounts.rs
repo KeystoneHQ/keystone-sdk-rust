@@ -24,41 +24,9 @@ impl From<ur_registry::zcash::zcash_accounts::ZcashAccounts> for ZcashAccounts {
 }
 
 #[derive(Default, Clone, Debug, Serialize, Deserialize)]
-struct ZcashTransparentAccount {
-    path: String,
-    xpub: String,
-}
-
-impl From<CryptoHDKey> for ZcashTransparentAccount {
-    fn from(value: CryptoHDKey) -> Self {
-        Self {
-            path: value.get_origin().unwrap().get_path().unwrap(),
-            xpub: value.get_bip32_key(),
-        }
-    }
-}
-
-#[derive(Default, Clone, Debug, Serialize, Deserialize)]
-struct ZcashShieldedAccount {
-    path: String,
-    fvk: String,
-}
-
-impl From<ur_registry::zcash::zcash_full_viewing_key::ZcashFullViewingKey>
-    for ZcashShieldedAccount
-{
-    fn from(value: ur_registry::zcash::zcash_full_viewing_key::ZcashFullViewingKey) -> Self {
-        Self {
-            path: value.get_key_path().get_path().unwrap(),
-            fvk: hex::encode(value.get_key_data()),
-        }
-    }
-}
-
-#[derive(Default, Clone, Debug, Serialize, Deserialize)]
 struct ZcashUnifiedAccount {
-    transparent: Option<ZcashTransparentAccount>,
-    orchard: ZcashShieldedAccount,
+    ufvk: String,
+    index: u32,
     name: Option<String>,
 }
 
@@ -69,8 +37,8 @@ impl From<ur_registry::zcash::zcash_unified_full_viewing_key::ZcashUnifiedFullVi
         value: ur_registry::zcash::zcash_unified_full_viewing_key::ZcashUnifiedFullViewingKey,
     ) -> Self {
         Self {
-            transparent: value.get_transparent().map(|account| account.into()),
-            orchard: value.get_orchard().into(),
+            ufvk: value.get_ufvk(),
+            index: value.get_index(),
             name: value.get_name(),
         }
     }
