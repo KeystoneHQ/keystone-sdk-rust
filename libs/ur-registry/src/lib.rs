@@ -34,5 +34,6 @@ pub mod stellar;
 pub mod sui;
 pub mod ton;
 pub mod traits;
+pub mod monero;
 mod types;
 pub mod zcash;
