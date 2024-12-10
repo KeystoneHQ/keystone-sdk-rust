@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ur = { git = "https://github.com/KeystoneHQ/ur-rs", tag = "0.3.1", default-features = false }
+ur = { git = "https://github.com/KeystoneHQ/ur-rs", tag = "0.3.3", default-features = false }
 minicbor = { version = "0.19", features = ["alloc"] }
 hex = { version = "0.4.3", features = ["alloc"], default-features = false }
 bs58 = { version = "0.5.1", features = [
