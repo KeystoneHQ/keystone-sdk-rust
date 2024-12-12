@@ -44,6 +44,10 @@ use crate::ton::{ton_sign_request::TonSignRequest, ton_signature::TonSignature};
 use crate::zcash::zcash_accounts::ZcashAccounts;
 use crate::zcash::zcash_pczt::ZcashPczt;
 use crate::zcash::zcash_unified_full_viewing_key::ZcashUnifiedFullViewingKey;
+use crate::monero::{
+    xmr_output::XmrOutput, xmr_keyimage::XmrKeyImage,
+    xmr_txunsigned::XmrTxUnsigned, xmr_txsigned::XmrTxSigned,
+};
 use crate::{
     aptos::{aptos_sign_request::AptosSignRequest, aptos_signature::AptosSignature},
     cardano::cardano_sign_tx_hash_request::CardanoSignTxHashRequest,
@@ -104,5 +108,9 @@ impl_cbor_bytes!(
     BtcSignature,
     ZcashAccounts,
     ZcashUnifiedFullViewingKey,
+    XmrOutput,
+    XmrKeyImage,
+    XmrTxUnsigned,
+    XmrTxSigned,
     ZcashPczt,
 );
