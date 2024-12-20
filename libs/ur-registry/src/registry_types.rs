@@ -27,6 +27,7 @@ pub enum URType {
     BtcSignRequest(String),
     KeystoneSignRequest(String),
     ZcashPczt(String),
+    AvaxSignRequest(String),
 }
 
 impl URType {
@@ -62,6 +63,7 @@ impl URType {
             "qr-hardware-call" => Ok(URType::QRHardwareCall(type_str.to_string())),
             "ton-sign-request" => Ok(URType::TonSignRequest(type_str.to_string())),
             "zcash-pczt" => Ok(URType::ZcashPczt(type_str.to_string())),
+            "avax-sign-request" => Ok(URType::AvaxSignRequest(type_str.to_string())),
             _ => Err(URError::NotSupportURTypeError(type_str.to_string())),
         }
     }
@@ -92,6 +94,7 @@ impl URType {
             URType::QRHardwareCall(type_str) => type_str.to_string(),
             URType::TonSignRequest(type_str) => type_str.to_string(),
             URType::ZcashPczt(type_str) => type_str.to_string(),
+            URType::AvaxSignRequest(type_str) => type_str.to_string(),
         }
     }
 }
@@ -188,6 +191,8 @@ pub const BTC_SIGNATURE: RegistryType = RegistryType("btc-signature", Some(8102)
 // Stellar
 pub const STELLAR_SIGN_REQUEST: RegistryType = RegistryType("stellar-sign-request", Some(8201));
 pub const STELLAR_SIGNATURE: RegistryType = RegistryType("stellar-signature", Some(8202));
+
+pub const AVAX_SIGN_REQUEST: RegistryType = RegistryType("avax-sign-request", Some(8301));
 
 // Zcash
 pub const ZCASH_ACCOUNTS: RegistryType = RegistryType("zcash-accounts", Some(49201));
