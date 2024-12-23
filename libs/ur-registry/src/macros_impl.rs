@@ -101,6 +101,7 @@ impl_cbor_bytes!(
     SuiSignature,
     TonSignature,
     TonSignRequest,
+    ErgoSignRequest,
     KeyDerivationSchema,
     KeyDerivationCall,
     QRHardwareCall,
