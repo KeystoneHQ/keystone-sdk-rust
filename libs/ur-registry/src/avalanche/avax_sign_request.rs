@@ -1,28 +1,67 @@
+use crate::cbor::{cbor_array, cbor_map};
 use crate::error::{URError, URResult};
-use crate::registry_types::{RegistryType, AVAX_SIGN_REQUEST};
+use crate::registry_types::{RegistryType, AVAX_SIGN_REQUEST, UUID};
 use crate::traits::{From as FromCbor, RegistryItem, To};
 use crate::types::Bytes;
-use alloc::string::ToString;
+use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+use minicbor::data::{Int, Tag};
 use minicbor::encode::Write;
 use minicbor::{Decoder, Encoder};
 
+const REQUEST_ID: u8 = 1;
+const SIGN_DATA: u8 = 2;
+const XPUB: u8 = 6;
+const WALLET_INDEX: u8 = 7;
+
 #[derive(Debug, Clone, Default)]
 pub struct AvaxSignRequest {
-    data: Bytes,
+    request_id: Bytes,
+    sign_data: Bytes,
+    xpub: String,
+    wallet_index: u64,
 }
 
 impl AvaxSignRequest {
-    pub fn new(data: Bytes) -> Self {
-        AvaxSignRequest { data }
+    pub fn new(request_id: Bytes, sign_data: Bytes, xpub: String, wallet_index: u64) -> Self {
+        AvaxSignRequest {
+            request_id,
+            sign_data,
+            xpub,
+            wallet_index,
+        }
+    }
+
+    pub fn get_request_id(&self) -> Bytes {
+        self.request_id.clone()
+    }
+
+    pub fn set_request_id(&mut self, id: Bytes) {
+        self.request_id = id;
     }
 
     pub fn get_tx_data(&self) -> Bytes {
-        self.data.clone()
+        self.sign_data.clone()
     }
 
     pub fn set_tx_data(&mut self, data: Bytes) {
-        self.data = data;
+        self.sign_data = data;
+    }
+
+    pub fn get_xpub(&self) -> String {
+        self.xpub.clone()
+    }
+
+    pub fn set_xpub(&mut self, xpub: String) {
+        self.xpub = xpub;
+    }
+
+    pub fn get_wallet_index(&self) -> u64 {
+        self.wallet_index
+    }
+
+    pub fn set_wallet_index(&mut self, index: u64) {
+        self.wallet_index = index;
     }
 }
 
@@ -38,16 +77,43 @@ impl<C> minicbor::Encode<C> for AvaxSignRequest {
         e: &mut Encoder<W>,
         _ctx: &mut C,
     ) -> Result<(), minicbor::encode::Error<W::Error>> {
-        e.bytes(&self.data)?;
+        e.map(4)?;
+        e.int(Int::from(REQUEST_ID))?
+            .tag(Tag::Unassigned(UUID.get_tag()))?
+            .bytes(&self.request_id)?;
+        e.int(Int::from(SIGN_DATA))?.bytes(&self.sign_data)?;
+        e.int(Int::from(XPUB))?.str(&self.xpub)?;
+        e.int(Int::from(WALLET_INDEX))?.u64(self.wallet_index)?;
         Ok(())
     }
 }
 
 impl<'b, C> minicbor::Decode<'b, C> for AvaxSignRequest {
     fn decode(d: &mut Decoder<'b>, _ctx: &mut C) -> Result<Self, minicbor::decode::Error> {
-        Ok(Self {
-            data: d.bytes()?.to_vec(),
-        })
+        let mut result = AvaxSignRequest::default();
+
+        cbor_map(d, &mut result, |key, obj, d| {
+            let key =
+                u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
+            match key {
+                REQUEST_ID => {
+                    d.tag()?;
+                    obj.request_id = d.bytes()?.to_vec();
+                }
+                SIGN_DATA => {
+                    obj.sign_data = d.bytes()?.to_vec();
+                }
+                XPUB => {
+                    obj.xpub = d.str()?.to_string();
+                }
+                WALLET_INDEX => {
+                    obj.wallet_index = d.u64()?;
+                }
+                _ => {}
+            }
+            Ok(())
+        })?;
+        Ok(result)
     }
 }
 
@@ -75,9 +141,12 @@ mod tests {
     #[test]
     fn test_avax_encode() {
         let unsigned_data = AvaxSignRequest {
-            data: Vec::from_hex("00000000001a000000050000000000000000000000000000000000000000000000000000000000000000000000013d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000007000000003b9a9e0400000000000000000000000100000001e0beb088f94b8224eb5d6f1115561d7173cd6e7f00000002295a7b15e26c6cafda8883afd0f724e0e0b1dad4517148711434cb96fb3c8a61000000013d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000005000000003b9aca0000000001000000006109bc613691602ca0811312357676416252412a87ded6c56c240baba1afe042000000013d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000005000000003b9aca000000000100000000000000007072a3df0cd056d9b9ef00c09630bad3027dc312000000006760c3b100000000676215a9000000003b9aca000000000000000000000000000000000000000000000000000000000000000000000000013d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000007000000003b9aca0000000000000000000000000100000001e0beb088f94b8224eb5d6f1115561d7173cd6e7f0000000b00000000000000000000000100000001a0f4d4d9a0ea219da5ed5499ad083e1942a0846a000000020000000900000001438c3a393f49bb27791ca830effec456c2642a487ee4ce89300dd2e591fc22ab6b2aa8e08515ca229f2a2f14168700e05a1f96bd61d1fc3ab31e9e71ef9f16bb000000000900000001438c3a393f49bb27791ca830effec456c2642a487ee4ce89300dd2e591fc22ab6b2aa8e08515ca229f2a2f14168700e05a1f96bd61d1fc3ab31e9e71ef9f16bb005c3d047c")
+            request_id: [12, 34, 56, 78].to_vec(),
+            sign_data: Vec::from_hex("00000000000000000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c4b0000000121e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff00000007000000000089544000000000000000000000000100000001512e7191685398f00663e12197a3d8f6012d9ea300000001db720ad6707915cc4751fb7e5491a3af74e127a1d81817abe9438590c0833fe10000000021e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff000000050000000000989680000000010000000000000000")
                 .unwrap(),
-        };
+            xpub: "xpub6DXryz8Kd7XchtXvDnkjara83shGJH8ubu7KZhHhPfp4L1shvDEYiFZm32EKHnyo4bva4gxXjabFGqY7fNs8Ggd4khYz2oNs2KYLf56a9GX".to_string(),
+            wallet_index: 6,
+            };
         let result: Vec<u8> = unsigned_data.try_into().unwrap();
         let ur = ur::encode(&result, AvaxSignRequest::get_registry_type().get_type());
         assert_eq!(ur, "ur:avax-sign-request/hkaddmaeaeaeaeaecpaeaeaeahaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaofsndtnrtwecakobwdytkisbazcwmcyfwbznnqdlttbtdmdbnmtyltdmyhsrkvopkaeaeaeataeaeaeaeahykvyaeaeaeaeaeaeaeaeaeaeaeaeadaeaeaeadltjsmobwadtlrszmykmotnvsiymdolbzryqzoxfpfsndtnrtwecakobwdytkisbazcwmcyfwbznnqdlttbtdmdbnmtyltdmyhsrkvopkaeaeaeataeaeaeaechstjstdaeaeaeaeaeaeaeaeaeaeaeadaeaeaeadasinwdidvorkdyvajnlfvsdlvoioweynltckonylaeaeaeadhgtlvofmdmctfgbdhslurdcwgomefhwftoqdbzwtttpsssctvafzmnuogtwlzssnaeaeaeaefsndtnrtwecakobwdytkisbazcwmcyfwbznnqdlttbtdmdbnmtyltdmyhsrkvopkaeaeaeahaeaeaeaecaryiobtaeaeaeadaeaeaeaeaeaeaeaeecfhesrp");
@@ -86,7 +155,7 @@ mod tests {
     #[test]
     fn test_avax_decode() {
         let bytes =
-            Vec::from_hex("59012E000000000022000000050000000000000000000000000000000000000000000000000000000000000000000000023D9BDAC0ED1D761330CF680EFDEB1A42159EB387D6D2950C96F7D28F61BBE2AA000000070000000005F5E100000000000000000000000001000000018771921301D5BFFFF592DAE86695A615BDB4A4413D9BDAC0ED1D761330CF680EFDEB1A42159EB387D6D2950C96F7D28F61BBE2AA000000070000000017C771D2000000000000000000000001000000010969EA62E2BB30E66D82E82FE267EDF6871EA5F70000000157D5E23E2E1F460B618BBA1B55913FF3CEB315F0D1ACC41FE6408EDC4DE9FACD000000003D9BDAC0ED1D761330CF680EFDEB1A42159EB387D6D2950C96F7D28F61BBE2AA00000005000000001DBD670D000000010000000000000000")
+            Vec::from_hex("a401d82544123456780258de00000000000000000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c4b0000000121e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff00000007000000000089544000000000000000000000000100000001512e7191685398f00663e12197a3d8f6012d9ea300000001db720ad6707915cc4751fb7e5491a3af74e127a1d81817abe9438590c0833fe10000000021e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff00000005000000000098968000000001000000000000000006786f7870756236445872797a384b6437586368745876446e6b6a61726138337368474a4838756275374b5a684868506670344c3173687644455969465a6d3332454b486e796f34627661346778586a61624647715937664e7338476764346b68597a326f4e73324b594c663536613947580706")
                 .unwrap();
         let data = AvaxSignRequest::try_from(bytes).unwrap();
         assert_eq!(
