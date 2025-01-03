@@ -64,7 +64,6 @@ impl URType {
             "ton-sign-request" => Ok(URType::TonSignRequest(type_str.to_string())),
             "zcash-pczt" => Ok(URType::ZcashPczt(type_str.to_string())),
             "avax-sign-request" => Ok(URType::AvaxSignRequest(type_str.to_string())),
-            "avax-signature" => Ok(URType::AvaxSignRequest(type_str.to_string())),
             _ => Err(URError::NotSupportURTypeError(type_str.to_string())),
         }
     }
