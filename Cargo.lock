@@ -1408,7 +1408,7 @@ dependencies = [
 [[package]]
 name = "ur"
 version = "0.3.0"
-source = "git+https://github.com/KeystoneHQ/ur-rs?tag=0.3.1#abf91c2417f2bda3ae7e93d3ba6ce9bc3bc2fd6f"
+source = "git+https://github.com/KeystoneHQ/ur-rs?tag=0.3.3#81b8bb3b6b3a823128489c81ffee5bb4001ba2ae"
 dependencies = [
  "bitcoin_hashes",
  "crc",

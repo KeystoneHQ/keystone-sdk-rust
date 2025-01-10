@@ -27,6 +27,8 @@ pub enum URType {
     BtcSignRequest(String),
     KeystoneSignRequest(String),
     ZcashPczt(String),
+    XmrOutput(String),
+    XmrTxUnsigned(String),
     AvaxSignRequest(String),
 }
 
@@ -63,6 +65,8 @@ impl URType {
             "qr-hardware-call" => Ok(URType::QRHardwareCall(type_str.to_string())),
             "ton-sign-request" => Ok(URType::TonSignRequest(type_str.to_string())),
             "zcash-pczt" => Ok(URType::ZcashPczt(type_str.to_string())),
+            "xmr-output" => Ok(URType::XmrOutput(type_str.to_string())),
+            "xmr-txunsigned" => Ok(URType::XmrTxUnsigned(type_str.to_string())),
             "avax-sign-request" => Ok(URType::AvaxSignRequest(type_str.to_string())),
             _ => Err(URError::NotSupportURTypeError(type_str.to_string())),
         }
@@ -94,6 +98,8 @@ impl URType {
             URType::QRHardwareCall(type_str) => type_str.to_string(),
             URType::TonSignRequest(type_str) => type_str.to_string(),
             URType::ZcashPczt(type_str) => type_str.to_string(),
+            URType::XmrOutput(type_str) => type_str.to_string(),
+            URType::XmrTxUnsigned(type_str) => type_str.to_string(),
             URType::AvaxSignRequest(type_str) => type_str.to_string(),
         }
     }
@@ -191,6 +197,11 @@ pub const BTC_SIGNATURE: RegistryType = RegistryType("btc-signature", Some(8102)
 // Stellar
 pub const STELLAR_SIGN_REQUEST: RegistryType = RegistryType("stellar-sign-request", Some(8201));
 pub const STELLAR_SIGNATURE: RegistryType = RegistryType("stellar-signature", Some(8202));
+// Monero
+pub const XMR_OUTPUT: RegistryType = RegistryType("xmr-output", Some(8301));
+pub const XMR_KEYIMAGE: RegistryType = RegistryType("xmr-keyimage", Some(8302));
+pub const XMR_TXUNSIGNED: RegistryType = RegistryType("xmr-txunsigned", Some(8303));
+pub const XMR_TXSIGNED: RegistryType = RegistryType("xmr-txsigned", Some(8304));
 
 pub const AVAX_SIGN_REQUEST: RegistryType = RegistryType("avax-sign-request", Some(8301));
 pub const AVAX_SIGNATURE: RegistryType = RegistryType("avax-signature", Some(8302));
