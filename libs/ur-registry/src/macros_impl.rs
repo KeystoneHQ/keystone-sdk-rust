@@ -2,6 +2,7 @@ use crate::arweave::{
     arweave_crypto_account::ArweaveCryptoAccount, arweave_sign_request::ArweaveSignRequest,
     arweave_signature::ArweaveSignature,
 };
+use crate::avalanche::{avax_sign_request::AvaxSignRequest, avax_signature::AvaxSignature};
 use crate::bitcoin::{btc_sign_request::BtcSignRequest, btc_signature::BtcSignature};
 use crate::bytes::Bytes;
 use crate::cardano::{
@@ -113,4 +114,6 @@ impl_cbor_bytes!(
     XmrTxUnsigned,
     XmrTxSigned,
     ZcashPczt,
+    AvaxSignRequest,
+    AvaxSignature,
 );

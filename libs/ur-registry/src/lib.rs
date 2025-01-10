@@ -6,6 +6,7 @@ extern crate core;
 
 pub mod aptos;
 pub mod arweave;
+pub mod avalanche;
 pub mod bitcoin;
 pub mod bytes;
 pub mod cardano;

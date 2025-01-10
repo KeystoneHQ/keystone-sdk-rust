@@ -250,8 +250,10 @@ impl FromCbor<EthSignRequest> for EthSignRequest {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::crypto_key_path::{CryptoKeyPath, PathComponent};
     use crate::ethereum::eth_sign_request::{DataType, EthSignRequest};
+    use crate::traits::RegistryItem;
     use crate::traits::{From as FromCbor, To};
     use alloc::string::ToString;
     use alloc::vec;
@@ -310,5 +312,39 @@ mod tests {
             eth_sign_request.get_derivation_path().get_path().unwrap()
         );
         assert_eq!(DataType::Transaction, eth_sign_request.get_data_type());
+    }
+
+    #[test]
+    fn test_avax_c_chain_encode() {
+        let path1 = PathComponent::new(Some(44), true).unwrap();
+        let path2 = PathComponent::new(Some(60), true).unwrap();
+        let path3 = PathComponent::new(Some(0), true).unwrap();
+        let path4 = PathComponent::new(Some(0), false).unwrap();
+        let path5 = PathComponent::new(Some(6), false).unwrap();
+
+        let source_fingerprint: [u8; 4] = [0xbd, 0xee, 0xe7, 0x82];
+        let components = vec![path1, path2, path3, path4, path5];
+        let crypto_key_path = CryptoKeyPath::new(components, Some(source_fingerprint), None);
+
+        let request_id = Some(
+            [
+                155, 29, 235, 77, 59, 125, 75, 173, 155, 221, 43, 13, 123, 61, 203, 109,
+            ]
+            .to_vec(),
+        );
+
+        let sign_data = hex::decode("02f87482a86901841dcd6500849502f9008252089446a836a6d5800dd3ab9a6b914c904ef8017b48c8880dcac353ec227a0080c001a03cebc64b4bd58567b7205897f1f68922c3f142366b3236fba169bea5ab875284a05291dae91b105ac2c0dc5479ecf1ed7890d93c2ab1e12695f1e8ecbc92a42e5a").unwrap();
+        let eth_sign_request = EthSignRequest::new(
+            request_id,
+            sign_data,
+            DataType::TypedTransaction,
+            Some(43113),
+            crypto_key_path,
+            None,
+            Some("core wallet".to_string()),
+        );
+        let data = hex::decode(hex::encode(eth_sign_request.to_bytes().unwrap())).unwrap();
+        let ur = ur::encode(&data, EthSignRequest::get_registry_type().get_type());
+        assert_eq!(ur, "ur:eth-sign-request/oladtpdagdndcawmgtfrkigrpmndutdnbtkgfssbjnaohdktaoyajylfpdinadlrcasnihaelrmdaoytaelfgmaymwfgpdenoltllabttepynyjemegsmhglyaadkgfdsplobtsgsrguwpcpknaelartadnbfnwmswgrgrtllpiorlcxhdmswnynldcpsrwnfwenjeeyenzooyinrnonpyltgmlrnbgmmetnwlcwbehtsartuoghkkwpwnweksmhtafndrpavydsmdwnvswprfmooxdmhtaxaaaacfpdinahtaaddyoeadlecsdwykcsfnykaeykaewkamwkaocyrywyvdlfatjeiajljpihcxkthsjzjzihjyfwkouyfp");
     }
 }
