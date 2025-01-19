@@ -30,6 +30,7 @@ pub enum URType {
     XmrOutput(String),
     XmrTxUnsigned(String),
     AvaxSignRequest(String),
+    ErgoSignRequest(String),
 }
 
 impl URType {
@@ -68,6 +69,7 @@ impl URType {
             "xmr-output" => Ok(URType::XmrOutput(type_str.to_string())),
             "xmr-txunsigned" => Ok(URType::XmrTxUnsigned(type_str.to_string())),
             "avax-sign-request" => Ok(URType::AvaxSignRequest(type_str.to_string())),
+            "ergo-sign-request" => Ok(URType::ErgoSignRequest(type_str.to_string())),
             _ => Err(URError::NotSupportURTypeError(type_str.to_string())),
         }
     }
@@ -101,6 +103,7 @@ impl URType {
             URType::XmrOutput(type_str) => type_str.to_string(),
             URType::XmrTxUnsigned(type_str) => type_str.to_string(),
             URType::AvaxSignRequest(type_str) => type_str.to_string(),
+            URType::ErgoSignRequest(type_str) => type_str.to_string(),
         }
     }
 }
@@ -206,6 +209,11 @@ pub const XMR_TXSIGNED: RegistryType = RegistryType("xmr-txsigned", Some(8304));
 pub const AVAX_SIGN_REQUEST: RegistryType = RegistryType("avax-sign-request", Some(8301));
 pub const AVAX_SIGNATURE: RegistryType = RegistryType("avax-signature", Some(8302));
 
+// Ergo
+pub const ERGO_SIGN_REQUEST: RegistryType = RegistryType("ergo-sign-request", Some(8401));
+pub const ERGO_SIGNED_TX: RegistryType = RegistryType("ergo-signed-tx", Some(8402));
+pub const ERGO_UNSPENT_BOX: RegistryType = RegistryType("ergo-unspent-box", Some(8403));
+pub const ERGO_ASSET: RegistryType = RegistryType("ergo-asset", Some(8404));
 // Zcash
 pub const ZCASH_ACCOUNTS: RegistryType = RegistryType("zcash-accounts", Some(49201));
 pub const ZCASH_FULL_VIEWING_KEY: RegistryType =

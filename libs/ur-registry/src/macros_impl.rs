@@ -56,6 +56,8 @@ use crate::{
 use crate::{impl_cbor_bytes, impl_ur_try_from_cbor_bytes, impl_ur_try_into_cbor_bytes};
 use alloc::string::ToString;
 use alloc::vec::Vec;
+use crate::ergo::ergo_sign_request::ErgoSignRequest;
+use crate::ergo::ergo_signed_tx::ErgoSignedTx;
 
 impl_cbor_bytes!(
     Bytes,
@@ -116,4 +118,6 @@ impl_cbor_bytes!(
     ZcashPczt,
     AvaxSignRequest,
     AvaxSignature,
+    ErgoSignRequest,
+    ErgoSignedTx,
 );
