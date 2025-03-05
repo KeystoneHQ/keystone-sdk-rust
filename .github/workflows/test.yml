@@ -12,10 +12,10 @@ jobs:
 
       - uses: actions-rs/toolchain@v1
         with:
-          toolchain: nightly-2023-06-26
+          toolchain: nightly-2024-10-08
           override: true
           target: x86_64-apple-darwin
           components: rustfmt
 
       - name: Run Test
-        run: cargo +nightly-2023-06-26 test
+        run: cargo +nightly-2024-10-08 test

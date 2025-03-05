@@ -1,3 +1,13 @@
+//! Zcash PCZT Registry Type
+//!
+//! This module implements the CBOR encoding and decoding for Zcash PCZT (Partially Created Zcash Transaction).
+//! It represents a binary data structure used in Zcash transactions.
+//!
+//! The structure follows the UR Registry Type specification for Zcash PCZT,
+//! with a map containing:
+//! - Data: The hex encoded payload of the PCZT
+//!
+
 use alloc::string::ToString;
 use minicbor::data::Int;
 
@@ -54,5 +64,52 @@ impl<'b, C> minicbor::Decode<'b, C> for ZcashPczt {
             Ok(())
         })?;
         Ok(result)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use alloc::vec;
+
+    #[test]
+    fn test_zcash_pczt_encode_decode() {
+        let data = hex::decode("d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1").unwrap();
+        
+        let pczt = ZcashPczt {
+            data,
+        };
+        
+        let cbor = minicbor::to_vec(&pczt).unwrap();
+        let decoded: ZcashPczt = minicbor::decode(&cbor).unwrap();
+        
+        assert_eq!(decoded.data, pczt.data);
+    }
+    
+    #[test]
+    fn test_zcash_pczt_empty() {
+        let pczt = ZcashPczt {
+            data: vec![],
+        };
+        
+        let cbor = minicbor::to_vec(&pczt).unwrap();
+        let decoded: ZcashPczt = minicbor::decode(&cbor).unwrap();
+        
+        assert_eq!(decoded.data, pczt.data);
+        assert_eq!(decoded.data.len(), 0);
+    }
+    
+    #[test]
+    fn test_map_size() {
+        let pczt = ZcashPczt {
+            data: vec![],
+        };
+        
+        assert_eq!(pczt.map_size(), 1);
+    }
+    
+    #[test]
+    fn test_registry_type() {
+        assert_eq!(ZcashPczt::get_registry_type().get_type(), "zcash-pczt");
     }
 }
