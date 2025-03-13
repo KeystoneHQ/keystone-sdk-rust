@@ -121,17 +121,14 @@ mod tests {
 
     #[test]
     fn test_zcash_unified_account_conversion() {
-        // 创建测试数据
         let ur_ufvk = ZcashUnifiedFullViewingKey::new(
             "uview1qqqqqqqqqqqqqq8rzd0efkm6ej5n0twzum9czt9kj5y7jxjm9qz3uq9qgpqqqqqqqqqqqqqq9en0hkucteqncqcfqcqcpz4wuwl".to_string(),
             42,
             Some("Keystone".to_string())
         );
 
-        // 测试转换
         let ffi_account: ZcashUnifiedAccount = ur_ufvk.into();
 
-        // 验证转换结果
         assert_eq!(ffi_account.ufvk, "uview1qqqqqqqqqqqqqq8rzd0efkm6ej5n0twzum9czt9kj5y7jxjm9qz3uq9qgpqqqqqqqqqqqqqq9en0hkucteqncqcfqcqcpz4wuwl");
         assert_eq!(ffi_account.index, 42);
         assert_eq!(ffi_account.name, Some("Keystone".to_string()));
