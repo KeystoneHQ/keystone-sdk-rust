@@ -21,6 +21,9 @@ ethabi = "18.0.0"
 bs58 = "0.5.1"
 bip32 = "0.5.0"
 
+[dev-dependencies]
+minicbor = { version = "0.19", features = ["alloc"] }
+
 [lib]
 name = "ur_registry_ffi"
 crate-type = ["cdylib", "staticlib"]

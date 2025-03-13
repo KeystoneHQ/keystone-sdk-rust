@@ -21,7 +21,7 @@ jobs:
               uses: actions/checkout@v3
             - uses: actions-rs/toolchain@v1
               with:
-                toolchain: nightly-2023-06-26
+                toolchain: nightly-2024-10-08
                 override: true
                 target: x86_64-apple-darwin
                 components: rustfmt
@@ -39,7 +39,7 @@ jobs:
                 echo "XCFramework Checksum: $XCF_CHECKSUM" >> $GITHUB_STEP_SUMMARY
                 echo "FRAMEWORK_CHECKSUM=$XCF_CHECKSUM" >> $GITHUB_OUTPUT
             - name: Attach artifact
-              uses: actions/upload-artifact@v3
+              uses: actions/upload-artifact@v4
               with:
                 name: URRegistryFFI.xcframework.zip
                 path: URRegistryFFI.xcframework.zip

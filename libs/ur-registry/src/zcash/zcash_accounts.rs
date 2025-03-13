@@ -1,3 +1,15 @@
+//! Zcash Accounts Registry Type
+//!
+//! This module implements the CBOR encoding and decoding for Zcash accounts.
+//! It represents a collection of Zcash unified full viewing keys with an associated
+//! seed fingerprint for identification.
+//!
+//! The structure follows the UR Registry Type specification for Zcash accounts,
+//! with a map containing:
+//! - Seed fingerprint: A byte string that uniquely identifies the seed
+//! - Accounts: An array of Zcash unified full viewing keys
+
+
 use alloc::{string::ToString, vec::Vec};
 use minicbor::data::{Int, Tag};
 
@@ -81,4 +93,69 @@ impl<'b, C> minicbor::Decode<'b, C> for ZcashAccounts {
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::*;
+    use alloc::vec;
+    use crate::zcash::zcash_unified_full_viewing_key::ZcashUnifiedFullViewingKey;
+
+    #[test]
+    fn test_zcash_accounts_encode_decode() {
+        let seed_fingerprint = hex::decode("d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1").unwrap();
+        
+        let ufvk1 = ZcashUnifiedFullViewingKey::new(
+            "uview1qqqqqqqqqqqqqq8rzd0efkm6ej5n0twzum9czt9kj5y7jxjm9qz3uq9qgpqqqqqqqqqqqqqq9en0hkucteqncqcfqcqcpz4wuwl".to_string(),
+            0,
+            Some("Keystone 1".to_string())
+        );
+
+        let ufvk2 = ZcashUnifiedFullViewingKey::new(
+            "uview1qqqqqqqqqqqqqq8rzd0efkm6ej5n0twzum9czt9kj5y7jxjm9qz3uq9qgpqqqqqqqqqqqqqq9en0hkucteqncqcfqcqcpz4wuwl".to_string(),
+            1,
+            Some("Keystone 2".to_string())
+        );
+        
+        let accounts = ZcashAccounts {
+            seed_fingerprint,
+            accounts: vec![ufvk1, ufvk2],
+        };
+        
+        let cbor = minicbor::to_vec(&accounts).unwrap();
+        let decoded: ZcashAccounts = minicbor::decode(&cbor).unwrap();
+        
+        assert_eq!(decoded.seed_fingerprint, accounts.seed_fingerprint);
+        assert_eq!(decoded.accounts.len(), 2);
+        assert_eq!(decoded.accounts[0].get_ufvk(), accounts.accounts[0].get_ufvk());
+        assert_eq!(decoded.accounts[0].get_index(), accounts.accounts[0].get_index());
+        assert_eq!(decoded.accounts[0].get_name(), accounts.accounts[0].get_name());
+        assert_eq!(decoded.accounts[1].get_ufvk(), accounts.accounts[1].get_ufvk());
+        assert_eq!(decoded.accounts[1].get_index(), accounts.accounts[1].get_index());
+        assert_eq!(decoded.accounts[1].get_name(), accounts.accounts[1].get_name());
+    }
+    
+    #[test]
+    fn test_zcash_accounts_empty() {
+        let seed_fingerprint = hex::decode("d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1").unwrap();
+        
+        let accounts = ZcashAccounts {
+            seed_fingerprint,
+            accounts: vec![],
+        };
+        
+        let cbor = minicbor::to_vec(&accounts).unwrap();
+        let decoded: ZcashAccounts = minicbor::decode(&cbor).unwrap();
+        
+        assert_eq!(decoded.seed_fingerprint, accounts.seed_fingerprint);
+        assert_eq!(decoded.accounts.len(), 0);
+    }
+    
+    #[test]
+    fn test_map_size() {
+        let seed_fingerprint = hex::decode("d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1").unwrap();
+        let accounts = ZcashAccounts {
+            seed_fingerprint,
+            accounts: vec![],
+        };
+        
+        assert_eq!(accounts.map_size(), 2);
+    }
+}
