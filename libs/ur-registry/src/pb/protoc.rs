@@ -287,6 +287,22 @@ pub struct LtcTx {
     #[prost(message, repeated, tag = "5")]
     pub outputs: ::prost::alloc::vec::Vec<Output>,
 }
+
+#[derive(serde::Serialize, serde::Deserialize)]
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct DogeTx {
+    #[prost(int64, tag = "1")]
+    pub fee: i64,
+    #[prost(int32, tag = "2")]
+    pub dust_threshold: i32,
+    #[prost(string, tag = "3")]
+    pub memo: ::prost::alloc::string::String,
+    #[prost(message, repeated, tag = "4")]
+    pub inputs: ::prost::alloc::vec::Vec<Input>,
+    #[prost(message, repeated, tag = "5")]
+    pub outputs: ::prost::alloc::vec::Vec<Output>,
+}
 #[derive(serde::Serialize, serde::Deserialize)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -631,7 +647,7 @@ pub struct SignTransaction {
     pub decimal: i32,
     #[prost(
         oneof = "sign_transaction::Transaction",
-        tags = "6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21"
+        tags = "6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22"
     )]
     pub transaction: ::core::option::Option<sign_transaction::Transaction>,
 }
@@ -673,6 +689,8 @@ pub mod sign_transaction {
         KsmTx(super::KsmTx),
         #[prost(message, tag = "21")]
         CfxTx(super::CfxTx),
+        #[prost(message, tag = "22")]
+        DogeTx(super::DogeTx),
     }
 }
 #[derive(serde::Serialize, serde::Deserialize)]
