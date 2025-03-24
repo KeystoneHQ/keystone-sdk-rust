@@ -17,5 +17,6 @@ pub mod tron;
 mod util_internal;
 pub mod utils;
 pub mod zcash;
+pub mod ergo;
 
 ffi_support::define_string_destructor!(keystone_sdk_destroy_string);
