@@ -62,7 +62,7 @@ mod tests {
     #[test]
     fn test_parse_ergo_signed_tx_error() {
         let signed_tx_cbor = "a201";
-        let expect_result = "{\"error\":\"signature is invalid\"}";
+        let expect_result = "{\"error\":\"type not match\"}";
 
         assert_eq!(
             expect_result,
