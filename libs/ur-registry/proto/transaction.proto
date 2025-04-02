@@ -8,6 +8,7 @@ import "eth_transaction.proto";
 import "etc_transaction.proto";
 import "tron_transaction.proto";
 import "bch_transaction.proto";
+import "doge_transaction.proto";
 import "dash_transaction.proto";
 import "ltc_transaction.proto";
 import "dcr_transaction.proto";
@@ -43,5 +44,6 @@ message SignTransaction {
         DotTx dotTx = 19;
         KsmTx ksmTx = 20;
         CfxTx cfxTx = 21;
+        DogeTx dogeTx = 22;
     }
 }
