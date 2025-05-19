@@ -33,6 +33,7 @@ pub mod script_expression;
 pub mod solana;
 pub mod stellar;
 pub mod sui;
+pub mod iota;
 pub mod ton;
 pub mod ergo;
 pub mod traits;

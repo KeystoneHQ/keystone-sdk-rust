@@ -30,6 +30,8 @@ pub enum URType {
     XmrOutput(String),
     XmrTxUnsigned(String),
     AvaxSignRequest(String),
+    IotaSignRequest(String),
+    IotaSignHashRequest(String),
     ErgoSignRequest(String),
 }
 
@@ -69,6 +71,8 @@ impl URType {
             "xmr-output" => Ok(URType::XmrOutput(type_str.to_string())),
             "xmr-txunsigned" => Ok(URType::XmrTxUnsigned(type_str.to_string())),
             "avax-sign-request" => Ok(URType::AvaxSignRequest(type_str.to_string())),
+            "iota-sign-hash-request" => Ok(URType::IotaSignHashRequest(type_str.to_string())),
+            "iota-sign-request" => Ok(URType::IotaSignRequest(type_str.to_string())),
             "ergo-sign-request" => Ok(URType::ErgoSignRequest(type_str.to_string())),
             _ => Err(URError::NotSupportURTypeError(type_str.to_string())),
         }
@@ -103,6 +107,8 @@ impl URType {
             URType::XmrOutput(type_str) => type_str.to_string(),
             URType::XmrTxUnsigned(type_str) => type_str.to_string(),
             URType::AvaxSignRequest(type_str) => type_str.to_string(),
+            URType::IotaSignRequest(type_str) => type_str.to_string(),
+            URType::IotaSignHashRequest(type_str) => type_str.to_string(),
             URType::ErgoSignRequest(type_str) => type_str.to_string(),
         }
     }
@@ -214,6 +220,11 @@ pub const ERGO_SIGN_REQUEST: RegistryType = RegistryType("ergo-sign-request", So
 pub const ERGO_SIGNED_TX: RegistryType = RegistryType("ergo-signed-tx", Some(8402));
 pub const ERGO_UNSPENT_BOX: RegistryType = RegistryType("ergo-unspent-box", Some(8403));
 pub const ERGO_ASSET: RegistryType = RegistryType("ergo-asset", Some(8404));
+
+pub const IOTA_SIGN_REQUEST: RegistryType = RegistryType("iota-sign-request", Some(8501));
+pub const IOTA_SIGNATURE: RegistryType = RegistryType("iota-signature", Some(8502));
+pub const IOTA_SIGN_HASH_REQUEST: RegistryType = RegistryType("iota-sign-hash-request", Some(8503));
+
 // Zcash
 pub const ZCASH_ACCOUNTS: RegistryType = RegistryType("zcash-accounts", Some(49201));
 pub const ZCASH_FULL_VIEWING_KEY: RegistryType =
