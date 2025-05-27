@@ -7,6 +7,7 @@ pub enum URType {
     CryptoMultiAccounts(String),
     CryptoAccount(String),
     EthSignRequest(String),
+    EthBatchSignRequest(String),
     SolSignRequest(String),
     StellarSignRequest(String),
     NearSignRequest(String),
@@ -43,6 +44,7 @@ impl URType {
             "btc-sign-request" => Ok(URType::BtcSignRequest(type_str.to_string())),
             "keystone-sign-request" => Ok(URType::KeystoneSignRequest(type_str.to_string())),
             "eth-sign-request" => Ok(URType::EthSignRequest(type_str.to_string())),
+            "eth-batch-sign-request" => Ok(URType::EthBatchSignRequest(type_str.to_string())),
             "sol-sign-request" => Ok(URType::SolSignRequest(type_str.to_string())),
             "stellar-sign-request" => Ok(URType::StellarSignRequest(type_str.to_string())),
             "arweave-sign-request" => Ok(URType::ArweaveSignRequest(type_str.to_string())),
@@ -83,6 +85,7 @@ impl URType {
             URType::BtcSignRequest(type_str) => type_str.to_string(),
             URType::KeystoneSignRequest(type_str) => type_str.to_string(),
             URType::EthSignRequest(type_str) => type_str.to_string(),
+            URType::EthBatchSignRequest(type_str) => type_str.to_string(),
             URType::SolSignRequest(type_str) => type_str.to_string(),
             URType::StellarSignRequest(type_str) => type_str.to_string(),
             URType::NearSignRequest(type_str) => type_str.to_string(),
@@ -135,6 +138,8 @@ pub const CRYPTO_MULTI_ACCOUNTS: RegistryType = RegistryType("crypto-multi-accou
 // ETH
 pub const ETH_SIGN_REQUEST: RegistryType = RegistryType("eth-sign-request", Some(401));
 pub const ETH_SIGNATURE: RegistryType = RegistryType("eth-signature", Some(402));
+pub const ETH_BATCH_SIGN_REQUEST: RegistryType = RegistryType("eth-batch-sign-request", Some(40404));
+pub const ETH_BATCH_SIGNATURE: RegistryType = RegistryType("eth-batch-signature", Some(40405));
 // SOL
 pub const SOL_SIGN_REQUEST: RegistryType = RegistryType("sol-sign-request", Some(1101));
 pub const SOL_SIGNATURE: RegistryType = RegistryType("sol-signature", Some(1102));

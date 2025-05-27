@@ -25,6 +25,8 @@ use crate::crypto_key_path::CryptoKeyPath;
 use crate::crypto_output::CryptoOutput;
 use crate::crypto_psbt::CryptoPSBT;
 use crate::error::{URError, URResult};
+use crate::ethereum::eth_batch_sign_requests::EthBatchSignRequest;
+use crate::ethereum::eth_batch_signature::EthBatchSignature;
 use crate::ethereum::{eth_sign_request::EthSignRequest, eth_signature::EthSignature};
 use crate::extend::crypto_multi_accounts::CryptoMultiAccounts;
 use crate::extend::{
@@ -90,6 +92,8 @@ impl_cbor_bytes!(
     CosmosSignature,
     EthSignRequest,
     EthSignature,
+    EthBatchSignRequest,
+    EthBatchSignature,
     CryptoMultiAccounts,
     KeystoneSignRequest,
     KeystoneSignResult,
