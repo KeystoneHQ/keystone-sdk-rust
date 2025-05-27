@@ -107,4 +107,19 @@ mod tests {
         let ur = ur::encode(message.as_slice(), ur_type);
         assert_eq!(ur, "ur:eth-batch-sign-request/oyadlytaadmeoladtpdagdndcawmgtfrkigrpmndutdnbtkgfssbjnaohdgryagalalnascsgljpnbaelfdibemwaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaelaoxlbjyihjkjyeyaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaehnaehglalalaaxadaaadahtaaddyoeadlecsdwykadykadykaewkadwkaocybgeehfksatisjnihjyhsjnhsjkjekoamykvw");
     }
+
+    #[test]
+    fn encode_testcase2() {
+        let cbor = hex::decode("a601d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d02587702f87482a86901841dcd6500849502f9008252089446a836a6d5800dd3ab9a6b914c904ef8017b48c8880dcac353ec227a0080c001a03cebc64b4bd58567b7205897f1f68922c3f142366b3236fba169bea5ab875284a05291dae91b105ac2c0dc5479ecf1ed7890d93c2ab1e12695f1e8ecbc92a42e5a03040419a86905d90130a2018a182cf5183cf500f500f400f4021a52744703076b636f72652077616c6c6574").unwrap();
+        let request1 = EthSignRequest::try_from(cbor).unwrap();
+
+        let batch_request = EthBatchSignRequest::new(vec![request1]);
+
+        let encoded: Vec<u8> = batch_request.try_into().unwrap();
+
+        let message = encoded;
+        let ur_type = ETH_BATCH_SIGN_REQUEST.get_type();
+        let ur = ur::encode(message.as_slice(), ur_type);
+        assert_eq!(ur, "ur:eth-batch-sign-request/oyadlytaadmeoladtpdagdndcawmgtfrkigrpmndutdnbtkgfssbjnaohdktaoyajylfpdinadlrcasnihaelrmdaoytaelfgmaymwfgpdenoltllabttepynyjemegsmhglyaadkgfdsplobtsgsrguwpcpknaelartadnbfnwmswgrgrtllpiorlcxhdmswnynldcpsrwnfwenjeeyenzooyinrnonpyltgmlrnbgmmetnwlcwbehtsartuoghkkwpwnweksmhtafndrpavydsmdwnvswprfmooxdmhtaxaaaacfpdinahtaaddyoeadlecsdwykcsfnykaeykaewkaewkaocygmjyflaxatjeiajljpihcxkthsjzjzihjyfsbswdvd");
+    }
 }
