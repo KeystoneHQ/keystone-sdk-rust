@@ -43,6 +43,7 @@ use crate::stellar::{
 };
 use crate::sui::sui_signature::SuiSignature;
 use crate::sui::{sui_sign_hash_request::SuiSignHashRequest, sui_sign_request::SuiSignRequest};
+use crate::iota::{iota_sign_request::IotaSignRequest, iota_signature::IotaSignature, iota_sign_hash_request::IotaSignHashRequest};
 use crate::ton::{ton_sign_request::TonSignRequest, ton_signature::TonSignature};
 use crate::zcash::zcash_accounts::ZcashAccounts;
 use crate::zcash::zcash_pczt::ZcashPczt;
@@ -124,4 +125,7 @@ impl_cbor_bytes!(
     AvaxSignature,
     ErgoSignRequest,
     ErgoSignedTx,
+    IotaSignRequest,
+    IotaSignHashRequest,
+    IotaSignature,
 );
