@@ -34,6 +34,7 @@ pub enum URType {
     IotaSignRequest(String),
     IotaSignHashRequest(String),
     ErgoSignRequest(String),
+    SolSignature(String),
 }
 
 impl URType {
@@ -76,6 +77,7 @@ impl URType {
             "iota-sign-hash-request" => Ok(URType::IotaSignHashRequest(type_str.to_string())),
             "iota-sign-request" => Ok(URType::IotaSignRequest(type_str.to_string())),
             "ergo-sign-request" => Ok(URType::ErgoSignRequest(type_str.to_string())),
+            "sol-signature" => Ok(URType::SolSignature(type_str.to_string())),
             _ => Err(URError::NotSupportURTypeError(type_str.to_string())),
         }
     }
@@ -113,6 +115,7 @@ impl URType {
             URType::IotaSignRequest(type_str) => type_str.to_string(),
             URType::IotaSignHashRequest(type_str) => type_str.to_string(),
             URType::ErgoSignRequest(type_str) => type_str.to_string(),
+            URType::SolSignature(type_str) => type_str.to_string(),
         }
     }
 }
