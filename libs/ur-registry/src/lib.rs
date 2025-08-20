@@ -1,5 +1,4 @@
-#![no_std]
-#![feature(error_in_core)]
+#![cfg_attr(feature = "core", no_std)]
 
 extern crate alloc;
 extern crate core;

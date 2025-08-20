@@ -6,6 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ur-registry = { path = "../ur-registry" }
+ur-registry = { path = "../ur-registry", default-features = false }
 ur = { git = "https://github.com/KeystoneHQ/ur-rs", tag = "0.3.3", default-features = false }
 hex = { version = "0.4.3", features = ["alloc"], default-features = false }

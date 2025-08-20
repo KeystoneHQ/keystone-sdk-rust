@@ -1,4 +1,11 @@
 use alloc::string::String;
+
+// Prefer std when available; otherwise fall back to core
+#[cfg(feature = "std")]
+extern crate thiserror as thiserror;
+#[cfg(all(not(feature = "std"), feature = "core"))]
+extern crate thiserror_core as thiserror;
+
 use thiserror::Error;
 
 #[derive(Error, Debug, PartialEq)]
