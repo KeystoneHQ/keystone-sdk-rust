@@ -99,6 +99,8 @@ impl<C> minicbor::Encode<C> for CardanoSignCip8DataRequest {
 
         e.int(Int::from(DERIVATION_PATH))?;
         e.tag(Tag::Unassigned(CRYPTO_KEYPATH.get_tag()))?;
+        CryptoKeyPath::encode(&self.derivation_path, e, _ctx)?;
+
         e.int(Int::from(XPUB))?.bytes(&self.xpub)?;
         e.int(Int::from(HASH_PAYLOAD))?.bool(self.hash_payload)?;
 
@@ -109,7 +111,6 @@ impl<C> minicbor::Encode<C> for CardanoSignCip8DataRequest {
         e.int(Int::from(ADDRESS_TYPE))?
             .str(&self.address_type.as_str())?;
 
-        CryptoKeyPath::encode(&self.derivation_path, e, _ctx)?;
 
         if let Some(origin) = &self.origin {
             e.int(Int::from(ORIGIN))?.str(origin)?;
