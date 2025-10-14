@@ -2,17 +2,18 @@
 
 all: android
 
+export ANDROID_RUSTFLAGS=-C link-arg=-Wl,-z,max-page-size=16384 -C link-arg=-Wl,-z,common-page-size=4096
+
 android:
 	@echo "Step: Generating Android builds"
-	RUSTFLAGS="-C link-arg=-Wl,-z,max-page-size=16384 -C link-arg=-Wl,-z,common-page-size=4096"
 	@echo "1: arm64-v8a"
-	cargo ndk -t arm64-v8a build -p ur-registry-ffi --release
+	RUSTFLAGS="$(ANDROID_RUSTFLAGS)" cargo ndk -t arm64-v8a build -p ur-registry-ffi --release
 	@echo "2: armeabi-v7a"
-	cargo ndk -t armeabi-v7a build -p ur-registry-ffi --release
+	RUSTFLAGS="$(ANDROID_RUSTFLAGS)" cargo ndk -t armeabi-v7a build -p ur-registry-ffi --release
 	@echo "3: x86"
-	cargo ndk -t x86 build -p ur-registry-ffi --release
+	RUSTFLAGS="$(ANDROID_RUSTFLAGS)" cargo ndk -t x86 build -p ur-registry-ffi --release
 	@echo "4: x86_64"
-	cargo ndk -t x86_64 build -p ur-registry-ffi --release
+	RUSTFLAGS="$(ANDROID_RUSTFLAGS)" cargo ndk -t x86_64 build -p ur-registry-ffi --release
 	@echo "Android buildup"
 
 generate_xcframework:
