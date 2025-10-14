@@ -4,6 +4,7 @@ all: android
 
 android:
 	@echo "Step: Generating Android builds"
+	RUSTFLAGS="-C link-arg=-Wl,-z,max-page-size=16384 -C link-arg=-Wl,-z,common-page-size=4096"
 	@echo "1: arm64-v8a"
 	cargo ndk -t arm64-v8a build -p ur-registry-ffi --release
 	@echo "2: armeabi-v7a"
