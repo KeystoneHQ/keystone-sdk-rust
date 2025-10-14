@@ -62,8 +62,9 @@ impl<C> minicbor::Encode<C> for CardanoSignDataRequest {
 
         e.int(Int::from(DERIVATION_PATH))?;
         e.tag(Tag::Unassigned(CRYPTO_KEYPATH.get_tag()))?;
-        e.int(Int::from(XPUB))?.bytes(&self.xpub)?;
         CryptoKeyPath::encode(&self.derivation_path, e, _ctx)?;
+
+        e.int(Int::from(XPUB))?.bytes(&self.xpub)?;
 
         if let Some(origin) = &self.origin {
             e.int(Int::from(ORIGIN))?.str(origin)?;
