@@ -4,6 +4,7 @@ use alloc::string::{String, ToString};
 #[derive(Clone, Debug)]
 pub enum URType {
     CryptoPsbt(String),
+    CryptoPsbtExtend(String),
     CryptoMultiAccounts(String),
     CryptoAccount(String),
     EthSignRequest(String),
@@ -41,6 +42,7 @@ impl URType {
     pub fn from(type_str: &str) -> URResult<URType> {
         match type_str {
             "crypto-psbt" => Ok(URType::CryptoPsbt(type_str.to_string())),
+            "crypto-psbt-extend" => Ok(URType::CryptoPsbtExtend(type_str.to_string())),
             "crypto-multi-accounts" => Ok(URType::CryptoMultiAccounts(type_str.to_string())),
             "crypto-account" => Ok(URType::CryptoAccount(type_str.to_string())),
             "bytes" => Ok(URType::Bytes(type_str.to_string())),
@@ -85,6 +87,7 @@ impl URType {
     pub fn get_type_str(&self) -> String {
         match self {
             URType::CryptoPsbt(type_str) => type_str.to_string(),
+            URType::CryptoPsbtExtend(type_str) => type_str.to_string(),
             URType::CryptoMultiAccounts(type_str) => type_str.to_string(),
             URType::CryptoAccount(type_str) => type_str.to_string(),
             URType::Bytes(type_str) => type_str.to_string(),
@@ -140,6 +143,7 @@ pub const CRYPTO_ECKEY: RegistryType = RegistryType("crypto-eckey", Some(306));
 pub const CRYPTO_OUTPUT: RegistryType = RegistryType("crypto-output", Some(308));
 pub const CRYPTO_PSBT: RegistryType = RegistryType("crypto-psbt", Some(310));
 pub const CRYPTO_ACCOUNT: RegistryType = RegistryType("crypto-account", Some(311));
+pub const CRYPTO_PSBT_EXTEND: RegistryType = RegistryType("crypto-psbt-extend", Some(312));
 
 // Multiple Accounts
 pub const CRYPTO_MULTI_ACCOUNTS: RegistryType = RegistryType("crypto-multi-accounts", Some(1103));
