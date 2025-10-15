@@ -24,6 +24,9 @@ use crate::crypto_hd_key::CryptoHDKey;
 use crate::crypto_key_path::CryptoKeyPath;
 use crate::crypto_output::CryptoOutput;
 use crate::crypto_psbt::CryptoPSBT;
+use crate::crypto_psbt_extend::CryptoPSBTExtend;
+use crate::ergo::ergo_sign_request::ErgoSignRequest;
+use crate::ergo::ergo_signed_tx::ErgoSignedTx;
 use crate::error::{URError, URResult};
 use crate::ethereum::eth_batch_sign_requests::EthBatchSignRequest;
 use crate::ethereum::eth_batch_signature::EthBatchSignature;
@@ -33,8 +36,16 @@ use crate::extend::{
     key_derivation::KeyDerivationCall, key_derivation_schema::KeyDerivationSchema,
     qr_hardware_call::QRHardwareCall,
 };
+use crate::iota::{
+    iota_sign_hash_request::IotaSignHashRequest, iota_sign_request::IotaSignRequest,
+    iota_signature::IotaSignature,
+};
 use crate::keystone::{
     keystone_sign_request::KeystoneSignRequest, keystone_sign_result::KeystoneSignResult,
+};
+use crate::monero::{
+    xmr_keyimage::XmrKeyImage, xmr_output::XmrOutput, xmr_txsigned::XmrTxSigned,
+    xmr_txunsigned::XmrTxUnsigned,
 };
 use crate::near::{near_sign_request::NearSignRequest, near_signature::NearSignature};
 use crate::solana::{sol_sign_request::SolSignRequest, sol_signature::SolSignature};
@@ -43,15 +54,10 @@ use crate::stellar::{
 };
 use crate::sui::sui_signature::SuiSignature;
 use crate::sui::{sui_sign_hash_request::SuiSignHashRequest, sui_sign_request::SuiSignRequest};
-use crate::iota::{iota_sign_request::IotaSignRequest, iota_signature::IotaSignature, iota_sign_hash_request::IotaSignHashRequest};
 use crate::ton::{ton_sign_request::TonSignRequest, ton_signature::TonSignature};
 use crate::zcash::zcash_accounts::ZcashAccounts;
 use crate::zcash::zcash_pczt::ZcashPczt;
 use crate::zcash::zcash_unified_full_viewing_key::ZcashUnifiedFullViewingKey;
-use crate::monero::{
-    xmr_output::XmrOutput, xmr_keyimage::XmrKeyImage,
-    xmr_txunsigned::XmrTxUnsigned, xmr_txsigned::XmrTxSigned,
-};
 use crate::{
     aptos::{aptos_sign_request::AptosSignRequest, aptos_signature::AptosSignature},
     cardano::cardano_sign_tx_hash_request::CardanoSignTxHashRequest,
@@ -59,8 +65,6 @@ use crate::{
 use crate::{impl_cbor_bytes, impl_ur_try_from_cbor_bytes, impl_ur_try_into_cbor_bytes};
 use alloc::string::ToString;
 use alloc::vec::Vec;
-use crate::ergo::ergo_sign_request::ErgoSignRequest;
-use crate::ergo::ergo_signed_tx::ErgoSignedTx;
 
 impl_cbor_bytes!(
     Bytes,
@@ -71,6 +75,7 @@ impl_cbor_bytes!(
     CryptoKeyPath,
     CryptoOutput,
     CryptoPSBT,
+    CryptoPSBTExtend,
     CardanoSignature,
     CardanoUTXO,
     CardanoSignRequest,
