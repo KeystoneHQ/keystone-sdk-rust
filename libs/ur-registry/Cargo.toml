@@ -38,3 +38,4 @@ prost-build = { version = "0.11.8" }
 
 [dev-dependencies]
 base64 = { version = "0.22.1" }
+serde_json = { version = "1.0.95", default-features = false, features = ["alloc"] }
