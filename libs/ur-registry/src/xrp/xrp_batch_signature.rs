@@ -9,12 +9,10 @@ use minicbor::data::{Int, Tag};
 use minicbor::encode::Write;
 use minicbor::{Decoder, Encoder};
 
-const REQUEST_ID: u8 = 1;
-const SIGNATURE: u8 = 2;
+const SIGNATURE: u8 = 1;
 
 #[derive(Clone, Debug, Default)]
 pub struct XrpBatchSignature {
-    request_id: Option<Bytes>,
     signatures: Vec<Bytes>,
 }
 
@@ -23,24 +21,16 @@ impl XrpBatchSignature {
         Default::default()
     }
 
-    pub fn set_request_id(&mut self, id: Bytes) {
-        self.request_id = Some(id);
-    }
-
     pub fn set_signature(&mut self, signature: Vec<Bytes>) {
         self.signatures = signature;
     }
 
-    pub fn new(request_id: Option<Bytes>, signatures: Vec<Bytes>) -> Self {
+    pub fn new(signatures: Vec<Bytes>) -> Self {
         XrpBatchSignature {
-            request_id,
             signatures,
         }
     }
 
-    pub fn get_request_id(&self) -> Option<Bytes> {
-        self.request_id.clone()
-    }
     pub fn get_signature(&self) -> Vec<Bytes> {
         self.signatures.clone()
     }
@@ -59,15 +49,7 @@ impl<C> minicbor::Encode<C> for XrpBatchSignature {
         _ctx: &mut C,
     ) -> Result<(), minicbor::encode::Error<W::Error>> {
         let mut size = 1;
-        if self.request_id.is_some() {
-            size += 1;
-        }
         e.map(size)?;
-        if let Some(request_id) = &self.request_id {
-            e.int(Int::from(REQUEST_ID))?
-                .tag(Tag::Unassigned(UUID.get_tag()))?
-                .bytes(request_id)?;
-        }
         e.int(Int::from(SIGNATURE))?;
         let len = self.signatures.len().try_into().unwrap();
         e.array(len)?;
@@ -85,10 +67,6 @@ impl<'b, C> minicbor::Decode<'b, C> for XrpBatchSignature {
             let key =
                 u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
             match key {
-                REQUEST_ID => {
-                    d.tag()?;
-                    obj.request_id = Some(d.bytes()?.to_vec());
-                }
                 SIGNATURE => {
                     let len = d.array()?;
                     obj.signatures = Vec::new();

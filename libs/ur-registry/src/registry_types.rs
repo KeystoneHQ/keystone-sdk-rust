@@ -243,8 +243,8 @@ pub const IOTA_SIGNATURE: RegistryType = RegistryType("iota-signature", Some(850
 pub const IOTA_SIGN_HASH_REQUEST: RegistryType = RegistryType("iota-sign-hash-request", Some(8503));
 
 // XRP
-pub const XRP_BATCH_SIGN_REQUEST: RegistryType = RegistryType("xrp-batch-sign-request", Some(8601));
-pub const XRP_BATCH_SIGNATURE: RegistryType = RegistryType("xrp-batch-signature", Some(8602));
+pub const XRP_BATCH_SIGN_REQUEST: RegistryType = RegistryType("xrp-batch-sign-request", Some(40001));
+pub const XRP_BATCH_SIGNATURE: RegistryType = RegistryType("xrp-batch-signature", Some(40002));
 
 // Zcash
 pub const ZCASH_ACCOUNTS: RegistryType = RegistryType("zcash-accounts", Some(49201));
