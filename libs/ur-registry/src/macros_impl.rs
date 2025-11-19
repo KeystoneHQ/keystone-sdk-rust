@@ -55,6 +55,7 @@ use crate::stellar::{
 use crate::sui::sui_signature::SuiSignature;
 use crate::sui::{sui_sign_hash_request::SuiSignHashRequest, sui_sign_request::SuiSignRequest};
 use crate::ton::{ton_sign_request::TonSignRequest, ton_signature::TonSignature};
+use crate::xrp::{xrp_batch_sign_request::XrpBatchSignRequest, xrp_batch_signature::XrpBatchSignature};
 use crate::zcash::zcash_accounts::ZcashAccounts;
 use crate::zcash::zcash_pczt::ZcashPczt;
 use crate::zcash::zcash_unified_full_viewing_key::ZcashUnifiedFullViewingKey;
@@ -133,4 +134,6 @@ impl_cbor_bytes!(
     IotaSignRequest,
     IotaSignHashRequest,
     IotaSignature,
+    XrpBatchSignRequest,
+    XrpBatchSignature,
 );

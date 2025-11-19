@@ -40,3 +40,4 @@ pub mod ton;
 pub mod traits;
 mod types;
 pub mod zcash;
+pub mod xrp;
