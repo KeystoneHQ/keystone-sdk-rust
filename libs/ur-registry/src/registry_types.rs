@@ -226,6 +226,7 @@ pub const XMR_TXSIGNED: RegistryType = RegistryType("xmr-txsigned", Some(8304));
 
 pub const AVAX_SIGN_REQUEST: RegistryType = RegistryType("avax-sign-request", Some(8301));
 pub const AVAX_SIGNATURE: RegistryType = RegistryType("avax-signature", Some(8302));
+pub const AVAX_UTXO: RegistryType = RegistryType("avax-utxo", Some(8303));
 
 // Ergo
 pub const ERGO_SIGN_REQUEST: RegistryType = RegistryType("ergo-sign-request", Some(8401));
