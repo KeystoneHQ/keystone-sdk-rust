@@ -65,6 +65,7 @@ use crate::{
 use crate::{impl_cbor_bytes, impl_ur_try_from_cbor_bytes, impl_ur_try_into_cbor_bytes};
 use alloc::string::ToString;
 use alloc::vec::Vec;
+use crate::kaspa::kaspa_pskt::KaspaPskt;
 
 impl_cbor_bytes!(
     Bytes,
@@ -133,4 +134,5 @@ impl_cbor_bytes!(
     IotaSignRequest,
     IotaSignHashRequest,
     IotaSignature,
+    KaspaPskt,
 );

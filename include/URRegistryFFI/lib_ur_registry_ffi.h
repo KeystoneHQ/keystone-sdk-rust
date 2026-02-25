@@ -72,3 +72,7 @@ const char* parse_cardano_signature(struct ExternError*, const char* ur_type, co
 const char* parse_zcash_accounts(struct ExternError*, const char* ur_type, const char* cbor_hex);
 const char* parse_zcash_pczt(struct ExternError*, const char* ur_type, const char* cbor_hex);
 const char* generate_zcash_pczt(struct ExternError*, const char* pczt_hex);
+
+// Kaspa PSKT
+const char* generate_kaspa_pskt(struct ExternError*, const char* pskt_hex);
+const char* parse_kaspa_pskt(struct ExternError*, const char* ur_type, const char* cbor_hex);
