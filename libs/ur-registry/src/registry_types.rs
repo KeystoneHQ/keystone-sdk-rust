@@ -36,6 +36,8 @@ pub enum URType {
     IotaSignHashRequest(String),
     ErgoSignRequest(String),
     SolSignature(String),
+    TronSignRequest(String),
+    TronSignature(String),
 }
 
 impl URType {
@@ -73,6 +75,8 @@ impl URType {
             "qr-hardware-call" => Ok(URType::QRHardwareCall(type_str.to_string())),
             "ton-sign-request" => Ok(URType::TonSignRequest(type_str.to_string())),
             "zcash-pczt" => Ok(URType::ZcashPczt(type_str.to_string())),
+            "tron-sign-request" => Ok(URType::TronSignRequest(type_str.to_string())),
+            "tron-signature" => Ok(URType::TronSignature(type_str.to_string())),
             "xmr-output" => Ok(URType::XmrOutput(type_str.to_string())),
             "xmr-txunsigned" => Ok(URType::XmrTxUnsigned(type_str.to_string())),
             "avax-sign-request" => Ok(URType::AvaxSignRequest(type_str.to_string())),
@@ -112,6 +116,8 @@ impl URType {
             URType::QRHardwareCall(type_str) => type_str.to_string(),
             URType::TonSignRequest(type_str) => type_str.to_string(),
             URType::ZcashPczt(type_str) => type_str.to_string(),
+            URType::TronSignRequest(type_str) => type_str.to_string(),
+            URType::TronSignature(type_str) => type_str.to_string(),
             URType::XmrOutput(type_str) => type_str.to_string(),
             URType::XmrTxUnsigned(type_str) => type_str.to_string(),
             URType::AvaxSignRequest(type_str) => type_str.to_string(),
