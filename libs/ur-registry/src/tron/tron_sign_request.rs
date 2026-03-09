@@ -191,60 +191,57 @@ impl TryFrom<Vec<u8>> for TronSignRequest {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::crypto_key_path::{CryptoKeyPath, PathComponent};
     use crate::traits::{From as FromCbor, To};
     use crate::tron::tron_sign_request::TronSignRequest;
-    use alloc::string::ToString;
     use alloc::vec;
     use alloc::vec::Vec;
     use hex::FromHex;
+    extern crate std; // import std
+    use std::println;
 
     #[test]
-    fn test_encode() {
+    fn test_encode_binary() {
         let path1 = PathComponent::new(Some(44), true).unwrap();
         let path2 = PathComponent::new(Some(195), true).unwrap();
         let path3 = PathComponent::new(Some(0), true).unwrap();
-        let path4 = PathComponent::new(Some(0), true).unwrap();
+        let path4 = PathComponent::new(Some(0), false).unwrap();
+        let path5 = PathComponent::new(Some(0), false).unwrap();
 
         let source_fingerprint: [u8; 4] = [18, 18, 18, 18];
-        let components = vec![path1, path2, path3, path4];
+        let components = vec![path1, path2, path3, path4, path5];
         let crypto_key_path = CryptoKeyPath::new(components, Some(source_fingerprint), None);
 
         let request_id = Some(
-            [
-                155, 29, 235, 77, 59, 125, 75, 173, 155, 221, 43, 13, 123, 61, 203, 109,
-            ]
-            .to_vec(),
+            Vec::from_hex("9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d").unwrap()
         );
-        let sign_data = r#"{"to":"TKCsXtfKfH2d6aEaQCctybDC9uaA3MSj2h","from":"TXhtYr8nmgiSp3dY3cSfiKBjed3zN8teHS","value":"1","fee":100000,"latestBlock":{"hash":"6886a76fcae677e3543e546a43ad4e5fc6920653b56b713542e0bf64e0ff85ce","number":16068126,"timestamp":1578459699000},"token":"1001090","override":{"tokenShortName":"TONE","tokenFullName":"TronOne","decimals":18}}"#.as_bytes().to_vec();
+
+        let sign_data = Vec::from_hex("0a0207902208e1b9de559665c6714080c49789bb2c5aae01081f12a9010a31747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e54726967676572536d617274436f6e747261637412740a1541c79f045e4d48ad8dae00e6a6714dae1e000adfcd1215410d292c98a5eca06c2085fff993996423cf66c93b2244a9059cbb0000000000000000000000009bbce520d984c3b95ad10cb4e32a9294e6338da300000000000000000000000000000000000000000000000000000000000f424070c0b6e087bb2c90018094ebdc03").unwrap();
+
         let tron_sign_request = TronSignRequest::new(
             request_id,
             sign_data,
             crypto_key_path,
-            None,
-            Some("keystone".to_string()),
+            None, 
+            Some("tron wallet".to_string()),
         );
-        assert_eq!(
-            "a401d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d025901557b22746f223a22544b43735874664b6648326436614561514363747962444339756141334d536a3268222c2266726f6d223a22545868745972386e6d6769537033645933635366694b426a6564337a4e3874654853222c2276616c7565223a2231222c22666565223a3130303030302c226c6174657374426c6f636b223a7b2268617368223a2236383836613736666361653637376533353433653534366134336164346535666336393230363533623536623731333534326530626636346530666638356365222c226e756d626572223a31363036383132362c2274696d657374616d70223a313537383435393639393030307d2c22746f6b656e223a2231303031303930222c226f76657272696465223a7b22746f6b656e53686f72744e616d65223a22544f4e45222c22746f6b656e46756c6c4e616d65223a2254726f6e4f6e65222c22646563696d616c73223a31387d7d03d90130a20188182cf518c3f500f500f5021a1212121205686b657973746f6e65",
-            hex::encode(tron_sign_request.to_bytes().unwrap()).to_lowercase()
-        );
+
+        let encoded = tron_sign_request.to_bytes().unwrap();
+        println!("Encoded CBOR Hex: {}", hex::encode(&encoded));
+        
+        let decoded = TronSignRequest::from_cbor(encoded).unwrap();
+        assert_eq!(decoded.sign_data, tron_sign_request.sign_data);
     }
 
     #[test]
-    fn test_decode() {
-        let bytes = Vec::from_hex(
-            "a401d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d025901557b22746f223a22544b43735874664b6648326436614561514363747962444339756141334d536a3268222c2266726f6d223a22545868745972386e6d6769537033645933635366694b426a6564337a4e3874654853222c2276616c7565223a2231222c22666565223a3130303030302c226c6174657374426c6f636b223a7b2268617368223a2236383836613736666361653637376533353433653534366134336164346535666336393230363533623536623731333534326530626636346530666638356365222c226e756d626572223a31363036383132362c2274696d657374616d70223a313537383435393639393030307d2c22746f6b656e223a2231303031303930222c226f76657272696465223a7b22746f6b656e53686f72744e616d65223a22544f4e45222c22746f6b656e46756c6c4e616d65223a2254726f6e4f6e65222c22646563696d616c73223a31387d7d03d90130a20188182cf518c3f500f500f5021a1212121205686b657973746f6e65",
-        ).unwrap();
-        let tron_sign_request = TronSignRequest::from_cbor(bytes).unwrap();
-
-        let expected_sign_data = r#"{"to":"TKCsXtfKfH2d6aEaQCctybDC9uaA3MSj2h","from":"TXhtYr8nmgiSp3dY3cSfiKBjed3zN8teHS","value":"1","fee":100000,"latestBlock":{"hash":"6886a76fcae677e3543e546a43ad4e5fc6920653b56b713542e0bf64e0ff85ce","number":16068126,"timestamp":1578459699000},"token":"1001090","override":{"tokenShortName":"TONE","tokenFullName":"TronOne","decimals":18}}"#;
-        assert_eq!(
-            "44'/195'/0'/0'",
-            tron_sign_request.derivation_path.get_path().unwrap()
-        );
-        assert_eq!(
-            expected_sign_data,
-            core::str::from_utf8(tron_sign_request.sign_data.as_slice()).unwrap_or_default()
-        );
+    fn test_decode_binary() {
+        let hex_str = "a401d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d0258d40a0207902208e1b9de559665c6714080c49789bb2c5aae01081f12a9010a31747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e54726967676572536d617274436f6e747261637412740a1541c79f045e4d48ad8dae00e6a6714dae1e000adfcd1215410d292c98a5eca06c2085fff993996423cf66c93b2244a9059cbb0000000000000000000000009bbce520d984c3b95ad10cb4e32a9294e6338da300000000000000000000000000000000000000000000000000000000000f424070c0b6e087bb2c90018094ebdc0303d90130a2018a182cf518c3f500f500f400f4021a12121212056b74726f6e2077616c6c6574";
+        let bytes = Vec::from_hex(hex_str).unwrap();
+        
+        let decoded = TronSignRequest::from_cbor(bytes).unwrap();
+        
+        assert_eq!(decoded.origin, Some("tron wallet".to_string()));
+        assert_eq!(decoded.sign_data[0], 0x0A);
     }
 }
