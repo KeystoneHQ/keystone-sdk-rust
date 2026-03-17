@@ -239,8 +239,6 @@ mod tests {
     use alloc::vec;
     use alloc::vec::Vec;
     use hex::FromHex;
-    extern crate std; // import std
-    use std::println;
 
     #[test]
     fn test_encode_binary() {
@@ -270,10 +268,14 @@ mod tests {
         );
 
         let encoded = tron_sign_request.to_bytes().unwrap();
-        println!("Encoded CBOR Hex: {}", hex::encode(&encoded));
         
+        let expected_hex_str = "a501d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d0258d40a0207902208e1b9de559665c6714080c49789bb2c5aae01081f12a9010a31747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e54726967676572536d617274436f6e747261637412740a1541c79f045e4d48ad8dae00e6a6714dae1e000adfcd1215410d292c98a5eca06c2085fff993996423cf66c93b2244a9059cbb0000000000000000000000009bbce520d984c3b95ad10cb4e32a9294e6338da300000000000000000000000000000000000000000000000000000000000f424070c0b6e087bb2c90018094ebdc03030104d90130a2018a182cf518c3f500f500f400f4021a12121212066b74726f6e2077616c6c6574";
+        let expected_bytes = Vec::from_hex(expected_hex_str).unwrap();
+        assert_eq!(expected_bytes, encoded);
         let decoded = TronSignRequest::from_cbor(encoded).unwrap();
         assert_eq!(decoded.sign_data, tron_sign_request.sign_data);
+        assert_eq!(decoded.origin, tron_sign_request.origin);
+        assert_eq!(decoded.get_data_type(), tron_sign_request.get_data_type());
     }
 
     #[test]
