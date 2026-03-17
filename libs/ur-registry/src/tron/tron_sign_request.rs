@@ -9,17 +9,40 @@ use alloc::vec::Vec;
 use minicbor::data::{Int, Tag};
 use minicbor::encode::Write;
 use minicbor::{Decoder, Encoder};
+use alloc::format;
 
 const REQUEST_ID: u8 = 1;
 const SIGN_DATA: u8 = 2;
-const DERIVATION_PATH: u8 = 3;
-const ADDRESS: u8 = 4;
-const ORIGIN: u8 = 5;
+const DATA_TYPE: u8 = 3;
+const DERIVATION_PATH: u8 = 4;
+const ADDRESS: u8 = 5;
+const ORIGIN: u8 = 6;
+
+#[derive(Clone, Debug, PartialEq, Default)]
+pub enum DataType {
+    #[default]
+    Transaction = 1,
+    PersonalMessage = 2,
+}
+
+impl DataType {
+    pub fn from_u32(i: u32) -> Result<Self, String> {
+        match i {
+            1 => Ok(DataType::Transaction),
+            2 => Ok(DataType::PersonalMessage),
+            x => Err(format!(
+                "invalid value for data_type in tron-sign-request, expected (1, 2), received {:?}",
+                x
+            )),
+        }
+    }
+}
 
 #[derive(Clone, Debug, Default)]
 pub struct TronSignRequest {
     request_id: Option<Bytes>,
     sign_data: Bytes,
+    data_type: DataType,
     derivation_path: CryptoKeyPath,
     address: Option<Bytes>,
     origin: Option<String>,
@@ -38,6 +61,10 @@ impl TronSignRequest {
         self.sign_data = data;
     }
 
+    pub fn set_data_type(&mut self, data_type: DataType) {
+        self.data_type = data_type
+    }
+
     pub fn set_derivation_path(&mut self, derivation_path: CryptoKeyPath) {
         self.derivation_path = derivation_path;
     }
@@ -53,6 +80,7 @@ impl TronSignRequest {
     pub fn new(
         request_id: Option<Bytes>,
         sign_data: Bytes,
+        data_type: DataType,
         derivation_path: CryptoKeyPath,
         address: Option<Bytes>,
         origin: Option<String>,
@@ -60,6 +88,7 @@ impl TronSignRequest {
         TronSignRequest {
             request_id,
             sign_data,
+            data_type,
             derivation_path,
             address,
             origin,
@@ -70,6 +99,9 @@ impl TronSignRequest {
     }
     pub fn get_sign_data(&self) -> Bytes {
         self.sign_data.clone()
+    }
+    pub fn get_data_type(&self) -> DataType {
+        self.data_type.clone()
     }
     pub fn get_derivation_path(&self) -> CryptoKeyPath {
         self.derivation_path.clone()
@@ -82,7 +114,7 @@ impl TronSignRequest {
     }
 
     fn get_map_size(&self) -> u64 {
-        let mut size = 2;
+        let mut size = 3;
         if self.request_id.is_some() {
             size += 1;
         }
@@ -117,6 +149,8 @@ impl<C> minicbor::Encode<C> for TronSignRequest {
         }
 
         e.int(Int::from(SIGN_DATA))?.bytes(&self.sign_data)?;
+        e.int(Int::from(DATA_TYPE))?
+            .int(Int::from(self.data_type.clone() as u8))?;
 
         e.int(Int::from(DERIVATION_PATH))?;
         e.tag(Tag::Unassigned(CRYPTO_KEYPATH.get_tag()))?;
@@ -150,6 +184,13 @@ impl<'b, C> minicbor::Decode<'b, C> for TronSignRequest {
                 }
                 SIGN_DATA => {
                     obj.sign_data = d.bytes()?.to_vec();
+                }
+                DATA_TYPE => {
+                    obj.data_type = DataType::from_u32(
+                        u32::try_from(d.int()?)
+                            .map_err(|e| minicbor::decode::Error::message(e.to_string()))?,
+                    )
+                    .map_err(minicbor::decode::Error::message)?;
                 }
                 DERIVATION_PATH => {
                     d.tag()?;
@@ -222,6 +263,7 @@ mod tests {
         let tron_sign_request = TronSignRequest::new(
             request_id,
             sign_data,
+            DataType::Transaction,
             crypto_key_path,
             None, 
             Some("tron wallet".to_string()),
@@ -236,12 +278,13 @@ mod tests {
 
     #[test]
     fn test_decode_binary() {
-        let hex_str = "a401d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d0258d40a0207902208e1b9de559665c6714080c49789bb2c5aae01081f12a9010a31747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e54726967676572536d617274436f6e747261637412740a1541c79f045e4d48ad8dae00e6a6714dae1e000adfcd1215410d292c98a5eca06c2085fff993996423cf66c93b2244a9059cbb0000000000000000000000009bbce520d984c3b95ad10cb4e32a9294e6338da300000000000000000000000000000000000000000000000000000000000f424070c0b6e087bb2c90018094ebdc0303d90130a2018a182cf518c3f500f500f400f4021a12121212056b74726f6e2077616c6c6574";
+        let hex_str = "a501d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d0258d40a0207902208e1b9de559665c6714080c49789bb2c5aae01081f12a9010a31747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e54726967676572536d617274436f6e747261637412740a1541c79f045e4d48ad8dae00e6a6714dae1e000adfcd1215410d292c98a5eca06c2085fff993996423cf66c93b2244a9059cbb0000000000000000000000009bbce520d984c3b95ad10cb4e32a9294e6338da300000000000000000000000000000000000000000000000000000000000f424070c0b6e087bb2c90018094ebdc03030104d90130a2018a182cf518c3f500f500f400f4021a12121212066b74726f6e2077616c6c6574";
         let bytes = Vec::from_hex(hex_str).unwrap();
         
         let decoded = TronSignRequest::from_cbor(bytes).unwrap();
         
         assert_eq!(decoded.origin, Some("tron wallet".to_string()));
         assert_eq!(decoded.sign_data[0], 0x0A);
+        assert_eq!(DataType::Transaction, decoded.get_data_type());
     }
 }
