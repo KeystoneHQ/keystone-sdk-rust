@@ -9,17 +9,40 @@ use alloc::vec::Vec;
 use minicbor::data::{Int, Tag};
 use minicbor::encode::Write;
 use minicbor::{Decoder, Encoder};
+use alloc::format;
 
 const REQUEST_ID: u8 = 1;
 const SIGN_DATA: u8 = 2;
-const DERIVATION_PATH: u8 = 3;
-const ADDRESS: u8 = 4;
-const ORIGIN: u8 = 5;
+const DATA_TYPE: u8 = 3;
+const DERIVATION_PATH: u8 = 4;
+const ADDRESS: u8 = 5;
+const ORIGIN: u8 = 6;
+
+#[derive(Clone, Debug, PartialEq, Default)]
+pub enum DataType {
+    #[default]
+    Transaction = 1,
+    PersonalMessage = 2,
+}
+
+impl DataType {
+    pub fn from_u32(i: u32) -> Result<Self, String> {
+        match i {
+            1 => Ok(DataType::Transaction),
+            2 => Ok(DataType::PersonalMessage),
+            x => Err(format!(
+                "invalid value for data_type in tron-sign-request, expected (1, 2), received {:?}",
+                x
+            )),
+        }
+    }
+}
 
 #[derive(Clone, Debug, Default)]
 pub struct TronSignRequest {
     request_id: Option<Bytes>,
     sign_data: Bytes,
+    data_type: DataType,
     derivation_path: CryptoKeyPath,
     address: Option<Bytes>,
     origin: Option<String>,
@@ -38,6 +61,10 @@ impl TronSignRequest {
         self.sign_data = data;
     }
 
+    pub fn set_data_type(&mut self, data_type: DataType) {
+        self.data_type = data_type
+    }
+
     pub fn set_derivation_path(&mut self, derivation_path: CryptoKeyPath) {
         self.derivation_path = derivation_path;
     }
@@ -53,6 +80,7 @@ impl TronSignRequest {
     pub fn new(
         request_id: Option<Bytes>,
         sign_data: Bytes,
+        data_type: DataType,
         derivation_path: CryptoKeyPath,
         address: Option<Bytes>,
         origin: Option<String>,
@@ -60,6 +88,7 @@ impl TronSignRequest {
         TronSignRequest {
             request_id,
             sign_data,
+            data_type,
             derivation_path,
             address,
             origin,
@@ -70,6 +99,9 @@ impl TronSignRequest {
     }
     pub fn get_sign_data(&self) -> Bytes {
         self.sign_data.clone()
+    }
+    pub fn get_data_type(&self) -> DataType {
+        self.data_type.clone()
     }
     pub fn get_derivation_path(&self) -> CryptoKeyPath {
         self.derivation_path.clone()
@@ -82,7 +114,7 @@ impl TronSignRequest {
     }
 
     fn get_map_size(&self) -> u64 {
-        let mut size = 2;
+        let mut size = 3;
         if self.request_id.is_some() {
             size += 1;
         }
@@ -117,6 +149,8 @@ impl<C> minicbor::Encode<C> for TronSignRequest {
         }
 
         e.int(Int::from(SIGN_DATA))?.bytes(&self.sign_data)?;
+        e.int(Int::from(DATA_TYPE))?
+            .int(Int::from(self.data_type.clone() as u8))?;
 
         e.int(Int::from(DERIVATION_PATH))?;
         e.tag(Tag::Unassigned(CRYPTO_KEYPATH.get_tag()))?;
@@ -150,6 +184,13 @@ impl<'b, C> minicbor::Decode<'b, C> for TronSignRequest {
                 }
                 SIGN_DATA => {
                     obj.sign_data = d.bytes()?.to_vec();
+                }
+                DATA_TYPE => {
+                    obj.data_type = DataType::from_u32(
+                        u32::try_from(d.int()?)
+                            .map_err(|e| minicbor::decode::Error::message(e.to_string()))?,
+                    )
+                    .map_err(minicbor::decode::Error::message)?;
                 }
                 DERIVATION_PATH => {
                     d.tag()?;
@@ -191,60 +232,61 @@ impl TryFrom<Vec<u8>> for TronSignRequest {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::crypto_key_path::{CryptoKeyPath, PathComponent};
     use crate::traits::{From as FromCbor, To};
     use crate::tron::tron_sign_request::TronSignRequest;
-    use alloc::string::ToString;
     use alloc::vec;
     use alloc::vec::Vec;
     use hex::FromHex;
 
     #[test]
-    fn test_encode() {
+    fn test_encode_binary() {
         let path1 = PathComponent::new(Some(44), true).unwrap();
         let path2 = PathComponent::new(Some(195), true).unwrap();
         let path3 = PathComponent::new(Some(0), true).unwrap();
-        let path4 = PathComponent::new(Some(0), true).unwrap();
+        let path4 = PathComponent::new(Some(0), false).unwrap();
+        let path5 = PathComponent::new(Some(0), false).unwrap();
 
         let source_fingerprint: [u8; 4] = [18, 18, 18, 18];
-        let components = vec![path1, path2, path3, path4];
+        let components = vec![path1, path2, path3, path4, path5];
         let crypto_key_path = CryptoKeyPath::new(components, Some(source_fingerprint), None);
 
         let request_id = Some(
-            [
-                155, 29, 235, 77, 59, 125, 75, 173, 155, 221, 43, 13, 123, 61, 203, 109,
-            ]
-            .to_vec(),
+            Vec::from_hex("9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d").unwrap()
         );
-        let sign_data = r#"{"to":"TKCsXtfKfH2d6aEaQCctybDC9uaA3MSj2h","from":"TXhtYr8nmgiSp3dY3cSfiKBjed3zN8teHS","value":"1","fee":100000,"latestBlock":{"hash":"6886a76fcae677e3543e546a43ad4e5fc6920653b56b713542e0bf64e0ff85ce","number":16068126,"timestamp":1578459699000},"token":"1001090","override":{"tokenShortName":"TONE","tokenFullName":"TronOne","decimals":18}}"#.as_bytes().to_vec();
+
+        let sign_data = Vec::from_hex("0a0207902208e1b9de559665c6714080c49789bb2c5aae01081f12a9010a31747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e54726967676572536d617274436f6e747261637412740a1541c79f045e4d48ad8dae00e6a6714dae1e000adfcd1215410d292c98a5eca06c2085fff993996423cf66c93b2244a9059cbb0000000000000000000000009bbce520d984c3b95ad10cb4e32a9294e6338da300000000000000000000000000000000000000000000000000000000000f424070c0b6e087bb2c90018094ebdc03").unwrap();
+
         let tron_sign_request = TronSignRequest::new(
             request_id,
             sign_data,
+            DataType::Transaction,
             crypto_key_path,
-            None,
-            Some("keystone".to_string()),
+            None, 
+            Some("tron wallet".to_string()),
         );
-        assert_eq!(
-            "a401d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d025901557b22746f223a22544b43735874664b6648326436614561514363747962444339756141334d536a3268222c2266726f6d223a22545868745972386e6d6769537033645933635366694b426a6564337a4e3874654853222c2276616c7565223a2231222c22666565223a3130303030302c226c6174657374426c6f636b223a7b2268617368223a2236383836613736666361653637376533353433653534366134336164346535666336393230363533623536623731333534326530626636346530666638356365222c226e756d626572223a31363036383132362c2274696d657374616d70223a313537383435393639393030307d2c22746f6b656e223a2231303031303930222c226f76657272696465223a7b22746f6b656e53686f72744e616d65223a22544f4e45222c22746f6b656e46756c6c4e616d65223a2254726f6e4f6e65222c22646563696d616c73223a31387d7d03d90130a20188182cf518c3f500f500f5021a1212121205686b657973746f6e65",
-            hex::encode(tron_sign_request.to_bytes().unwrap()).to_lowercase()
-        );
+
+        let encoded = tron_sign_request.to_bytes().unwrap();
+        
+        let expected_hex_str = "a501d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d0258d40a0207902208e1b9de559665c6714080c49789bb2c5aae01081f12a9010a31747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e54726967676572536d617274436f6e747261637412740a1541c79f045e4d48ad8dae00e6a6714dae1e000adfcd1215410d292c98a5eca06c2085fff993996423cf66c93b2244a9059cbb0000000000000000000000009bbce520d984c3b95ad10cb4e32a9294e6338da300000000000000000000000000000000000000000000000000000000000f424070c0b6e087bb2c90018094ebdc03030104d90130a2018a182cf518c3f500f500f400f4021a12121212066b74726f6e2077616c6c6574";
+        let expected_bytes = Vec::from_hex(expected_hex_str).unwrap();
+        assert_eq!(expected_bytes, encoded);
+        let decoded = TronSignRequest::from_cbor(encoded).unwrap();
+        assert_eq!(decoded.sign_data, tron_sign_request.sign_data);
+        assert_eq!(decoded.origin, tron_sign_request.origin);
+        assert_eq!(decoded.get_data_type(), tron_sign_request.get_data_type());
     }
 
     #[test]
-    fn test_decode() {
-        let bytes = Vec::from_hex(
-            "a401d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d025901557b22746f223a22544b43735874664b6648326436614561514363747962444339756141334d536a3268222c2266726f6d223a22545868745972386e6d6769537033645933635366694b426a6564337a4e3874654853222c2276616c7565223a2231222c22666565223a3130303030302c226c6174657374426c6f636b223a7b2268617368223a2236383836613736666361653637376533353433653534366134336164346535666336393230363533623536623731333534326530626636346530666638356365222c226e756d626572223a31363036383132362c2274696d657374616d70223a313537383435393639393030307d2c22746f6b656e223a2231303031303930222c226f76657272696465223a7b22746f6b656e53686f72744e616d65223a22544f4e45222c22746f6b656e46756c6c4e616d65223a2254726f6e4f6e65222c22646563696d616c73223a31387d7d03d90130a20188182cf518c3f500f500f5021a1212121205686b657973746f6e65",
-        ).unwrap();
-        let tron_sign_request = TronSignRequest::from_cbor(bytes).unwrap();
-
-        let expected_sign_data = r#"{"to":"TKCsXtfKfH2d6aEaQCctybDC9uaA3MSj2h","from":"TXhtYr8nmgiSp3dY3cSfiKBjed3zN8teHS","value":"1","fee":100000,"latestBlock":{"hash":"6886a76fcae677e3543e546a43ad4e5fc6920653b56b713542e0bf64e0ff85ce","number":16068126,"timestamp":1578459699000},"token":"1001090","override":{"tokenShortName":"TONE","tokenFullName":"TronOne","decimals":18}}"#;
-        assert_eq!(
-            "44'/195'/0'/0'",
-            tron_sign_request.derivation_path.get_path().unwrap()
-        );
-        assert_eq!(
-            expected_sign_data,
-            core::str::from_utf8(tron_sign_request.sign_data.as_slice()).unwrap_or_default()
-        );
+    fn test_decode_binary() {
+        let hex_str = "a501d825509b1deb4d3b7d4bad9bdd2b0d7b3dcb6d0258d40a0207902208e1b9de559665c6714080c49789bb2c5aae01081f12a9010a31747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e54726967676572536d617274436f6e747261637412740a1541c79f045e4d48ad8dae00e6a6714dae1e000adfcd1215410d292c98a5eca06c2085fff993996423cf66c93b2244a9059cbb0000000000000000000000009bbce520d984c3b95ad10cb4e32a9294e6338da300000000000000000000000000000000000000000000000000000000000f424070c0b6e087bb2c90018094ebdc03030104d90130a2018a182cf518c3f500f500f400f4021a12121212066b74726f6e2077616c6c6574";
+        let bytes = Vec::from_hex(hex_str).unwrap();
+        
+        let decoded = TronSignRequest::from_cbor(bytes).unwrap();
+        
+        assert_eq!(decoded.origin, Some("tron wallet".to_string()));
+        assert_eq!(decoded.sign_data[0], 0x0A);
+        assert_eq!(DataType::Transaction, decoded.get_data_type());
     }
 }
