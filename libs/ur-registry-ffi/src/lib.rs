@@ -18,5 +18,6 @@ mod util_internal;
 pub mod utils;
 pub mod zcash;
 pub mod ergo;
+pub mod kaspa;
 
 ffi_support::define_string_destructor!(keystone_sdk_destroy_string);

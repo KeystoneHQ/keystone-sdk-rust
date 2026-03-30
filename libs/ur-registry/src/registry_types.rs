@@ -38,6 +38,7 @@ pub enum URType {
     SolSignature(String),
     TronSignRequest(String),
     TronSignature(String),
+    KaspaPskt(String),
 }
 
 impl URType {
@@ -84,6 +85,7 @@ impl URType {
             "iota-sign-request" => Ok(URType::IotaSignRequest(type_str.to_string())),
             "ergo-sign-request" => Ok(URType::ErgoSignRequest(type_str.to_string())),
             "sol-signature" => Ok(URType::SolSignature(type_str.to_string())),
+            "kaspa-pskt" => Ok(URType::KaspaPskt(type_str.to_string())),
             _ => Err(URError::NotSupportURTypeError(type_str.to_string())),
         }
     }
@@ -125,6 +127,7 @@ impl URType {
             URType::IotaSignHashRequest(type_str) => type_str.to_string(),
             URType::ErgoSignRequest(type_str) => type_str.to_string(),
             URType::SolSignature(type_str) => type_str.to_string(),
+            URType::KaspaPskt(type_str) => type_str.to_string(),
         }
     }
 }
@@ -242,6 +245,9 @@ pub const ERGO_ASSET: RegistryType = RegistryType("ergo-asset", Some(8404));
 pub const IOTA_SIGN_REQUEST: RegistryType = RegistryType("iota-sign-request", Some(8501));
 pub const IOTA_SIGNATURE: RegistryType = RegistryType("iota-signature", Some(8502));
 pub const IOTA_SIGN_HASH_REQUEST: RegistryType = RegistryType("iota-sign-hash-request", Some(8503));
+
+// Kaspa
+pub const KASPA_PSKT: RegistryType = RegistryType("kaspa-pskt", Some(8601));
 
 // Zcash
 pub const ZCASH_ACCOUNTS: RegistryType = RegistryType("zcash-accounts", Some(49201));
