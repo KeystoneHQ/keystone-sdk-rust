@@ -1,8 +1,8 @@
 use crate::error::URError;
 use alloc::string::ToString;
 use alloc::vec::Vec;
-use core2::io::{Read, Write};
 use libflate::gzip::{Decoder, Encoder};
+use no_std_io2::io::{Read, Write};
 use prost::bytes::Bytes;
 use prost::Message;
 
@@ -24,8 +24,8 @@ pub fn unzip(bytes: Vec<u8>) -> Result<Vec<u8>, URError> {
     let mut decoder =
         Decoder::new(&bytes[..]).map_err(|e| URError::GzipDecodeError(e.to_string()))?;
     let mut buf = Vec::new();
-    Read::read(&mut decoder, &mut buf).map_err(|e| URError::GzipDecodeError(e.to_string()))?;
-    Read::read_to_end(&mut decoder, &mut buf)
+    decoder
+        .read_to_end(&mut buf)
         .map_err(|e| URError::GzipDecodeError(e.to_string()))?;
     Ok(buf)
 }

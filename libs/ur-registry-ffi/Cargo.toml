@@ -1,12 +1,16 @@
 [package]
 name = "ur-registry-ffi"
-version = "0.0.1"
+version = "1.0.0"
 edition = "2021"
+description = "FFI bindings for Keystone UR registry"
+license = "MIT"
+repository = "https://github.com/KeystoneHQ/keystone-sdk-rust"
+homepage = "https://github.com/KeystoneHQ/keystone-sdk-rust"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ur-registry = { path = "../ur-registry" }
+ur-registry = { path = "../ur-registry", version = "1.0.0" }
 hex = "0.4.3"
 ffi-support = "0.4"
 anyhow = "1.0"
