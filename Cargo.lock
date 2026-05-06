@@ -1440,16 +1440,16 @@ dependencies = [
 
 [[package]]
 name = "ur-parse-lib"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "hex",
  "keystone-ur",
- "ur-registry 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ur-registry",
 ]
 
 [[package]]
 name = "ur-registry"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "base64",
  "bs58",
@@ -1469,29 +1469,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "ur-registry"
-version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "35ff812876686ea9de5461e9aedd61d88232d9ac52b21c2e816c327ca12f22b2"
-dependencies = [
- "bs58",
- "core2",
- "hex",
- "keystone-ur",
- "libflate",
- "minicbor",
- "no_std_io2",
- "paste",
- "prost",
- "prost-build",
- "prost-types",
- "serde",
- "thiserror-core",
-]
-
-[[package]]
 name = "ur-registry-ffi"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "anyhow",
  "bip32",
@@ -1506,7 +1485,7 @@ dependencies = [
  "secp256k1",
  "serde",
  "serde_json",
- "ur-registry 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ur-registry",
  "uuid",
 ]
 
