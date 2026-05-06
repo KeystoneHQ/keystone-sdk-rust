@@ -13,6 +13,14 @@ registry objects and UR transport strings.
 ur-parse-lib = "1.0.0"
 ```
 
+If you manually depend on `ur-registry` in the same project with
+`default-features = false`, ensure the `core` feature is enabled to keep error
+types compatible:
+
+```toml
+ur-registry = { version = "1.0.0", default-features = false, features = ["core"] }
+```
+
 ## What It Provides
 
 - UR encoder helpers

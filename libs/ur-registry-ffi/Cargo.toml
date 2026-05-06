@@ -10,7 +10,7 @@ homepage = "https://github.com/KeystoneHQ/keystone-sdk-rust"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ur-registry = { path = "../ur-registry", version = "1.0.0" }
+ur-registry = "1.0.0"
 hex = "0.4.3"
 ffi-support = "0.4"
 anyhow = "1.0"
