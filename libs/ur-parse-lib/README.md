@@ -10,15 +10,18 @@ registry objects and UR transport strings.
 
 ```toml
 [dependencies]
-ur-parse-lib = "1.0.0"
+ur-parse-lib = "1.0.1"
 ```
 
-If you manually depend on `ur-registry` in the same project with
-`default-features = false`, ensure the `core` feature is enabled to keep error
-types compatible:
+`ur-parse-lib` forwards feature selection to `ur-registry`:
+
+- `core` (default)
+- `std`
+
+If you need the `std` variant:
 
 ```toml
-ur-registry = { version = "1.0.0", default-features = false, features = ["core"] }
+ur-parse-lib = { version = "1.0.1", default-features = false, features = ["std"] }
 ```
 
 ## What It Provides
