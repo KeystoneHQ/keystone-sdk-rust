@@ -1,6 +1,6 @@
 [package]
 name = "ur-registry"
-version = "1.0.2"
+version = "1.0.3"
 edition = "2021"
 description = "Keystone UR registry types and encoders/decoders for multi-chain payloads"
 license = "MIT"
@@ -28,7 +28,6 @@ prost = { version = "0.11.8", default-features = false }
 prost-types = { version = "0.11.8", default-features = false }
 libflate = { version = "=2.2.2", default-features = false }
 no_std_io2 = { version = "0.9", default-features = false, features = ["alloc"] }
-core2 = { version = "0.3", default-features = false, features = ["alloc"] }
 paste = "1.0.12"
 
 [features]

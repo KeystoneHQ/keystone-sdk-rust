@@ -1,6 +1,6 @@
 [package]
 name = "ur-parse-lib"
-version = "1.0.2"
+version = "1.0.3"
 edition = "2021"
 description = "UR parsing and encoding helpers built on Keystone UR registry"
 license = "MIT"
@@ -10,7 +10,7 @@ homepage = "https://github.com/KeystoneHQ/keystone-sdk-rust"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ur-registry = { path = "../ur-registry", version = "1.0.2", default-features = false }
+ur-registry = { path = "../ur-registry", version = "1.0.3", default-features = false }
 ur = { package = "keystone-ur", version = "0.1.0", default-features = false }
 hex = { version = "0.4.3", features = ["alloc"], default-features = false }
 

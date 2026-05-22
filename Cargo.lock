@@ -212,15 +212,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2459377285ad874054d797f3ccebf984978aa39129f6eafde5cdc8315b612f8"
 
 [[package]]
-name = "core2"
-version = "0.3.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "239fa3ae9b63c2dc74bd3fa852d4792b8b305ae64eeede946265b6af62f1fff3"
-dependencies = [
- "memchr",
-]
-
-[[package]]
 name = "cpufeatures"
 version = "0.2.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1440,7 +1431,7 @@ dependencies = [
 
 [[package]]
 name = "ur-parse-lib"
-version = "1.0.2"
+version = "1.0.3"
 dependencies = [
  "hex",
  "keystone-ur",
@@ -1449,11 +1440,10 @@ dependencies = [
 
 [[package]]
 name = "ur-registry"
-version = "1.0.2"
+version = "1.0.3"
 dependencies = [
  "base64",
  "bs58",
- "core2",
  "hex",
  "keystone-ur",
  "libflate",
@@ -1470,7 +1460,7 @@ dependencies = [
 
 [[package]]
 name = "ur-registry-ffi"
-version = "1.0.2"
+version = "1.0.3"
 dependencies = [
  "anyhow",
  "bip32",
