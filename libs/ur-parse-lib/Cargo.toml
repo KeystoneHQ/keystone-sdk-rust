@@ -1,6 +1,6 @@
 [package]
 name = "ur-parse-lib"
-version = "1.0.3"
+version = "1.0.4"
 edition = "2021"
 description = "UR parsing and encoding helpers built on Keystone UR registry"
 license = "MIT"
