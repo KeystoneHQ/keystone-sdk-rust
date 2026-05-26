@@ -40,8 +40,8 @@ macro_rules! export {
             use jni::objects::JClass;
 
             $(
-                #[no_mangle]
-                pub extern fn $jname<'jni>(
+                #[unsafe(no_mangle)]
+                pub extern "C" fn $jname<'jni>(
                     env: JNIEnv<'jni>,
                     _: JClass,
                     $( $a: <$t as Argument<'jni>>::Ext ),*
