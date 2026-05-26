@@ -33,13 +33,13 @@ export! {
 
     @Java_com_keystone_sdk_KeystoneNativeSDK_generateCryptoPSBT
     fn generate_crypto_psbt(psbt_hex: &str) -> String {
-        let gen = || -> Result<String, Error> {
+        let cbor_hex = || -> Result<String, Error> {
             let psbt = hex::decode(psbt_hex.to_string())?;
             let crypto_psbt = CryptoPSBT::new(psbt);
             let cbor_hex = hex::encode(crypto_psbt.to_bytes()?);
             Ok(cbor_hex)
         };
-        match gen() {
+        match cbor_hex() {
             Ok(v) => json!({
                 "type": "crypto-psbt",
                 "cbor": v,
