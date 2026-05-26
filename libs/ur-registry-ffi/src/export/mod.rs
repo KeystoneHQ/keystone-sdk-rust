@@ -59,7 +59,7 @@ macro_rules! export {
             use ffi_support::ExternError;
 
             $(
-                #[no_mangle]
+                #[unsafe(no_mangle)]
                 pub extern "C" fn $name(
                     err: &'static mut ExternError,
                     $( $a: <$t as Argument<'static>>::Ext ),*
