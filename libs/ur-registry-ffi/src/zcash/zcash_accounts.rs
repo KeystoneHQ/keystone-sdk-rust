@@ -22,6 +22,7 @@ use ur_registry::{crypto_hd_key::CryptoHDKey, registry_types::ZCASH_ACCOUNTS};
 struct ZcashAccounts {
     seed_fingerprint: String,
     accounts: Vec<ZcashUnifiedAccount>,
+    device_version: Option<String>,
 }
 
 impl From<ur_registry::zcash::zcash_accounts::ZcashAccounts> for ZcashAccounts {
@@ -33,6 +34,7 @@ impl From<ur_registry::zcash::zcash_accounts::ZcashAccounts> for ZcashAccounts {
                 .iter()
                 .map(|account| account.clone().into())
                 .collect(),
+            device_version: value.get_device_version(),
         }
     }
 }
