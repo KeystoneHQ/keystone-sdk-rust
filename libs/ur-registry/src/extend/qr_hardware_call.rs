@@ -1,10 +1,13 @@
 use crate::cbor::cbor_map;
 use crate::error::URError;
 use crate::error::URError::CborDecodeError;
+use crate::extend::derive_context_hash_call::DeriveContextHashCall;
 use crate::extend::key_derivation::KeyDerivationCall;
-use crate::extend::qr_hardware_call::CallType::KeyDerivation;
+use crate::extend::qr_hardware_call::CallType::{DeriveContextHash, KeyDerivation};
 use crate::impl_template_struct;
-use crate::registry_types::{RegistryType, KEY_DERIVATION_CALL, QR_HARDWARE_CALL};
+use crate::registry_types::{
+    RegistryType, DERIVE_CONTEXT_HASH_CALL, KEY_DERIVATION_CALL, QR_HARDWARE_CALL,
+};
 use crate::traits::{MapSize, RegistryItem};
 use alloc::format;
 use alloc::string::{String, ToString};
@@ -23,6 +26,7 @@ const VERSION: u8 = 4;
 pub enum CallType {
     #[default]
     KeyDerivation = 0,
+    DeriveContextHash = 1,
 }
 
 impl TryFrom<u32> for CallType {
@@ -31,6 +35,7 @@ impl TryFrom<u32> for CallType {
     fn try_from(value: u32) -> Result<Self, Self::Error> {
         match value {
             0 => Ok(KeyDerivation),
+            1 => Ok(DeriveContextHash),
             _ => Err(CborDecodeError(format!(
                 "QRHardwareCall: invalid call type {}",
                 value
@@ -42,6 +47,7 @@ impl TryFrom<u32> for CallType {
 #[derive(Debug, Clone)]
 pub enum CallParams {
     KeyDerivation(KeyDerivationCall),
+    DeriveContextHash(DeriveContextHashCall),
 }
 
 impl Default for CallParams {
@@ -121,6 +127,10 @@ impl<C> minicbor::Encode<C> for QRHardwareCall {
                 e.tag(Tag::Unassigned(KEY_DERIVATION_CALL.get_tag()))?;
                 k.encode(e, ctx)?;
             }
+            CallParams::DeriveContextHash(d) => {
+                e.tag(Tag::Unassigned(DERIVE_CONTEXT_HASH_CALL.get_tag()))?;
+                d.encode(e, ctx)?;
+            }
         }
 
         if let Some(origin) = self.get_origin() {
@@ -158,6 +168,12 @@ impl<'b, C> minicbor::Decode<'b, C> for QRHardwareCall {
                             )?));
                             return Ok(());
                         }
+                        if tag.eq(&DERIVE_CONTEXT_HASH_CALL.get_tag()) {
+                            obj.set_params(CallParams::DeriveContextHash(
+                                DeriveContextHashCall::decode(d, ctx)?,
+                            ));
+                            return Ok(());
+                        }
                     }
                     return Err(minicbor::decode::Error::message(format!(
                         "invalid QRHardwareCall params"
@@ -189,6 +205,7 @@ impl<'b, C> minicbor::Decode<'b, C> for QRHardwareCall {
 #[cfg(test)]
 mod tests {
     use crate::crypto_key_path::{CryptoKeyPath, PathComponent};
+    use crate::extend::derive_context_hash_call::DeriveContextHashCall;
     use crate::extend::key_derivation::KeyDerivationCall;
     use crate::extend::key_derivation_schema::{Curve, DerivationAlgo, KeyDerivationSchema};
     use crate::extend::qr_hardware_call::{
@@ -199,6 +216,56 @@ mod tests {
     use alloc::vec::Vec;
 
     extern crate std;
+
+    #[test]
+    fn test_derive_context_hash_call_roundtrip() {
+        // m/44'/0'/0'/0/0 — matches the Babylon spec test vector.
+        let key_path = CryptoKeyPath::new(
+            vec![
+                PathComponent::new(Some(44), true).unwrap(),
+                PathComponent::new(Some(0), true).unwrap(),
+                PathComponent::new(Some(0), true).unwrap(),
+                PathComponent::new(Some(0), false).unwrap(),
+                PathComponent::new(Some(0), false).unwrap(),
+            ],
+            None,
+            None,
+        );
+        let params = DeriveContextHashCall::new(
+            "babylon-btc-vault".to_string(),
+            "bitcoin-mainnet".to_string(),
+            key_path,
+            "deadbeef".to_string(),
+        );
+        let call = QRHardwareCall::new(
+            CallType::DeriveContextHash,
+            CallParams::DeriveContextHash(params),
+            Some("babylon".to_string()),
+            HardWareCallVersion::V1,
+        );
+
+        let bytes: Vec<u8> = call.clone().try_into().unwrap();
+        // Pinned to lock byte-for-byte agreement with the JS ur-registry
+        // (@keystonehq/bc-ur-registry) so third-party wallets and the firmware agree.
+        assert_eq!(
+            "a4010102d90517a40171626162796c6f6e2d6274632d7661756c74026f626974636f696e2d6d61696e6e657403d90130a1018a182cf500f500f500f400f4046864656164626565660367626162796c6f6e0401",
+            hex::encode(&bytes)
+        );
+        let decoded = QRHardwareCall::try_from(bytes).unwrap();
+
+        assert_eq!(CallType::DeriveContextHash as u32, decoded.get_call_type() as u32);
+        assert_eq!(Some("babylon".to_string()), decoded.get_origin());
+        assert_eq!(HardWareCallVersion::V1, decoded.get_version());
+        match decoded.get_params() {
+            CallParams::DeriveContextHash(d) => {
+                assert_eq!("babylon-btc-vault", d.get_app_name());
+                assert_eq!("bitcoin-mainnet", d.get_network());
+                assert_eq!("deadbeef", d.get_context());
+                assert_eq!("44'/0'/0'/0/0", d.get_key_path().get_path().unwrap());
+            }
+            _ => panic!("expected DeriveContextHash params"),
+        }
+    }
 
     #[test]
     fn test_wrong_hardware_call() {
@@ -423,6 +490,7 @@ mod tests {
                 );
                 assert_eq!("ATOM", schema.get_chain_type().unwrap());
             }
+            _ => panic!("expected KeyDerivation params"),
         }
     }
 
@@ -493,6 +561,7 @@ mod tests {
                     schema2.get_algo_or_default() as u32
                 );
             }
+            _ => panic!("expected KeyDerivation params"),
         }
     }
 
