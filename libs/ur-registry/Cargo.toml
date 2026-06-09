@@ -33,7 +33,7 @@ paste = "1.0.12"
 [features]
 default = ["core"]
 core = ["dep:thiserror-core"]
-std = ["dep:thiserror"]
+std = ["dep:thiserror", "thiserror-core?/std"]
 
 [build-dependencies]
 prost-build = { version = "0.11.8" }
