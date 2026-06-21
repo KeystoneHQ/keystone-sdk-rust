@@ -55,9 +55,7 @@ use crate::stellar::{
 use crate::sui::sui_signature::SuiSignature;
 use crate::sui::{sui_sign_hash_request::SuiSignHashRequest, sui_sign_request::SuiSignRequest};
 use crate::ton::{ton_sign_request::TonSignRequest, ton_signature::TonSignature};
-use crate::zcash::zcash_accounts::ZcashAccounts;
 use crate::zcash::zcash_pczt::ZcashPczt;
-use crate::zcash::zcash_unified_full_viewing_key::ZcashUnifiedFullViewingKey;
 use crate::{
     aptos::{aptos_sign_request::AptosSignRequest, aptos_signature::AptosSignature},
     cardano::cardano_sign_tx_hash_request::CardanoSignTxHashRequest,
@@ -120,8 +118,6 @@ impl_cbor_bytes!(
     QRHardwareCall,
     BtcSignRequest,
     BtcSignature,
-    ZcashAccounts,
-    ZcashUnifiedFullViewingKey,
     XmrOutput,
     XmrKeyImage,
     XmrTxUnsigned,
