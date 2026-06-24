@@ -28,7 +28,11 @@ pub enum URType {
     Bytes(String),
     BtcSignRequest(String),
     KeystoneSignRequest(String),
+    ZcashAccounts(String),
+    ZcashUnifiedFullViewingKey(String),
     ZcashPczt(String),
+    ZcashSignBatch(String),
+    ZcashSignResult(String),
     XmrOutput(String),
     XmrTxUnsigned(String),
     AvaxSignRequest(String),
@@ -75,7 +79,13 @@ impl URType {
             }
             "qr-hardware-call" => Ok(URType::QRHardwareCall(type_str.to_string())),
             "ton-sign-request" => Ok(URType::TonSignRequest(type_str.to_string())),
+            "zcash-accounts" => Ok(URType::ZcashAccounts(type_str.to_string())),
+            "zcash-unified-full-viewing-key" => {
+                Ok(URType::ZcashUnifiedFullViewingKey(type_str.to_string()))
+            }
             "zcash-pczt" => Ok(URType::ZcashPczt(type_str.to_string())),
+            "zcash-sign-batch" => Ok(URType::ZcashSignBatch(type_str.to_string())),
+            "zcash-sign-result" => Ok(URType::ZcashSignResult(type_str.to_string())),
             "tron-sign-request" => Ok(URType::TronSignRequest(type_str.to_string())),
             "tron-signature" => Ok(URType::TronSignature(type_str.to_string())),
             "xmr-output" => Ok(URType::XmrOutput(type_str.to_string())),
@@ -117,7 +127,11 @@ impl URType {
             URType::EvmSignRequest(type_str) => type_str.to_string(),
             URType::QRHardwareCall(type_str) => type_str.to_string(),
             URType::TonSignRequest(type_str) => type_str.to_string(),
+            URType::ZcashAccounts(type_str) => type_str.to_string(),
+            URType::ZcashUnifiedFullViewingKey(type_str) => type_str.to_string(),
             URType::ZcashPczt(type_str) => type_str.to_string(),
+            URType::ZcashSignBatch(type_str) => type_str.to_string(),
+            URType::ZcashSignResult(type_str) => type_str.to_string(),
             URType::TronSignRequest(type_str) => type_str.to_string(),
             URType::TronSignature(type_str) => type_str.to_string(),
             URType::XmrOutput(type_str) => type_str.to_string(),
@@ -160,7 +174,8 @@ pub const CRYPTO_MULTI_ACCOUNTS: RegistryType = RegistryType("crypto-multi-accou
 // ETH
 pub const ETH_SIGN_REQUEST: RegistryType = RegistryType("eth-sign-request", Some(401));
 pub const ETH_SIGNATURE: RegistryType = RegistryType("eth-signature", Some(402));
-pub const ETH_BATCH_SIGN_REQUEST: RegistryType = RegistryType("eth-batch-sign-request", Some(40404));
+pub const ETH_BATCH_SIGN_REQUEST: RegistryType =
+    RegistryType("eth-batch-sign-request", Some(40404));
 pub const ETH_BATCH_SIGNATURE: RegistryType = RegistryType("eth-batch-signature", Some(40405));
 // SOL
 pub const SOL_SIGN_REQUEST: RegistryType = RegistryType("sol-sign-request", Some(1101));
@@ -253,9 +268,13 @@ pub const IOTA_SIGN_HASH_REQUEST: RegistryType = RegistryType("iota-sign-hash-re
 pub const KASPA_PSKT: RegistryType = RegistryType("kaspa-pskt", Some(8601));
 
 // Zcash
+// Zcash registry tags are shared with Keystone firmware. The signing tags
+// continue the account and PCZT block so SDK and firmware agree on wire types.
 pub const ZCASH_ACCOUNTS: RegistryType = RegistryType("zcash-accounts", Some(49201));
 pub const ZCASH_FULL_VIEWING_KEY: RegistryType =
     RegistryType("zcash-full-viewing-key", Some(49202));
 pub const ZCASH_UNIFIED_FULL_VIEWING_KEY: RegistryType =
     RegistryType("zcash-unified-full-viewing-key", Some(49203));
 pub const ZCASH_PCZT: RegistryType = RegistryType("zcash-pczt", Some(49204));
+pub const ZCASH_SIGN_BATCH: RegistryType = RegistryType("zcash-sign-batch", Some(49205));
+pub const ZCASH_SIGN_RESULT: RegistryType = RegistryType("zcash-sign-result", Some(49206));

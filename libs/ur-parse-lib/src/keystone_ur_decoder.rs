@@ -124,12 +124,16 @@ impl<T: fmt::Debug> fmt::Debug for URParseResult<T> {
 #[cfg(test)]
 mod tests {
     use crate::keystone_ur_decoder::{probe_decode, MultiURParseResult, URParseResult};
+    use crate::keystone_ur_encoder::probe_encode;
     use alloc::string::ToString;
     use alloc::vec;
     use alloc::{string::String, vec::Vec};
     use ur_registry::crypto_psbt::CryptoPSBT;
     use ur_registry::ethereum::eth_sign_request::EthSignRequest;
     use ur_registry::sui::sui_sign_request::SuiSignRequest;
+    use ur_registry::traits::RegistryItem;
+    use ur_registry::zcash::zcash_accounts::ZcashAccounts;
+    use ur_registry::zcash::zcash_unified_full_viewing_key::ZcashUnifiedFullViewingKey;
     use ur_registry::{
         cardano::cardano_sign_request::CardanoSignRequest, crypto_key_path::CryptoKeyPath,
     };
@@ -162,6 +166,54 @@ mod tests {
             assert_eq!("8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa8c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa",
                        hex::encode(psbt.get_psbt()).to_lowercase())
         }
+    }
+
+    #[test]
+    fn test_decode_zcash_accounts_registry_ur() {
+        let seed_fingerprint = hex::decode("d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1").unwrap();
+        let accounts = ZcashAccounts::new(seed_fingerprint.clone(), vec![]);
+        let cbor: Vec<u8> = accounts.try_into().unwrap();
+        let encoded =
+            probe_encode(&cbor, 400, ZcashAccounts::get_registry_type().get_type()).unwrap();
+
+        assert!(!encoded.is_multi_part);
+        let decoded: URParseResult<ZcashAccounts> = probe_decode(encoded.data).unwrap();
+        let decoded_accounts = decoded.data.unwrap();
+
+        assert_eq!(decoded.ur_type.unwrap().get_type_str(), "zcash-accounts");
+        assert_eq!(decoded_accounts.get_seed_fingerprint(), seed_fingerprint);
+        assert!(decoded_accounts.get_accounts().is_empty());
+        assert_eq!(decoded_accounts.get_device_version(), None);
+    }
+
+    #[test]
+    fn test_decode_zcash_unified_full_viewing_key_registry_ur() {
+        let expected_ufvk = "uview1qqqqqqqqqqqqqq8rzd0efkm6ej5n0twzum9czt9kj5y7jxjm9qz3uq9qgpqqqqqqqqqqqqqq9en0hkucteqncqcfqcqcpz4wuwl";
+        let ufvk = ZcashUnifiedFullViewingKey::new(
+            expected_ufvk.to_string(),
+            7,
+            Some("Keystone".to_string()),
+        );
+        let cbor: Vec<u8> = ufvk.try_into().unwrap();
+        let encoded = probe_encode(
+            &cbor,
+            400,
+            ZcashUnifiedFullViewingKey::get_registry_type().get_type(),
+        )
+        .unwrap();
+
+        assert!(!encoded.is_multi_part);
+        let decoded: URParseResult<ZcashUnifiedFullViewingKey> =
+            probe_decode(encoded.data).unwrap();
+        let decoded_ufvk = decoded.data.unwrap();
+
+        assert_eq!(
+            decoded.ur_type.unwrap().get_type_str(),
+            "zcash-unified-full-viewing-key"
+        );
+        assert_eq!(decoded_ufvk.get_ufvk(), expected_ufvk);
+        assert_eq!(decoded_ufvk.get_index(), 7);
+        assert_eq!(decoded_ufvk.get_name(), Some("Keystone".to_string()));
     }
 
     #[test]
