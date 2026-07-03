@@ -33,6 +33,7 @@ pub enum URType {
     ZcashPczt(String),
     ZcashSignBatch(String),
     ZcashSignResult(String),
+    ZcashBatchSigResult(String),
     XmrOutput(String),
     XmrTxUnsigned(String),
     AvaxSignRequest(String),
@@ -86,6 +87,7 @@ impl URType {
             "zcash-pczt" => Ok(URType::ZcashPczt(type_str.to_string())),
             "zcash-sign-batch" => Ok(URType::ZcashSignBatch(type_str.to_string())),
             "zcash-sign-result" => Ok(URType::ZcashSignResult(type_str.to_string())),
+            "zcash-batch-sig-result" => Ok(URType::ZcashBatchSigResult(type_str.to_string())),
             "tron-sign-request" => Ok(URType::TronSignRequest(type_str.to_string())),
             "tron-signature" => Ok(URType::TronSignature(type_str.to_string())),
             "xmr-output" => Ok(URType::XmrOutput(type_str.to_string())),
@@ -132,6 +134,7 @@ impl URType {
             URType::ZcashPczt(type_str) => type_str.to_string(),
             URType::ZcashSignBatch(type_str) => type_str.to_string(),
             URType::ZcashSignResult(type_str) => type_str.to_string(),
+            URType::ZcashBatchSigResult(type_str) => type_str.to_string(),
             URType::TronSignRequest(type_str) => type_str.to_string(),
             URType::TronSignature(type_str) => type_str.to_string(),
             URType::XmrOutput(type_str) => type_str.to_string(),
@@ -278,3 +281,5 @@ pub const ZCASH_UNIFIED_FULL_VIEWING_KEY: RegistryType =
 pub const ZCASH_PCZT: RegistryType = RegistryType("zcash-pczt", Some(49204));
 pub const ZCASH_SIGN_BATCH: RegistryType = RegistryType("zcash-sign-batch", Some(49205));
 pub const ZCASH_SIGN_RESULT: RegistryType = RegistryType("zcash-sign-result", Some(49206));
+pub const ZCASH_BATCH_SIG_RESULT: RegistryType =
+    RegistryType("zcash-batch-sig-result", Some(49207));
