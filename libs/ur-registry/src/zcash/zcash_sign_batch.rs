@@ -12,7 +12,6 @@ use minicbor::data::Int;
 use crate::{
     cbor::cbor_map,
     error::{URError, URResult},
-    impl_template_struct,
     registry_types::{RegistryType, ZCASH_SIGN_BATCH},
     traits::{MapSize, RegistryItem},
     types::Bytes,
@@ -22,7 +21,20 @@ use super::cbor_helpers::{reject_duplicate_key, require_key};
 
 const DATA: u8 = 1;
 
-impl_template_struct!(ZcashSignBatch { data: Bytes });
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub struct ZcashSignBatch {
+    data: Bytes,
+}
+
+impl ZcashSignBatch {
+    pub fn new(data: Bytes) -> Self {
+        Self { data }
+    }
+
+    pub fn get_data(&self) -> &[u8] {
+        &self.data
+    }
+}
 
 impl MapSize for ZcashSignBatch {
     fn map_size(&self) -> u64 {
