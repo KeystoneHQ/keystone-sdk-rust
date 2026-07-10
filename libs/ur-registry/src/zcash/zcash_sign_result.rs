@@ -9,10 +9,7 @@
 //! correlation, supported versions, result status, result kind, unique ids,
 //! digest validity, and expected result count.
 
-use super::{
-    cbor_helpers::{reject_duplicate_key, require_key},
-    zcash_sign_batch::ZCASH_SIGN_MESSAGE_KIND_PCZT_V1,
-};
+use super::cbor_helpers::{reject_duplicate_key, require_key};
 use crate::{
     registry_types::{RegistryType, ZCASH_SIGN_RESULT},
     traits::{MapSize, RegistryItem},
@@ -30,7 +27,7 @@ use crate::error::{URError, URResult};
 pub const ZCASH_SIGN_RESULT_VERSION: u32 = 1;
 /// Registered PCZT v1 result kind used by producers. Result kind mirrors the
 /// request message kind so callers can correlate request and response policy.
-pub const ZCASH_SIGN_RESULT_KIND_PCZT_V1: u32 = ZCASH_SIGN_MESSAGE_KIND_PCZT_V1;
+pub const ZCASH_SIGN_RESULT_KIND_PCZT_V1: u32 = 1;
 /// Registered status for a signed result. Decode preserves any `u32` status so
 /// callers can decide protocol policy.
 pub const ZCASH_SIGN_STATUS_SIGNED: u32 = 0;
