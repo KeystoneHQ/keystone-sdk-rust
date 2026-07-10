@@ -108,10 +108,7 @@ mod tests {
     use ur_registry::crypto_psbt::CryptoPSBT;
     use ur_registry::extend::qr_hardware_call::QRHardwareCall;
     use ur_registry::traits::{RegistryItem, UR};
-    use ur_registry::zcash::zcash_batch_sig_result::{
-        ZcashActionSig, ZcashBatchSigResult, ZcashMsgSig, ZCASH_BATCH_SIG_RESULT_VERSION,
-        ZCASH_SIG_LEN, ZCASH_SIG_POOL_ORCHARD,
-    };
+    use ur_registry::zcash::zcash_batch_sig_result::ZcashBatchSigResult;
     use ur_registry::zcash::zcash_sign_batch::{
         ZcashSignBatch, ZcashSignMessage, ZCASH_SIGN_BATCH_NETWORK_MAINNET,
         ZCASH_SIGN_BATCH_VERSION, ZCASH_SIGN_MESSAGE_KIND_PCZT_V1,
@@ -235,18 +232,10 @@ mod tests {
 
     #[test]
     fn test_encode_decode_zcash_batch_sig_result_ur() {
-        let result = ZcashBatchSigResult::new(
-            ZCASH_BATCH_SIG_RESULT_VERSION,
-            vec![0xaa, 0xbb],
-            vec![ZcashMsgSig::new(
-                vec![0x01],
-                vec![ZcashActionSig::new(
-                    ZCASH_SIG_POOL_ORCHARD,
-                    3,
-                    vec![0x11; ZCASH_SIG_LEN],
-                )],
-            )],
-        );
+        // Serialization of an empty PCZT BatchSignResponse:
+        // "PCZS" || batch_version_le || Postcard body.
+        let response = vec![b'P', b'C', b'Z', b'S', 1, 0, 0, 0, 0];
+        let result = ZcashBatchSigResult::new(response.clone());
         let cbor: Vec<u8> = result.try_into().unwrap();
         let encoded =
             probe_encode(&cbor, 400, ZcashBatchSigResult::get_registry_type().get_type()).unwrap();
@@ -260,18 +249,7 @@ mod tests {
             decoded.ur_type.unwrap().get_type_str(),
             "zcash-batch-sig-result"
         );
-        assert_eq!(decoded_result.get_version(), ZCASH_BATCH_SIG_RESULT_VERSION);
-        assert_eq!(decoded_result.get_request_id(), &vec![0xaa, 0xbb]);
-        assert_eq!(decoded_result.get_results().len(), 1);
-        assert_eq!(
-            decoded_result.get_results()[0].get_message_id(),
-            &vec![0x01]
-        );
-        assert_eq!(decoded_result.get_results()[0].get_sigs().len(), 1);
-        let action = &decoded_result.get_results()[0].get_sigs()[0];
-        assert_eq!(action.get_pool(), ZCASH_SIG_POOL_ORCHARD);
-        assert_eq!(action.get_action_index(), 3);
-        assert_eq!(action.get_sig(), &vec![0x11; ZCASH_SIG_LEN]);
+        assert_eq!(decoded_result.get_data(), response);
     }
 
     #[test]
