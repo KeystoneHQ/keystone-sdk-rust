@@ -11,14 +11,13 @@ use alloc::{string::ToString, vec::Vec};
 use minicbor::data::Int;
 
 use crate::{
-    cbor::cbor_map,
     error::{URError, URResult},
     registry_types::{RegistryType, ZCASH_BATCH_SIG_RESULT},
     traits::{MapSize, RegistryItem},
     types::Bytes,
 };
 
-use super::cbor_helpers::{reject_duplicate_key, require_key};
+use super::cbor_helpers::{decode_definite_u8_map, reject_duplicate_key, require_key};
 
 const DATA: u8 = 1;
 const REQUEST_ID: u8 = 2;
@@ -75,22 +74,25 @@ impl<'b, C> minicbor::Decode<'b, C> for ZcashBatchSigResult {
     ) -> Result<Self, minicbor::decode::Error> {
         let mut result = ZcashBatchSigResult::default();
         let mut seen_keys = Vec::new();
-        cbor_map(d, &mut result, |key, obj, d| {
-            let key =
-                u8::try_from(key).map_err(|e| minicbor::decode::Error::message(e.to_string()))?;
-            reject_duplicate_key(
-                &mut seen_keys,
-                key,
-                d,
-                "duplicate key in zcash-batch-sig-result map",
-            )?;
-            match key {
-                DATA => obj.data = d.bytes()?.to_vec(),
-                REQUEST_ID => obj.request_id = d.bytes()?.to_vec(),
-                _ => d.skip()?,
-            }
-            Ok(())
-        })?;
+        decode_definite_u8_map(
+            d,
+            &mut result,
+            "indefinite zcash-batch-sig-result map is unsupported",
+            |key, obj, d| {
+                reject_duplicate_key(
+                    &mut seen_keys,
+                    key,
+                    d,
+                    "duplicate key in zcash-batch-sig-result map",
+                )?;
+                match key {
+                    DATA => obj.data = d.bytes()?.to_vec(),
+                    REQUEST_ID => obj.request_id = d.bytes()?.to_vec(),
+                    _ => d.skip()?,
+                }
+                Ok(())
+            },
+        )?;
         require_key(&seen_keys, DATA, d, "missing zcash-batch-sig-result data")?;
         require_key(
             &seen_keys,
@@ -184,27 +186,41 @@ mod tests {
     fn rejects_missing_data() {
         let err = ZcashBatchSigResult::try_from(vec![0xa1, REQUEST_ID, 0x40]).unwrap_err();
 
-        assert!(err
-            .to_string()
-            .contains("missing zcash-batch-sig-result data"));
+        assert!(
+            err.to_string()
+                .contains("missing zcash-batch-sig-result data")
+        );
     }
 
     #[test]
     fn rejects_missing_request_id() {
         let err = ZcashBatchSigResult::try_from(vec![0xa1, DATA, 0x40]).unwrap_err();
 
-        assert!(err
-            .to_string()
-            .contains("missing zcash-batch-sig-result request id"));
+        assert!(
+            err.to_string()
+                .contains("missing zcash-batch-sig-result request id")
+        );
     }
 
     #[test]
     fn rejects_duplicate_keys() {
         let err = ZcashBatchSigResult::try_from(vec![0xa2, 0x01, 0x40, 0x01, 0x40]).unwrap_err();
 
-        assert!(err
-            .to_string()
-            .contains("duplicate key in zcash-batch-sig-result map"));
+        assert!(
+            err.to_string()
+                .contains("duplicate key in zcash-batch-sig-result map")
+        );
+    }
+
+    #[test]
+    fn rejects_indefinite_map() {
+        let err = ZcashBatchSigResult::try_from(vec![0xbf, DATA, 0x40, REQUEST_ID, 0x40, 0xff])
+            .unwrap_err();
+
+        assert!(
+            err.to_string()
+                .contains("indefinite zcash-batch-sig-result map is unsupported")
+        );
     }
 
     #[test]

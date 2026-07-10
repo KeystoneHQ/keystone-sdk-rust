@@ -99,7 +99,7 @@ impl KeystoneUREncoder {
 
 #[cfg(test)]
 mod tests {
-    use crate::keystone_ur_decoder::{probe_decode, MultiURParseResult, URParseResult};
+    use crate::keystone_ur_decoder::{MultiURParseResult, URParseResult, probe_decode};
     use crate::keystone_ur_encoder::{cyclic_encode, probe_encode};
     use alloc::string::ToString;
     use alloc::vec;
@@ -111,8 +111,8 @@ mod tests {
     use ur_registry::zcash::zcash_batch_sig_result::ZcashBatchSigResult;
     use ur_registry::zcash::zcash_sign_batch::ZcashSignBatch;
     use ur_registry::zcash::zcash_sign_result::{
-        ZcashSignMessageResult, ZcashSignResult, ZCASH_SIGN_RESULT_KIND_PCZT_V1,
-        ZCASH_SIGN_RESULT_VERSION, ZCASH_SIGN_STATUS_SIGNED,
+        ZCASH_SIGN_RESULT_KIND_PCZT_V1, ZCASH_SIGN_RESULT_VERSION, ZCASH_SIGN_STATUS_SIGNED,
+        ZcashSignMessageResult, ZcashSignResult,
     };
 
     #[test]
