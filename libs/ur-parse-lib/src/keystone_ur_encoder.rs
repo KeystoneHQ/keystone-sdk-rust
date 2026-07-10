@@ -120,7 +120,8 @@ mod tests {
         // Serialization of an empty PCZT BatchSignRequest:
         // "PCZB" || batch_version_le || pczt_version_le || Postcard body.
         let request = vec![b'P', b'C', b'Z', b'B', 1, 0, 0, 0, 2, 0, 0, 0, 0];
-        let batch = ZcashSignBatch::new(request.clone());
+        let request_id = vec![0xaa, 0xbb];
+        let batch = ZcashSignBatch::new(request_id.clone(), request.clone());
         let cbor: Vec<u8> = batch.try_into().unwrap();
         let encoded =
             probe_encode(&cbor, 400, ZcashSignBatch::get_registry_type().get_type()).unwrap();
@@ -132,6 +133,7 @@ mod tests {
 
         assert_eq!(decoded.ur_type.unwrap().get_type_str(), "zcash-sign-batch");
         assert_eq!(decoded_batch.get_data(), request);
+        assert_eq!(decoded_batch.get_request_id(), request_id);
     }
 
     #[test]
@@ -199,10 +201,15 @@ mod tests {
         // Serialization of an empty PCZT BatchSignResponse:
         // "PCZS" || batch_version_le || Postcard body.
         let response = vec![b'P', b'C', b'Z', b'S', 1, 0, 0, 0, 0];
-        let result = ZcashBatchSigResult::new(response.clone());
+        let request_id = vec![0xaa, 0xbb];
+        let result = ZcashBatchSigResult::new(request_id.clone(), response.clone());
         let cbor: Vec<u8> = result.try_into().unwrap();
-        let encoded =
-            probe_encode(&cbor, 400, ZcashBatchSigResult::get_registry_type().get_type()).unwrap();
+        let encoded = probe_encode(
+            &cbor,
+            400,
+            ZcashBatchSigResult::get_registry_type().get_type(),
+        )
+        .unwrap();
 
         assert!(!encoded.is_multi_part);
 
@@ -214,12 +221,14 @@ mod tests {
             "zcash-batch-sig-result"
         );
         assert_eq!(decoded_result.get_data(), response);
+        assert_eq!(decoded_result.get_request_id(), request_id);
     }
 
     #[test]
     fn test_encode_decode_multipart_zcash_sign_batch_ur() {
         let payload = vec![0x42; 1024];
-        let batch = ZcashSignBatch::new(payload.clone());
+        let request_id = vec![0xaa, 0xbb];
+        let batch = ZcashSignBatch::new(request_id.clone(), payload.clone());
         let cbor: Vec<u8> = batch.try_into().unwrap();
         let encoded =
             probe_encode(&cbor, 100, ZcashSignBatch::get_registry_type().get_type()).unwrap();
@@ -244,6 +253,7 @@ mod tests {
         let decoded_batch = decoded_batch.unwrap();
 
         assert_eq!(decoded_batch.get_data(), payload);
+        assert_eq!(decoded_batch.get_request_id(), request_id);
     }
 
     #[test]
