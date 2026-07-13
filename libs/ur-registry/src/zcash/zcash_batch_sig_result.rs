@@ -6,6 +6,14 @@
 //! registry type only provides the outer UR/CBOR envelope, the request id
 //! copied from the corresponding signing request, and the signing device's
 //! firmware version.
+//!
+//! ```text
+//! zcash-batch-sig-result = {
+//!   1: bstr,         ; serialized PCZT BatchSignResponse
+//!   2: bstr,         ; request id
+//!   3: bstr .size 3  ; raw [major, minor, build] firmware version
+//! }
+//! ```
 
 use alloc::{string::ToString, vec::Vec};
 
@@ -28,11 +36,15 @@ const FIRMWARE_VERSION: u8 = 3;
 pub struct ZcashBatchSigResult {
     data: Bytes,
     request_id: Bytes,
-    firmware_version: Bytes,
+    firmware_version: [u8; 3],
 }
 
 impl ZcashBatchSigResult {
-    pub fn new(request_id: Bytes, data: Bytes, firmware_version: Bytes) -> Self {
+    /// Builds a batch signature result with the raw firmware build version.
+    ///
+    /// Each element is the corresponding major, minor, or build component.
+    /// Display-only version offsets are not applied to this value.
+    pub fn new(request_id: Bytes, data: Bytes, firmware_version: [u8; 3]) -> Self {
         Self {
             data,
             request_id,
@@ -48,7 +60,7 @@ impl ZcashBatchSigResult {
         &self.request_id
     }
 
-    pub fn get_firmware_version(&self) -> &[u8] {
+    pub fn get_firmware_version(&self) -> &[u8; 3] {
         &self.firmware_version
     }
 }
@@ -101,7 +113,14 @@ impl<'b, C> minicbor::Decode<'b, C> for ZcashBatchSigResult {
                 match key {
                     DATA => obj.data = d.bytes()?.to_vec(),
                     REQUEST_ID => obj.request_id = d.bytes()?.to_vec(),
-                    FIRMWARE_VERSION => obj.firmware_version = d.bytes()?.to_vec(),
+                    FIRMWARE_VERSION => {
+                        obj.firmware_version = d.bytes()?.try_into().map_err(|_| {
+                            minicbor::decode::Error::message(
+                                "zcash-batch-sig-result firmware version must be exactly 3 bytes",
+                            )
+                            .at(d.position())
+                        })?
+                    }
                     _ => d.skip()?,
                 }
                 Ok(())
@@ -160,8 +179,8 @@ mod tests {
         vec![b'P', b'C', b'Z', b'S', 1, 0, 0, 0, 0]
     }
 
-    fn firmware_version() -> Vec<u8> {
-        vec![1, 2, 3]
+    fn firmware_version() -> [u8; 3] {
+        [1, 2, 3]
     }
 
     #[test]
@@ -169,15 +188,14 @@ mod tests {
         let data = empty_batch_response();
         let request_id = vec![0xaa, 0xbb];
         let firmware_version = firmware_version();
-        let result =
-            ZcashBatchSigResult::new(request_id.clone(), data.clone(), firmware_version.clone());
+        let result = ZcashBatchSigResult::new(request_id.clone(), data.clone(), firmware_version);
 
         let encoded: Vec<u8> = result.try_into().unwrap();
         let decoded = ZcashBatchSigResult::try_from(encoded).unwrap();
 
         assert_eq!(decoded.get_data(), data);
         assert_eq!(decoded.get_request_id(), request_id);
-        assert_eq!(decoded.get_firmware_version(), firmware_version);
+        assert_eq!(decoded.get_firmware_version(), &firmware_version);
     }
 
     #[test]
@@ -253,6 +271,48 @@ mod tests {
         assert!(err
             .to_string()
             .contains("missing zcash-batch-sig-result firmware version"));
+    }
+
+    #[test]
+    fn rejects_short_firmware_version() {
+        let err = ZcashBatchSigResult::try_from(vec![
+            0xa3,
+            DATA,
+            0x40,
+            REQUEST_ID,
+            0x40,
+            FIRMWARE_VERSION,
+            0x42,
+            1,
+            2,
+        ])
+        .unwrap_err();
+
+        assert!(err
+            .to_string()
+            .contains("firmware version must be exactly 3 bytes"));
+    }
+
+    #[test]
+    fn rejects_long_firmware_version() {
+        let err = ZcashBatchSigResult::try_from(vec![
+            0xa3,
+            DATA,
+            0x40,
+            REQUEST_ID,
+            0x40,
+            FIRMWARE_VERSION,
+            0x44,
+            1,
+            2,
+            3,
+            4,
+        ])
+        .unwrap_err();
+
+        assert!(err
+            .to_string()
+            .contains("firmware version must be exactly 3 bytes"));
     }
 
     #[test]

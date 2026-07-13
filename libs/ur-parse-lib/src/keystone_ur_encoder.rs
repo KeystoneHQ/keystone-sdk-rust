@@ -202,11 +202,11 @@ mod tests {
         // "PCZS" || batch_version_le || Postcard body.
         let response = vec![b'P', b'C', b'Z', b'S', 1, 0, 0, 0, 0];
         let request_id = vec![0xaa, 0xbb];
-        let firmware_version = vec![1, 2, 3];
+        let firmware_version = [1, 2, 3];
         let result = ZcashBatchSigResult::new(
             request_id.clone(),
             response.clone(),
-            firmware_version.clone(),
+            firmware_version,
         );
         let cbor: Vec<u8> = result.try_into().unwrap();
         let encoded = probe_encode(
@@ -227,7 +227,7 @@ mod tests {
         );
         assert_eq!(decoded_result.get_data(), response);
         assert_eq!(decoded_result.get_request_id(), request_id);
-        assert_eq!(decoded_result.get_firmware_version(), firmware_version);
+        assert_eq!(decoded_result.get_firmware_version(), &firmware_version);
     }
 
     #[test]
