@@ -1,10 +1,10 @@
-//! Zcash PCZT batch signing request Registry Type.
+//! Zcash PCZT batch signature result Registry Type.
 //!
 //! The payload is the opaque output of
-//! `pczt::roles::signer::batch::BatchSignRequest::serialize`. The PCZT crate
-//! owns the versioned request encoding and its semantic validation; this
+//! `pczt::roles::signer::batch::BatchSignResponse::serialize`. The PCZT crate
+//! owns the versioned response encoding and its semantic validation; this
 //! registry type only provides the outer UR/CBOR envelope and the request id
-//! used to correlate it with a signing result.
+//! copied from the corresponding signing request.
 
 use alloc::{string::ToString, vec::Vec};
 
@@ -12,7 +12,7 @@ use minicbor::data::Int;
 
 use crate::{
     error::{URError, URResult},
-    registry_types::{RegistryType, ZCASH_SIGN_BATCH},
+    registry_types::{RegistryType, ZCASH_BATCH_SIG_RESULT},
     traits::{MapSize, RegistryItem},
     types::Bytes,
 };
@@ -23,12 +23,12 @@ const DATA: u8 = 1;
 const REQUEST_ID: u8 = 2;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
-pub struct ZcashSignBatch {
+pub struct ZcashBatchSigResult {
     data: Bytes,
     request_id: Bytes,
 }
 
-impl ZcashSignBatch {
+impl ZcashBatchSigResult {
     pub fn new(request_id: Bytes, data: Bytes) -> Self {
         Self { data, request_id }
     }
@@ -42,19 +42,19 @@ impl ZcashSignBatch {
     }
 }
 
-impl MapSize for ZcashSignBatch {
+impl MapSize for ZcashBatchSigResult {
     fn map_size(&self) -> u64 {
         2
     }
 }
 
-impl RegistryItem for ZcashSignBatch {
+impl RegistryItem for ZcashBatchSigResult {
     fn get_registry_type() -> RegistryType<'static> {
-        ZCASH_SIGN_BATCH
+        ZCASH_BATCH_SIG_RESULT
     }
 }
 
-impl<C> minicbor::Encode<C> for ZcashSignBatch {
+impl<C> minicbor::Encode<C> for ZcashBatchSigResult {
     fn encode<W: minicbor::encode::Write>(
         &self,
         e: &mut minicbor::Encoder<W>,
@@ -67,23 +67,23 @@ impl<C> minicbor::Encode<C> for ZcashSignBatch {
     }
 }
 
-impl<'b, C> minicbor::Decode<'b, C> for ZcashSignBatch {
+impl<'b, C> minicbor::Decode<'b, C> for ZcashBatchSigResult {
     fn decode(
         d: &mut minicbor::Decoder<'b>,
         _ctx: &mut C,
     ) -> Result<Self, minicbor::decode::Error> {
-        let mut result = ZcashSignBatch::default();
+        let mut result = ZcashBatchSigResult::default();
         let mut seen_keys = Vec::new();
         decode_definite_u8_map(
             d,
             &mut result,
-            "indefinite zcash-sign-batch map is unsupported",
+            "indefinite zcash-batch-sig-result map is unsupported",
             |key, obj, d| {
                 reject_duplicate_key(
                     &mut seen_keys,
                     key,
                     d,
-                    "duplicate key in zcash-sign-batch map",
+                    "duplicate key in zcash-batch-sig-result map",
                 )?;
                 match key {
                     DATA => obj.data = d.bytes()?.to_vec(),
@@ -93,34 +93,35 @@ impl<'b, C> minicbor::Decode<'b, C> for ZcashSignBatch {
                 Ok(())
             },
         )?;
-        require_key(&seen_keys, DATA, d, "missing zcash-sign-batch data")?;
+        require_key(&seen_keys, DATA, d, "missing zcash-batch-sig-result data")?;
         require_key(
             &seen_keys,
             REQUEST_ID,
             d,
-            "missing zcash-sign-batch request id",
+            "missing zcash-batch-sig-result request id",
         )?;
         Ok(result)
     }
 }
 
-impl TryFrom<Vec<u8>> for ZcashSignBatch {
+impl TryFrom<Vec<u8>> for ZcashBatchSigResult {
     type Error = URError;
 
     fn try_from(value: Vec<u8>) -> URResult<Self> {
         let mut decoder = minicbor::Decoder::new(&value);
-        let batch = <ZcashSignBatch as minicbor::Decode<'_, ()>>::decode(&mut decoder, &mut ())
-            .map_err(|e| URError::CborDecodeError(e.to_string()))?;
+        let result =
+            <ZcashBatchSigResult as minicbor::Decode<'_, ()>>::decode(&mut decoder, &mut ())
+                .map_err(|e| URError::CborDecodeError(e.to_string()))?;
         if decoder.position() != value.len() {
             return Err(URError::CborDecodeError(
-                "trailing data after zcash-sign-batch".to_string(),
+                "trailing data after zcash-batch-sig-result".to_string(),
             ));
         }
-        Ok(batch)
+        Ok(result)
     }
 }
 
-impl TryInto<Vec<u8>> for ZcashSignBatch {
+impl TryInto<Vec<u8>> for ZcashBatchSigResult {
     type Error = URError;
 
     fn try_into(self) -> URResult<Vec<u8>> {
@@ -133,20 +134,20 @@ mod tests {
     use super::*;
     use alloc::vec;
 
-    // Serialization of an empty PCZT BatchSignRequest. The request format is
-    // "PCZB" || batch_version_le || pczt_version_le || Postcard body.
-    fn empty_batch_request() -> Vec<u8> {
-        vec![b'P', b'C', b'Z', b'B', 1, 0, 0, 0, 2, 0, 0, 0, 0]
+    // Serialization of an empty PCZT BatchSignResponse. The response format is
+    // "PCZS" || batch_version_le || Postcard body.
+    fn empty_batch_response() -> Vec<u8> {
+        vec![b'P', b'C', b'Z', b'S', 1, 0, 0, 0, 0]
     }
 
     #[test]
     fn round_trip() {
-        let data = empty_batch_request();
+        let data = empty_batch_response();
         let request_id = vec![0xaa, 0xbb];
-        let batch = ZcashSignBatch::new(request_id.clone(), data.clone());
+        let result = ZcashBatchSigResult::new(request_id.clone(), data.clone());
 
-        let encoded: Vec<u8> = batch.try_into().unwrap();
-        let decoded = ZcashSignBatch::try_from(encoded).unwrap();
+        let encoded: Vec<u8> = result.try_into().unwrap();
+        let decoded = ZcashBatchSigResult::try_from(encoded).unwrap();
 
         assert_eq!(decoded.get_data(), data);
         assert_eq!(decoded.get_request_id(), request_id);
@@ -154,101 +155,100 @@ mod tests {
 
     #[test]
     fn wire_encoding_is_stable() {
-        let encoded: Vec<u8> = ZcashSignBatch::new(vec![0xaa, 0xbb], empty_batch_request())
+        let encoded: Vec<u8> = ZcashBatchSigResult::new(vec![0xaa, 0xbb], empty_batch_response())
             .try_into()
             .unwrap();
 
-        assert_eq!(
-            hex::encode(encoded),
-            "a2014d50435a420100000002000000000242aabb"
-        );
+        assert_eq!(hex::encode(encoded), "a2014950435a5301000000000242aabb");
     }
 
     #[test]
     fn preserves_empty_data() {
-        let encoded: Vec<u8> = ZcashSignBatch::new(vec![0xaa, 0xbb], vec![])
+        let encoded: Vec<u8> = ZcashBatchSigResult::new(vec![0xaa, 0xbb], vec![])
             .try_into()
             .unwrap();
-        let decoded = ZcashSignBatch::try_from(encoded).unwrap();
+        let decoded = ZcashBatchSigResult::try_from(encoded).unwrap();
 
         assert!(decoded.get_data().is_empty());
     }
 
     #[test]
     fn preserves_empty_request_id() {
-        let encoded: Vec<u8> = ZcashSignBatch::new(vec![], empty_batch_request())
+        let encoded: Vec<u8> = ZcashBatchSigResult::new(vec![], empty_batch_response())
             .try_into()
             .unwrap();
-        let decoded = ZcashSignBatch::try_from(encoded).unwrap();
+        let decoded = ZcashBatchSigResult::try_from(encoded).unwrap();
 
         assert!(decoded.get_request_id().is_empty());
     }
 
     #[test]
     fn rejects_missing_data() {
-        let err = ZcashSignBatch::try_from(vec![0xa1, REQUEST_ID, 0x40]).unwrap_err();
+        let err = ZcashBatchSigResult::try_from(vec![0xa1, REQUEST_ID, 0x40]).unwrap_err();
 
-        assert!(err.to_string().contains("missing zcash-sign-batch data"));
+        assert!(
+            err.to_string()
+                .contains("missing zcash-batch-sig-result data")
+        );
     }
 
     #[test]
     fn rejects_missing_request_id() {
-        let err = ZcashSignBatch::try_from(vec![0xa1, DATA, 0x40]).unwrap_err();
+        let err = ZcashBatchSigResult::try_from(vec![0xa1, DATA, 0x40]).unwrap_err();
 
         assert!(
             err.to_string()
-                .contains("missing zcash-sign-batch request id")
+                .contains("missing zcash-batch-sig-result request id")
         );
     }
 
     #[test]
     fn rejects_duplicate_keys() {
-        let err = ZcashSignBatch::try_from(vec![0xa2, 0x01, 0x40, 0x01, 0x40]).unwrap_err();
+        let err = ZcashBatchSigResult::try_from(vec![0xa2, 0x01, 0x40, 0x01, 0x40]).unwrap_err();
 
         assert!(
             err.to_string()
-                .contains("duplicate key in zcash-sign-batch map")
+                .contains("duplicate key in zcash-batch-sig-result map")
         );
     }
 
     #[test]
     fn rejects_indefinite_map() {
-        let err =
-            ZcashSignBatch::try_from(vec![0xbf, DATA, 0x40, REQUEST_ID, 0x40, 0xff]).unwrap_err();
+        let err = ZcashBatchSigResult::try_from(vec![0xbf, DATA, 0x40, REQUEST_ID, 0x40, 0xff])
+            .unwrap_err();
 
         assert!(
             err.to_string()
-                .contains("indefinite zcash-sign-batch map is unsupported")
+                .contains("indefinite zcash-batch-sig-result map is unsupported")
         );
     }
 
     #[test]
     fn rejects_trailing_data() {
-        let mut encoded: Vec<u8> = ZcashSignBatch::new(vec![0xaa, 0xbb], empty_batch_request())
-            .try_into()
-            .unwrap();
+        let result = ZcashBatchSigResult::new(vec![0xaa, 0xbb], empty_batch_response());
+        let mut encoded: Vec<u8> = result.try_into().unwrap();
         encoded.push(0);
 
-        let err = ZcashSignBatch::try_from(encoded).unwrap_err();
+        let err = ZcashBatchSigResult::try_from(encoded).unwrap_err();
 
         assert!(err.to_string().contains("trailing data"));
     }
 
     #[test]
     fn skips_unknown_keys() {
-        let encoded = hex::decode("a3014d50435a420100000002000000000242aabb0982010a").unwrap();
+        let encoded = hex::decode("a3014950435a5301000000000242aabb0982010a").unwrap();
 
-        let decoded = ZcashSignBatch::try_from(encoded).unwrap();
+        let decoded = ZcashBatchSigResult::try_from(encoded).unwrap();
 
-        assert_eq!(decoded.get_data(), empty_batch_request());
+        assert_eq!(decoded.get_data(), empty_batch_response());
         assert_eq!(decoded.get_request_id(), &[0xaa, 0xbb]);
     }
 
     #[test]
     fn registry_type() {
         assert_eq!(
-            ZcashSignBatch::get_registry_type().get_type(),
-            "zcash-sign-batch"
+            ZcashBatchSigResult::get_registry_type().get_type(),
+            "zcash-batch-sig-result"
         );
     }
 }
