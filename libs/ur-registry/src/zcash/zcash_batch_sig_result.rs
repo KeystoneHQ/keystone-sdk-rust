@@ -161,7 +161,7 @@ mod tests {
     }
 
     fn firmware_version() -> Vec<u8> {
-        vec![12, 5, 0]
+        vec![1, 2, 3]
     }
 
     #[test]
@@ -189,7 +189,7 @@ mod tests {
 
         assert_eq!(
             hex::encode(encoded),
-            "a3014950435a5301000000000242aabb03430c0500"
+            "a3014950435a5301000000000242aabb0343010203"
         );
     }
 
@@ -223,9 +223,9 @@ mod tests {
             0x40,
             FIRMWARE_VERSION,
             0x43,
-            12,
-            5,
-            0,
+            1,
+            2,
+            3,
         ])
         .unwrap_err();
 
@@ -237,7 +237,7 @@ mod tests {
     #[test]
     fn rejects_missing_request_id() {
         let err =
-            ZcashBatchSigResult::try_from(vec![0xa2, DATA, 0x40, FIRMWARE_VERSION, 0x43, 12, 5, 0])
+            ZcashBatchSigResult::try_from(vec![0xa2, DATA, 0x40, FIRMWARE_VERSION, 0x43, 1, 2, 3])
                 .unwrap_err();
 
         assert!(err
@@ -265,14 +265,14 @@ mod tests {
             0x40,
             FIRMWARE_VERSION,
             0x43,
-            12,
-            5,
-            0,
+            1,
+            2,
+            3,
             FIRMWARE_VERSION,
             0x43,
-            12,
-            5,
-            0,
+            1,
+            2,
+            3,
         ])
         .unwrap_err();
 
@@ -291,9 +291,9 @@ mod tests {
             0x40,
             FIRMWARE_VERSION,
             0x43,
-            12,
-            5,
-            0,
+            1,
+            2,
+            3,
             0xff,
         ])
         .unwrap_err();
@@ -317,13 +317,13 @@ mod tests {
 
     #[test]
     fn skips_unknown_keys() {
-        let encoded = hex::decode("a4014950435a5301000000000242aabb03430c05000982010a").unwrap();
+        let encoded = hex::decode("a4014950435a5301000000000242aabb03430102030982010a").unwrap();
 
         let decoded = ZcashBatchSigResult::try_from(encoded).unwrap();
 
         assert_eq!(decoded.get_data(), empty_batch_response());
         assert_eq!(decoded.get_request_id(), &[0xaa, 0xbb]);
-        assert_eq!(decoded.get_firmware_version(), &[12, 5, 0]);
+        assert_eq!(decoded.get_firmware_version(), &[1, 2, 3]);
     }
 
     #[test]

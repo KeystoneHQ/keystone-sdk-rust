@@ -202,7 +202,7 @@ mod tests {
         // "PCZS" || batch_version_le || Postcard body.
         let response = vec![b'P', b'C', b'Z', b'S', 1, 0, 0, 0, 0];
         let request_id = vec![0xaa, 0xbb];
-        let firmware_version = vec![12, 5, 0];
+        let firmware_version = vec![1, 2, 3];
         let result = ZcashBatchSigResult::new(
             request_id.clone(),
             response.clone(),
