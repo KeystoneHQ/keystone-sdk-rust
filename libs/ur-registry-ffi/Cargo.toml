@@ -1,6 +1,6 @@
 [package]
 name = "ur-registry-ffi"
-version = "1.0.6"
+version = "1.0.7"
 edition = "2024"
 description = "FFI bindings for Keystone UR registry"
 license = "MIT"
