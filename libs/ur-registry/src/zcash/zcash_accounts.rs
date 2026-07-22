@@ -8,10 +8,7 @@
 //! with a map containing:
 //! - Seed fingerprint: A byte string that uniquely identifies the seed
 //! - Accounts: An array of Zcash unified full viewing keys
-//!
-//! Decode also accepts a device version string at CBOR map key 3 if present.
-//! The standard encoder does not emit that field, preserving the existing
-//! two-key account export shape for older consumers.
+//! - Device version: An optional firmware version string
 
 use alloc::{
     string::{String, ToString},
@@ -70,8 +67,7 @@ impl ZcashAccounts {
         self.device_version.clone()
     }
 
-    /// Stores device version metadata without changing the canonical
-    /// `zcash-accounts` encoding.
+    /// Sets the firmware version emitted at CBOR map key 3.
     pub fn set_device_version(&mut self, device_version: String) {
         self.device_version = Some(device_version);
     }
@@ -79,7 +75,11 @@ impl ZcashAccounts {
 
 impl MapSize for ZcashAccounts {
     fn map_size(&self) -> u64 {
-        2
+        if self.device_version.is_some() {
+            3
+        } else {
+            2
+        }
     }
 }
 
@@ -105,6 +105,10 @@ impl<C> minicbor::Encode<C> for ZcashAccounts {
         for account in &self.accounts {
             e.tag(Tag::Unassigned(ZCASH_UNIFIED_FULL_VIEWING_KEY.get_tag()))?;
             ZcashUnifiedFullViewingKey::encode(account, e, _ctx)?;
+        }
+
+        if let Some(device_version) = &self.device_version {
+            e.int(Int::from(DEVICE_VERSION))?.str(device_version)?;
         }
 
         Ok(())
@@ -259,7 +263,7 @@ mod tests {
     }
 
     #[test]
-    fn test_zcash_accounts_encoder_omits_device_version_for_compatibility() {
+    fn test_zcash_accounts_encodes_device_version() {
         let seed_fingerprint = hex::decode("d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1").unwrap();
         let mut accounts = ZcashAccounts::new(seed_fingerprint, vec![]);
         accounts.set_device_version("1.2.3".to_string());
@@ -268,16 +272,22 @@ mod tests {
 
         assert_eq!(
             hex::encode(&cbor),
-            "a20150d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d10280"
+            "a30150d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d102800365312e322e33"
         );
         let decoded: ZcashAccounts = minicbor::decode(&cbor).unwrap();
-        assert_eq!(decoded.device_version, None);
+        assert_eq!(decoded.device_version, Some("1.2.3".to_string()));
     }
 
     #[test]
-    fn test_zcash_accounts_without_device_version_decodes_from_old_cbor() {
+    fn test_zcash_accounts_without_device_version_preserves_old_cbor() {
         let seed_fingerprint = hex::decode("d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1").unwrap();
-        let cbor = hex::decode("a20150d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d10280").unwrap();
+        let accounts = ZcashAccounts::new(seed_fingerprint.clone(), vec![]);
+        let cbor = minicbor::to_vec(&accounts).unwrap();
+
+        assert_eq!(
+            hex::encode(&cbor),
+            "a20150d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d10280"
+        );
         let decoded: ZcashAccounts = minicbor::decode(&cbor).unwrap();
 
         assert_eq!(decoded.seed_fingerprint, seed_fingerprint);
@@ -381,6 +391,6 @@ mod tests {
 
         let mut accounts_with_version = ZcashAccounts::new(vec![], vec![]);
         accounts_with_version.set_device_version("1.0.0".to_string());
-        assert_eq!(accounts_with_version.map_size(), 2);
+        assert_eq!(accounts_with_version.map_size(), 3);
     }
 }
