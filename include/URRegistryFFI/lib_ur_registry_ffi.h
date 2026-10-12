@@ -20,6 +20,9 @@ const char* parse_hd_path(struct ExternError*, const char* hd_path);
 // BTC
 const char* generate_crypto_psbt(struct ExternError*, const char* psbt_hex);
 const char* parse_crypto_psbt(struct ExternError*, const char* ur_type, const char* cbor_hex);
+// coin_id: 0 omits the coin field (Bitcoin); 2 LTC, 3 DOGE, 4 DASH, 145 BCH.
+const char* generate_crypto_psbt_extend(struct ExternError*, const char* psbt_hex, int32_t coin_id);
+const char* parse_crypto_psbt_extend(struct ExternError*, const char* ur_type, const char* cbor_hex);
 const char* generate_btc_sign_request(struct ExternError*, const char* request_id, const char* sign_data, const int data_type, const char* accounts, const char* origin);
 const char* parse_btc_signature(struct ExternError*, const char* ur_type, const char* cbor_hex);
 
