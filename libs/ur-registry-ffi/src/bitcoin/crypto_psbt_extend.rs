@@ -52,7 +52,7 @@ mod tests {
 
     #[test]
     fn supported_coins_round_trip() {
-        for coin_id in [0, 2, 3, 4, 145] {
+        for coin_id in [0, 2, 3, 5, 145] {
             let generated: Value =
                 serde_json::from_str(&generate_crypto_psbt_extend("0x70736274ff", coin_id))
                     .unwrap();
@@ -87,7 +87,7 @@ mod tests {
 
     #[test]
     fn invalid_inputs() {
-        for coin_id in [-1, 1, 5, i32::MAX] {
+        for coin_id in [-1, 1, 4, i32::MAX] {
             assert_eq!(
                 generate_crypto_psbt_extend("aabb", coin_id),
                 json!({"error": "invalid coin_id"}).to_string()
@@ -101,7 +101,7 @@ mod tests {
             parse_crypto_psbt_extend("crypto-psbt", "a10142aabb"),
             json!({"error": "type not match"}).to_string()
         );
-        for cbor in ["zz", "a201", "42aabb", "a20142aabb0201"] {
+        for cbor in ["zz", "a201", "42aabb", "a20142aabb0201", "a20142aabb0204"] {
             assert_eq!(
                 parse_crypto_psbt_extend("crypto-psbt-extend", cbor),
                 json!({"error": "PSBT is invalid"}).to_string()
