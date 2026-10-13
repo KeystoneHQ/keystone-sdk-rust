@@ -26,14 +26,14 @@ impl SupportedPsbtCoin {
         match coin_id {
             Some(2) => SupportedPsbtCoin::Litecoin,
             Some(3) => SupportedPsbtCoin::Dogecoin,
-            Some(4) => SupportedPsbtCoin::Dash,
+            Some(5) => SupportedPsbtCoin::Dash,
             Some(145) => SupportedPsbtCoin::BitcoinCash,
             _ => SupportedPsbtCoin::Bitcoin,
         }
     }
 
     pub fn is_valid_coin_id(coin_id: i128) -> bool {
-        matches!(coin_id, 2 | 3 | 4 | 145)
+        matches!(coin_id, 2 | 3 | 5 | 145)
     }
 }
 
