@@ -79,3 +79,6 @@ const char* generate_zcash_pczt(struct ExternError*, const char* pczt_hex);
 // Kaspa PSKT
 const char* generate_kaspa_pskt(struct ExternError*, const char* pskt_hex);
 const char* parse_kaspa_pskt(struct ExternError*, const char* ur_type, const char* cbor_hex);
+
+const char* generate_tron_native_sign_request(struct ExternError*, const char* request_id, const char* sign_data, const char* path, const char* xfp, int32_t data_type, const char* address, const char* origin);
+const char* parse_tron_native_signature(struct ExternError*, const char* ur_type, const char* cbor_hex);
