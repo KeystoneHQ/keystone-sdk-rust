@@ -27,7 +27,6 @@ pub enum URType {
     QRHardwareCall(String),
     Bytes(String),
     BtcSignRequest(String),
-    KeystoneSignRequest(String),
     ZcashAccounts(String),
     ZcashUnifiedFullViewingKey(String),
     ZcashPczt(String),
@@ -55,7 +54,6 @@ impl URType {
             "crypto-account" => Ok(URType::CryptoAccount(type_str.to_string())),
             "bytes" => Ok(URType::Bytes(type_str.to_string())),
             "btc-sign-request" => Ok(URType::BtcSignRequest(type_str.to_string())),
-            "keystone-sign-request" => Ok(URType::KeystoneSignRequest(type_str.to_string())),
             "eth-sign-request" => Ok(URType::EthSignRequest(type_str.to_string())),
             "eth-batch-sign-request" => Ok(URType::EthBatchSignRequest(type_str.to_string())),
             "sol-sign-request" => Ok(URType::SolSignRequest(type_str.to_string())),
@@ -110,7 +108,6 @@ impl URType {
             URType::CryptoAccount(type_str) => type_str.to_string(),
             URType::Bytes(type_str) => type_str.to_string(),
             URType::BtcSignRequest(type_str) => type_str.to_string(),
-            URType::KeystoneSignRequest(type_str) => type_str.to_string(),
             URType::EthSignRequest(type_str) => type_str.to_string(),
             URType::EthBatchSignRequest(type_str) => type_str.to_string(),
             URType::SolSignRequest(type_str) => type_str.to_string(),
@@ -211,8 +208,6 @@ pub const TRON_SIGNATURE: RegistryType = RegistryType("tron-signature", Some(520
 pub const APTOS_SIGN_REQUEST: RegistryType = RegistryType("aptos-sign-request", Some(3101));
 pub const APTOS_SIGNATURE: RegistryType = RegistryType("aptos-signature", Some(3102));
 // UTXO
-pub const KEYSTONE_SIGN_REQUEST: RegistryType = RegistryType("keystone-sign-request", Some(6101));
-pub const KEYSTONE_SIGN_RESULT: RegistryType = RegistryType("keystone-sign-result", Some(6102));
 // CARDANO
 pub const CARDANO_UTXO: RegistryType = RegistryType("cardano-utxo", Some(2201));
 pub const CARDANO_SIGN_REQUEST: RegistryType = RegistryType("cardano-sign-request", Some(2202));

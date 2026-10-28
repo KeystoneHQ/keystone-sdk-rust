@@ -25,7 +25,6 @@ pub mod ethereum;
 pub mod extend;
 pub mod iota;
 pub mod kaspa;
-pub mod keystone;
 mod macros;
 mod macros_impl;
 pub mod monero;

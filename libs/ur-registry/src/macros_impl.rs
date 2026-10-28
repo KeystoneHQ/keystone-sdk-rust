@@ -40,9 +40,6 @@ use crate::iota::{
     iota_sign_hash_request::IotaSignHashRequest, iota_sign_request::IotaSignRequest,
     iota_signature::IotaSignature,
 };
-use crate::keystone::{
-    keystone_sign_request::KeystoneSignRequest, keystone_sign_result::KeystoneSignResult,
-};
 use crate::monero::{
     xmr_keyimage::XmrKeyImage, xmr_output::XmrOutput, xmr_txsigned::XmrTxSigned,
     xmr_txunsigned::XmrTxUnsigned,
@@ -100,8 +97,6 @@ impl_cbor_bytes!(
     EthBatchSignRequest,
     EthBatchSignature,
     CryptoMultiAccounts,
-    KeystoneSignRequest,
-    KeystoneSignResult,
     NearSignRequest,
     NearSignature,
     SolSignRequest,

@@ -1,5 +1,9 @@
 # keystone-sdk-rust
 
+## Signing API changes
+
+The legacy `keystone-sign-request` / `keystone-sign-result` APIs have been removed. Use TRON Native for TRON and PSBT Extend for LTC, BCH, DASH and DOGE. These protocols require different transaction inputs and response handling; they are not drop-in replacements. Integrations that still require the removed APIs must pin an earlier SDK version.
+
 The Keystone Rust SDK is built to simplify the way how software wallets
 communicate with the Keystone hardware wallet via
 [UR](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-005-ur.md).
@@ -74,4 +78,4 @@ Free each returned JSON string with `keystone_sdk_destroy_string`. The JSON keys
 The request UR type is `tron-sign-request`; the response UR type is `tron-signature`.
 The response contains `requestId` and a 65-byte signature encoded as hex. It does not contain a signed transaction or transaction ID. For transactions, retain the original transaction, verify the response request ID and signature against the intended signer, then attach the signature to that transaction before broadcasting. Parsing does not perform that cryptographic verification or broadcast.
 
-The existing legacy TRON interface remains separate (`keystone-sign-request` / `keystone-sign-result`); there is no automatic fallback. Use a firmware version that supports the native TRON UR types.
+Use a firmware version that supports the native TRON UR types.
