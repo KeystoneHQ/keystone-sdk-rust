@@ -35,8 +35,15 @@ export! {
         }
 
         let parse_signature = || -> Result<MultiAccounts, Error> {
-            let cbor = hex::decode(cbor_hex.to_string())?;
+            anyhow::ensure!(!cbor_hex.is_empty() && cbor_hex.len() <= 128 * 1024, "invalid account");
+            let cbor = hex::decode(cbor_hex)?;
             let crypto_account = CryptoAccount::from_cbor(cbor).map_err(|_| format_err!(""))?;
+            let outputs = crypto_account.get_output_descriptors();
+            anyhow::ensure!(!outputs.is_empty() && outputs.len() <= 256, "invalid account");
+            for output in outputs {
+                let key = output.get_hd_key().ok_or_else(|| format_err!("invalid account"))?;
+                super::account_validation::validate_key(&key, Some(crypto_account.get_master_fingerprint()))?;
+            }
             let multi_accounts = crypto_account.into();
             Ok(multi_accounts)
         };
