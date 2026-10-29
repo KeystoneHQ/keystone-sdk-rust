@@ -35,8 +35,5 @@ default = ["core"]
 core = ["dep:thiserror-core"]
 std = ["dep:thiserror", "thiserror-core?/std"]
 
-[build-dependencies]
-prost-build = { version = "0.11.8" }
-
 [dev-dependencies]
 base64 = { version = "0.22.1" }
