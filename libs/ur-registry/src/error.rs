@@ -1,9 +1,9 @@
 use alloc::string::String;
 
 // Prefer std when available; otherwise fall back to core
-#[cfg(feature = "std")]
+#[cfg(feature = "std-base")]
 extern crate thiserror as thiserror;
-#[cfg(all(not(feature = "std"), feature = "core"))]
+#[cfg(all(not(feature = "std-base"), feature = "core-base"))]
 extern crate thiserror_core as thiserror;
 
 use thiserror::Error;

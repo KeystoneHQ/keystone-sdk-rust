@@ -12,6 +12,7 @@ pub trait To {
     fn to_bytes(&self) -> URResult<Vec<u8>>;
 }
 
+#[cfg(feature = "ur-encoder")]
 pub trait UR {
     fn to_ur_encoder(&self, max_fragment_length: usize) -> ur::Encoder;
 }
@@ -20,6 +21,7 @@ pub trait RegistryItem {
     fn get_registry_type() -> RegistryType<'static>;
 }
 
+#[cfg(feature = "ur-encoder")]
 impl<N> UR for N
 where
     N: To + RegistryItem,

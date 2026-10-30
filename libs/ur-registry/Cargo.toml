@@ -10,33 +10,44 @@ homepage = "https://github.com/KeystoneHQ/keystone-sdk-rust"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ur = { package = "keystone-ur", version = "0.1.0", default-features = false }
+ur = { package = "keystone-ur", version = "0.1.0", default-features = false, optional = true }
 minicbor = { version = "0.19", features = ["alloc"] }
-hex = { version = "0.4.3", features = ["alloc"], default-features = false }
+hex = { version = "0.4.3", features = ["alloc"], default-features = false, optional = true }
 bs58 = { version = "0.5.1", features = [
     'check',
     "alloc",
-], default-features = false }
+], default-features = false, optional = true }
 thiserror = { version = "1.0", optional = true }
 thiserror-core = { version = "1.0", package = "thiserror-core", default-features = false, optional = true }
 serde = { version = "1.0", default-features = false, features = [
     "derive",
     "alloc",
-] }
+], optional = true }
 
-prost = { version = "0.11.8", default-features = false }
-prost-types = { version = "0.11.8", default-features = false }
-libflate = { version = "=2.2.2", default-features = false }
-no_std_io2 = { version = "0.9", default-features = false, features = ["alloc"] }
+prost = { version = "0.11.8", default-features = false, optional = true }
+prost-types = { version = "0.11.8", default-features = false, optional = true }
+libflate = { version = "=2.2.2", default-features = false, optional = true }
+no_std_io2 = { version = "0.9", default-features = false, features = ["alloc"], optional = true }
 paste = "1.0.12"
 
 [features]
 default = ["core"]
-core = ["dep:thiserror-core"]
-std = ["dep:thiserror", "thiserror-core?/std"]
+# Preserve the full registry API for existing configurations.
+core = ["core-base", "all-chains"]
+std = ["std-base", "all-chains"]
+# Error/runtime support without selecting unrelated registry formats.
+core-base = ["dep:thiserror-core"]
+std-base = ["dep:thiserror", "thiserror-core?/std"]
+all-chains = [
+    "zcash", "ur-encoder", "dep:bs58", "dep:hex", "dep:serde",
+    "dep:prost", "dep:prost-types", "dep:libflate", "dep:no_std_io2",
+]
+zcash = []
+ur-encoder = ["dep:ur"]
 
 [build-dependencies]
 prost-build = { version = "0.11.8" }
 
 [dev-dependencies]
+hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
 base64 = { version = "0.22.1" }
