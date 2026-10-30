@@ -26,6 +26,7 @@ pub enum DataType {
     TypedData = 2,
     PersonalMessage = 3,
     TypedTransaction = 4,
+    Auth7702 = 5
 }
 
 impl DataType {
@@ -35,8 +36,9 @@ impl DataType {
             2 => Ok(DataType::TypedData),
             3 => Ok(DataType::PersonalMessage),
             4 => Ok(DataType::TypedTransaction),
+            5 => Ok(DataType::Auth7702),
             x => Err(format!(
-                "invalid value for data_type in eth-sign-request, expected (1, 2, 3, 4), received {:?}",
+                "invalid value for data_type in eth-sign-request, expected (1, 2, 3, 4, 5), received {:?}",
                 x
             )),
         }
