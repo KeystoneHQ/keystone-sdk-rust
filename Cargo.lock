@@ -1307,7 +1307,7 @@ dependencies = [
 
 [[package]]
 name = "ur-parse-lib"
-version = "1.0.4"
+version = "1.0.9"
 dependencies = [
  "hex",
  "keystone-ur",
@@ -1316,7 +1316,7 @@ dependencies = [
 
 [[package]]
 name = "ur-registry"
-version = "1.0.5"
+version = "1.0.9"
 dependencies = [
  "base64",
  "bs58",
@@ -1335,7 +1335,7 @@ dependencies = [
 
 [[package]]
 name = "ur-registry-ffi"
-version = "1.0.4"
+version = "1.0.9"
 dependencies = [
  "anyhow",
  "bip32",
@@ -1345,11 +1345,15 @@ dependencies = [
  "hex",
  "jni",
  "libc",
+ "libflate",
  "minicbor",
+ "no_std_io2",
+ "prost",
  "protobuf",
  "secp256k1",
  "serde",
  "serde_json",
+ "sha2",
  "ur-registry",
  "uuid",
 ]

@@ -75,7 +75,17 @@ impl core::convert::From<&CryptoHDKey> for Account {
             name: value.get_name().unwrap_or_default(),
             chain_code,
             extended_public_key: xpub,
-            note: value.get_note(),
+            note: value.get_note().and_then(|note| {
+                if coin_type == 60 && ["account.standard", "account.ledger_legacy", "account.ledger_live"].contains(&note.as_str()) { return Some(note); }
+                if coin_type == 133 {
+                    let parsed: serde_json::Value = serde_json::from_str(&note).ok()?;
+                    let fingerprint = parsed.get("seed_fingerprint")?.as_str()?;
+                    if fingerprint.len() == 64 && hex::decode(fingerprint).is_ok() {
+                        return Some(json!({"seed_fingerprint": fingerprint.to_lowercase()}).to_string());
+                    }
+                }
+                None
+            }),
             xfp,
             extra: gen_extra_data(coin_type),
         }
@@ -90,8 +100,10 @@ export! {
         }
 
         let parse_signature = || -> Result<Account, Error> {
-            let cbor = hex::decode(cbor_hex.to_string())?;
+            anyhow::ensure!(!cbor_hex.is_empty() && cbor_hex.len() <= 128 * 1024, "invalid account");
+            let cbor = hex::decode(cbor_hex)?;
             let crypto_hd_key = CryptoHDKey::from_cbor(cbor).map_err(|_| format_err!(""))?;
+            super::account_validation::validate_key(&crypto_hd_key, None)?;
             Ok(Account::from(&crypto_hd_key))
         };
         match parse_signature() {

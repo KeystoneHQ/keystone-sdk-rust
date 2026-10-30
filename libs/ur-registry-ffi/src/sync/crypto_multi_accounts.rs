@@ -45,8 +45,19 @@ export! {
         }
 
         let parse_signature = || -> Result<MultiAccounts, Error> {
-            let cbor = hex::decode(cbor_hex.to_string())?;
+            anyhow::ensure!(!cbor_hex.is_empty() && cbor_hex.len() <= 128 * 1024, "invalid account");
+            let cbor = hex::decode(cbor_hex)?;
             let crypto_multi_accounts = CryptoMultiAccounts::from_cbor(cbor).map_err(|_| format_err!(""))?;
+            let keys = crypto_multi_accounts.get_keys();
+            anyhow::ensure!(!keys.is_empty() && keys.len() <= 256, "invalid account");
+            let mut paths = std::collections::HashSet::new();
+            for key in &keys {
+                super::account_validation::validate_key(key, Some(crypto_multi_accounts.get_master_fingerprint()))?;
+                anyhow::ensure!(paths.insert(key.get_origin().and_then(|p| p.get_path())), "invalid account");
+            }
+            for (text, limit) in [(crypto_multi_accounts.get_device(),128), (crypto_multi_accounts.get_device_id(),128), (crypto_multi_accounts.get_device_version(),64)] {
+                if let Some(text) = text { super::account_validation::validate_text(&text, limit)?; }
+            }
             let multi_accounts = crypto_multi_accounts.into();
             Ok(multi_accounts)
         };

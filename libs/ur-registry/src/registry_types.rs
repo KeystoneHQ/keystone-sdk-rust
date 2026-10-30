@@ -27,12 +27,12 @@ pub enum URType {
     QRHardwareCall(String),
     Bytes(String),
     BtcSignRequest(String),
-    KeystoneSignRequest(String),
     ZcashAccounts(String),
     ZcashUnifiedFullViewingKey(String),
     ZcashPczt(String),
     ZcashSignBatch(String),
     ZcashSignResult(String),
+    ZcashBatchSigResult(String),
     XmrOutput(String),
     XmrTxUnsigned(String),
     AvaxSignRequest(String),
@@ -54,7 +54,6 @@ impl URType {
             "crypto-account" => Ok(URType::CryptoAccount(type_str.to_string())),
             "bytes" => Ok(URType::Bytes(type_str.to_string())),
             "btc-sign-request" => Ok(URType::BtcSignRequest(type_str.to_string())),
-            "keystone-sign-request" => Ok(URType::KeystoneSignRequest(type_str.to_string())),
             "eth-sign-request" => Ok(URType::EthSignRequest(type_str.to_string())),
             "eth-batch-sign-request" => Ok(URType::EthBatchSignRequest(type_str.to_string())),
             "sol-sign-request" => Ok(URType::SolSignRequest(type_str.to_string())),
@@ -86,6 +85,7 @@ impl URType {
             "zcash-pczt" => Ok(URType::ZcashPczt(type_str.to_string())),
             "zcash-sign-batch" => Ok(URType::ZcashSignBatch(type_str.to_string())),
             "zcash-sign-result" => Ok(URType::ZcashSignResult(type_str.to_string())),
+            "zcash-batch-sig-result" => Ok(URType::ZcashBatchSigResult(type_str.to_string())),
             "tron-sign-request" => Ok(URType::TronSignRequest(type_str.to_string())),
             "tron-signature" => Ok(URType::TronSignature(type_str.to_string())),
             "xmr-output" => Ok(URType::XmrOutput(type_str.to_string())),
@@ -108,7 +108,6 @@ impl URType {
             URType::CryptoAccount(type_str) => type_str.to_string(),
             URType::Bytes(type_str) => type_str.to_string(),
             URType::BtcSignRequest(type_str) => type_str.to_string(),
-            URType::KeystoneSignRequest(type_str) => type_str.to_string(),
             URType::EthSignRequest(type_str) => type_str.to_string(),
             URType::EthBatchSignRequest(type_str) => type_str.to_string(),
             URType::SolSignRequest(type_str) => type_str.to_string(),
@@ -132,6 +131,7 @@ impl URType {
             URType::ZcashPczt(type_str) => type_str.to_string(),
             URType::ZcashSignBatch(type_str) => type_str.to_string(),
             URType::ZcashSignResult(type_str) => type_str.to_string(),
+            URType::ZcashBatchSigResult(type_str) => type_str.to_string(),
             URType::TronSignRequest(type_str) => type_str.to_string(),
             URType::TronSignature(type_str) => type_str.to_string(),
             URType::XmrOutput(type_str) => type_str.to_string(),
@@ -208,8 +208,6 @@ pub const TRON_SIGNATURE: RegistryType = RegistryType("tron-signature", Some(520
 pub const APTOS_SIGN_REQUEST: RegistryType = RegistryType("aptos-sign-request", Some(3101));
 pub const APTOS_SIGNATURE: RegistryType = RegistryType("aptos-signature", Some(3102));
 // UTXO
-pub const KEYSTONE_SIGN_REQUEST: RegistryType = RegistryType("keystone-sign-request", Some(6101));
-pub const KEYSTONE_SIGN_RESULT: RegistryType = RegistryType("keystone-sign-result", Some(6102));
 // CARDANO
 pub const CARDANO_UTXO: RegistryType = RegistryType("cardano-utxo", Some(2201));
 pub const CARDANO_SIGN_REQUEST: RegistryType = RegistryType("cardano-sign-request", Some(2202));
@@ -278,3 +276,5 @@ pub const ZCASH_UNIFIED_FULL_VIEWING_KEY: RegistryType =
 pub const ZCASH_PCZT: RegistryType = RegistryType("zcash-pczt", Some(49204));
 pub const ZCASH_SIGN_BATCH: RegistryType = RegistryType("zcash-sign-batch", Some(49205));
 pub const ZCASH_SIGN_RESULT: RegistryType = RegistryType("zcash-sign-result", Some(49206));
+pub const ZCASH_BATCH_SIG_RESULT: RegistryType =
+    RegistryType("zcash-batch-sig-result", Some(49207));

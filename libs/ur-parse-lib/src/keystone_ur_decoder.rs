@@ -171,7 +171,8 @@ mod tests {
     #[test]
     fn test_decode_zcash_accounts_registry_ur() {
         let seed_fingerprint = hex::decode("d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1").unwrap();
-        let accounts = ZcashAccounts::new(seed_fingerprint.clone(), vec![]);
+        let mut accounts = ZcashAccounts::new(seed_fingerprint.clone(), vec![]);
+        accounts.set_device_version("1.2.3".to_string());
         let cbor: Vec<u8> = accounts.try_into().unwrap();
         let encoded =
             probe_encode(&cbor, 400, ZcashAccounts::get_registry_type().get_type()).unwrap();
@@ -183,7 +184,10 @@ mod tests {
         assert_eq!(decoded.ur_type.unwrap().get_type_str(), "zcash-accounts");
         assert_eq!(decoded_accounts.get_seed_fingerprint(), seed_fingerprint);
         assert!(decoded_accounts.get_accounts().is_empty());
-        assert_eq!(decoded_accounts.get_device_version(), None);
+        assert_eq!(
+            decoded_accounts.get_device_version(),
+            Some("1.2.3".to_string())
+        );
     }
 
     #[test]

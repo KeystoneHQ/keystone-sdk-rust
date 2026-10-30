@@ -20,6 +20,9 @@ const char* parse_hd_path(struct ExternError*, const char* hd_path);
 // BTC
 const char* generate_crypto_psbt(struct ExternError*, const char* psbt_hex);
 const char* parse_crypto_psbt(struct ExternError*, const char* ur_type, const char* cbor_hex);
+// coin_id: 0 omits the coin field (Bitcoin); 2 LTC, 3 DOGE, 5 DASH, 145 BCH.
+const char* generate_crypto_psbt_extend(struct ExternError*, const char* psbt_hex, int32_t coin_id);
+const char* parse_crypto_psbt_extend(struct ExternError*, const char* ur_type, const char* cbor_hex);
 const char* generate_btc_sign_request(struct ExternError*, const char* request_id, const char* sign_data, const int data_type, const char* accounts, const char* origin);
 const char* parse_btc_signature(struct ExternError*, const char* ur_type, const char* cbor_hex);
 
@@ -40,8 +43,6 @@ const char* generate_evm_sign_request(struct ExternError*, const char* request_i
 const char* parse_evm_signature(struct ExternError*, const char* ur_type, const char* cbor_hex);
 
 // Tron
-const char* generate_tron_sign_request(struct ExternError*, const char* request_id, const char* sign_data, const char* path, const char* xfp, const char* token_info, const char* origin, const int64_t timestamp);
-const char* parse_tron_signature(struct ExternError*, const char* ur_type, const char* cbor_hex);
 
 // Aptos
 const char* generate_aptos_sign_request(struct ExternError*, const char* request_id, const char* sign_data, const char* accounts, const char* origin, const int sign_type);
@@ -51,9 +52,6 @@ const char* parse_aptos_signature(struct ExternError*, const char* ur_type, cons
 const char* generate_sui_sign_request(struct ExternError*, const char* request_id, const char* intent_message, const char* accounts, const char* origin);
 const char* parse_sui_signature(struct ExternError*, const char* ur_type, const char* cbor_hex);
 
-// Keystone
-const char* generate_keystone_sign_request(struct ExternError*, const char* request_id, const int coin_type, const char* sign_data, const char* xfp, const char* origin, const int64_t timestamp);
-const char* parse_keystone_sign_result(struct ExternError*, const char* ur_type, const char* cbor_hex);
 
 // Near
 const char* generate_near_sign_request(struct ExternError*, const char* request_id, const char* sign_data, const char* path, const char* xfp, const char* account, const char* origin);
@@ -76,3 +74,6 @@ const char* generate_zcash_pczt(struct ExternError*, const char* pczt_hex);
 // Kaspa PSKT
 const char* generate_kaspa_pskt(struct ExternError*, const char* pskt_hex);
 const char* parse_kaspa_pskt(struct ExternError*, const char* ur_type, const char* cbor_hex);
+
+const char* generate_tron_native_sign_request(struct ExternError*, const char* request_id, const char* sign_data, const char* path, const char* xfp, int32_t data_type, const char* address, const char* origin);
+const char* parse_tron_native_signature(struct ExternError*, const char* ur_type, const char* cbor_hex);

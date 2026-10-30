@@ -6,7 +6,6 @@ pub mod cosmos;
 pub mod ethereum;
 pub mod evm;
 mod export;
-pub mod keystone;
 pub mod near;
 pub mod solana;
 pub mod stellar;
